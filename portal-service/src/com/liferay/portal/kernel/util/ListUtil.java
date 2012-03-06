@@ -195,13 +195,13 @@ public class ListUtil {
 		}
 		else {
 			Iterator<E> itr = list.iterator();
-	
+
 			while (itr.hasNext()) {
 				E curElement = itr.next();
-	
+
 				if ((curElement == element) || curElement.equals(element)) {
 					itr.remove();
-	
+
 					return true;
 				}
 			}
