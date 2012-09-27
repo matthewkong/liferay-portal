@@ -15,6 +15,7 @@
 package com.liferay.portlet.portalsettings.action;
 
 import com.liferay.counter.service.CounterLocalServiceUtil;
+import com.liferay.portal.DuplicateLDAPServerNameException;
 import com.liferay.portal.kernel.servlet.SessionErrors;
 import com.liferay.portal.kernel.util.Constants;
 import com.liferay.portal.kernel.util.ParamUtil;
@@ -23,6 +24,7 @@ import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.UnicodeProperties;
+import com.liferay.portal.LDAPServerNameException;
 import com.liferay.portal.security.auth.PrincipalException;
 import com.liferay.portal.security.ldap.LDAPSettingsUtil;
 import com.liferay.portal.service.CompanyServiceUtil;
@@ -74,6 +76,10 @@ public class EditLDAPServerAction extends PortletAction {
 				SessionErrors.add(actionRequest, e.getClass());
 
 				setForward(actionRequest, "portlet.portal_settings.error");
+			}
+			else if (e instanceof LDAPServerNameException ||
+				e instanceof DuplicateLDAPServerNameException) {
+					SessionErrors.add(actionRequest, e.getClass());
 			}
 			else {
 				throw e;
@@ -132,6 +138,8 @@ public class EditLDAPServerAction extends PortletAction {
 
 		String ldapServerIds = preferences.getValue(
 			"ldap.server.ids", StringPool.BLANK);
+
+		validateLDAPServerName(companyId, ldapServerId, properties);
 
 		ldapServerIds = StringUtil.add(
 			ldapServerIds, String.valueOf(ldapServerId));
@@ -195,8 +203,28 @@ public class EditLDAPServerAction extends PortletAction {
 			properties = addLDAPServer(themeDisplay.getCompanyId(), properties);
 		}
 
+		validateLDAPServerName(themeDisplay.getCompanyId(), ldapServerId, properties);
+
 		CompanyServiceUtil.updatePreferences(
 			themeDisplay.getCompanyId(), properties);
+	}
+
+	protected void validateLDAPServerName(long companyId, long ldapServerId, UnicodeProperties properties) 
+		throws Exception {
+		
+		long[] ldapServerCheck = StringUtil.split(PrefsPropsUtil.getString(companyId, "ldap.server.ids"), 0L);
+		
+		if (properties.getProperty("ldap.server.name." + ldapServerId).isEmpty()) {
+			throw new LDAPServerNameException();
+		}
+
+		for (long ldapServerIterator : ldapServerCheck) {
+			if (properties.getProperty
+					("ldap.server.name." + ldapServerId).equals(PrefsPropsUtil.getString(companyId, "ldap.server.name." + ldapServerIterator))) {
+
+				throw new DuplicateLDAPServerNameException();
+			}
+		}
 	}
 
 	private static final String[] _KEYS = {
