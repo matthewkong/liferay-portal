@@ -156,6 +156,9 @@ for (int i = 0 ; i < groupMappingArray.length ; i++) {
 </portlet:actionURL>
 
 <aui:form action="<%= editLDAPServerURL %>" method="post" name="fm" onSubmit='<%= "event.preventDefault(); " + renderResponse.getNamespace() + "saveEntry(false);" %>'>
+	<liferay-ui:error exception="<%= LDAPServerNameException.class %>" message="Please enter a valid LDAP server name" />
+	<liferay-ui:error exception="<%= DuplicateLDAPServerNameException.class %>" message="Please enter a unique LDAP server name" />
+
 	<aui:input name="<%= Constants.CMD %>" type="hidden" />
 	<aui:input name="redirect" type="hidden" value="<%= redirect %>" />
 	<aui:input name="ldapServerId" type="hidden" value="<%= ldapServerId %>" />
