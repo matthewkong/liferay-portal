@@ -59,6 +59,7 @@ import com.liferay.portlet.asset.model.AssetVocabulary;
 import com.liferay.portlet.assetpublisher.util.AssetPublisherUtil;
 import com.liferay.portlet.documentlibrary.DuplicateFileException;
 import com.liferay.portlet.documentlibrary.DuplicateFolderNameException;
+import com.liferay.portlet.documentlibrary.EntryTitleException;
 import com.liferay.portlet.documentlibrary.FileExtensionException;
 import com.liferay.portlet.documentlibrary.FileMimeTypeException;
 import com.liferay.portlet.documentlibrary.FileNameException;
@@ -567,6 +568,11 @@ public class EditFileEntryAction extends PortletAction {
 				"the-folder-you-selected-already-has-an-entry-with-this-name." +
 					"-please-select-a-different-folder");
 		}
+		else if (e instanceof EntryTitleException) {
+			errorMessage = LanguageUtil.get(
+				themeDisplay.getLocale(),
+				"please-enter-a-valid-title");
+		}
 		else if (e instanceof FileExtensionException) {
 			errorMessage = LanguageUtil.format(
 				themeDisplay.getLocale(),
@@ -614,6 +620,7 @@ public class EditFileEntryAction extends PortletAction {
 		}
 		else if (e instanceof DuplicateFileException ||
 				 e instanceof DuplicateFolderNameException ||
+				 e instanceof EntryTitleException ||
 				 e instanceof FileExtensionException ||
 				 e instanceof FileMimeTypeException ||
 				 e instanceof FileNameException ||

@@ -56,6 +56,7 @@ import com.liferay.portal.util.PrefsPropsUtil;
 import com.liferay.portal.util.PropsValues;
 import com.liferay.portlet.documentlibrary.DuplicateFileException;
 import com.liferay.portlet.documentlibrary.DuplicateFolderNameException;
+import com.liferay.portlet.documentlibrary.EntryTitleException;
 import com.liferay.portlet.documentlibrary.FileNameException;
 import com.liferay.portlet.documentlibrary.ImageSizeException;
 import com.liferay.portlet.documentlibrary.InvalidFileEntryTypeException;
@@ -2034,7 +2035,7 @@ public class DLFileEntryLocalServiceImpl
 
 	protected void validateFileName(String fileName) throws PortalException {
 		if (fileName.contains(StringPool.SLASH)) {
-			throw new FileNameException(fileName);
+			throw new EntryTitleException(fileName);
 		}
 	}
 
