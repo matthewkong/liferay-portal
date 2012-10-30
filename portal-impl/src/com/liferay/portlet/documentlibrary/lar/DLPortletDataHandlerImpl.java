@@ -1362,21 +1362,22 @@ public class DLPortletDataHandlerImpl extends BasePortletDataHandler {
 		List<Element> structureElements = fileEntryTypeElement.elements(
 			"structure");
 
+		List<DDMStructure> ddmStructures = new ArrayList<DDMStructure>();
+
 		for (Element structureElement : structureElements) {
-			DDMPortletDataHandlerImpl.importStructure(
-				portletDataContext, structureElement);
+			DDMStructure importedStructure =
+				DDMPortletDataHandlerImpl.importStructure(
+					portletDataContext, structureElement);
+
+			if (importedStructure != null) {
+				ddmStructures.add(importedStructure);
+			}
 		}
 
-		String[] ddmStructureUuids = StringUtil.split(
-			fileEntryTypeElement.attributeValue("structureUuids"));
+		long[] ddmStructureIds = new long[ddmStructures.size()];
 
-		long[] ddmStrutureIds = new long[ddmStructureUuids.length];
-
-		for (int i = 0; i < ddmStructureUuids.length; i++) {
-			DDMStructure existingStructure = DDMStructureUtil.fetchByUUID_G(
-				ddmStructureUuids[i], portletDataContext.getScopeGroupId());
-
-			ddmStrutureIds[i] = existingStructure.getStructureId();
+		for (int i = 0; i < ddmStructureIds.length; i++) {
+			ddmStructureIds[i] = ddmStructures.get(i).getStructureId();
 		}
 
 		ServiceContext serviceContext = portletDataContext.createServiceContext(
@@ -1396,13 +1397,13 @@ public class DLPortletDataHandlerImpl extends BasePortletDataHandler {
 				importedDLFileEntryType =
 					DLFileEntryTypeLocalServiceUtil.addFileEntryType(
 						userId, portletDataContext.getScopeGroupId(), name,
-						dlFileEntryType.getDescription(), ddmStrutureIds,
+						dlFileEntryType.getDescription(), ddmStructureIds,
 						serviceContext);
 			}
 			else {
 				DLFileEntryTypeLocalServiceUtil.updateFileEntryType(
 					userId, existingDLFileEntryType.getFileEntryTypeId(), name,
-					dlFileEntryType.getDescription(), ddmStrutureIds,
+					dlFileEntryType.getDescription(), ddmStructureIds,
 					serviceContext);
 
 				importedDLFileEntryType = existingDLFileEntryType;
@@ -1412,7 +1413,7 @@ public class DLPortletDataHandlerImpl extends BasePortletDataHandler {
 			importedDLFileEntryType =
 				DLFileEntryTypeLocalServiceUtil.addFileEntryType(
 					userId, portletDataContext.getScopeGroupId(), name,
-					dlFileEntryType.getDescription(), ddmStrutureIds,
+					dlFileEntryType.getDescription(), ddmStructureIds,
 					serviceContext);
 		}
 
@@ -1422,8 +1423,7 @@ public class DLPortletDataHandlerImpl extends BasePortletDataHandler {
 		String importedDLFileEntryDDMStructureKey = DLUtil.getDDMStructureKey(
 			importedDLFileEntryType);
 
-		List<DDMStructure> ddmStructures =
-			importedDLFileEntryType.getDDMStructures();
+		ddmStructures = importedDLFileEntryType.getDDMStructures();
 
 		for (DDMStructure ddmStructure : ddmStructures) {
 			String ddmStructureKey = ddmStructure.getStructureKey();
