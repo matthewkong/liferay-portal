@@ -101,14 +101,14 @@ public class DDMPortletDataHandlerImpl extends BasePortletDataHandler {
 			templateElement, path, template, _NAMESPACE);
 	}
 
-	public static void importStructure(
+	public static DDMStructure importStructure(
 			PortletDataContext portletDataContext, Element structureElement)
 		throws Exception {
 
 		String path = structureElement.attributeValue("path");
 
 		if (!portletDataContext.isPathNotProcessed(path)) {
-			return;
+			return null;
 		}
 
 		DDMStructure structure =
@@ -118,10 +118,6 @@ public class DDMPortletDataHandlerImpl extends BasePortletDataHandler {
 		prepareLanguagesForImport(structure);
 
 		long userId = portletDataContext.getUserId(structure.getUserUuid());
-
-		Map<Long, Long> structureIds =
-			(Map<Long, Long>)portletDataContext.getNewPrimaryKeysMap(
-				DDMStructure.class);
 
 		ServiceContext serviceContext = portletDataContext.createServiceContext(
 			structureElement, structure, _NAMESPACE);
@@ -177,8 +173,7 @@ public class DDMPortletDataHandlerImpl extends BasePortletDataHandler {
 		portletDataContext.importClassedModel(
 			structure, importedStructure, _NAMESPACE);
 
-		structureIds.put(
-			structure.getStructureId(), importedStructure.getStructureId());
+		return importedStructure;
 	}
 
 	public static void importTemplate(
