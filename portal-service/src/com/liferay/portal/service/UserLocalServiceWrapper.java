@@ -14,6 +14,8 @@
 
 package com.liferay.portal.service;
 
+import com.liferay.portal.service.ServiceWrapper;
+
 /**
  * <p>
  * This class is a wrapper for {@link UserLocalService}.
@@ -1952,7 +1954,7 @@ public class UserLocalServiceWrapper implements UserLocalService,
 	* first name, middle name, last name, screen name, and email address match
 	* the keywords specified for them, without using the indexer. It is
 	* preferable to use the indexed version {@link #search(long, String,
-	* String, String, String, String, int, LinkedHashMap, boolean, int, int,
+	* String, String, String, String, String, int, LinkedHashMap, boolean, int, int,
 	* Sort)} instead of this method wherever possible for performance reasons.
 	*
 	* <p>
@@ -1990,14 +1992,15 @@ public class UserLocalServiceWrapper implements UserLocalService,
 	public java.util.List<com.liferay.portal.model.User> search(
 		long companyId, java.lang.String firstName,
 		java.lang.String middleName, java.lang.String lastName,
-		java.lang.String screenName, java.lang.String emailAddress, int status,
+		java.lang.String screenName, java.lang.String emailAddress,
+		java.lang.String jobTitle, int status,
 		java.util.LinkedHashMap<java.lang.String, java.lang.Object> params,
 		boolean andSearch, int start, int end,
 		com.liferay.portal.kernel.util.OrderByComparator obc)
 		throws com.liferay.portal.kernel.exception.SystemException {
 		return _userLocalService.search(companyId, firstName, middleName,
-			lastName, screenName, emailAddress, status, params, andSearch,
-			start, end, obc);
+			lastName, screenName, emailAddress, jobTitle, status, params,
+			andSearch, start, end, obc);
 	}
 
 	/**
@@ -2042,14 +2045,14 @@ public class UserLocalServiceWrapper implements UserLocalService,
 	public com.liferay.portal.kernel.search.Hits search(long companyId,
 		java.lang.String firstName, java.lang.String middleName,
 		java.lang.String lastName, java.lang.String screenName,
-		java.lang.String emailAddress, int status,
+		java.lang.String emailAddress, java.lang.String jobTitle, int status,
 		java.util.LinkedHashMap<java.lang.String, java.lang.Object> params,
 		boolean andSearch, int start, int end,
 		com.liferay.portal.kernel.search.Sort sort)
 		throws com.liferay.portal.kernel.exception.SystemException {
 		return _userLocalService.search(companyId, firstName, middleName,
-			lastName, screenName, emailAddress, status, params, andSearch,
-			start, end, sort);
+			lastName, screenName, emailAddress, jobTitle, status, params,
+			andSearch, start, end, sort);
 	}
 
 	/**
@@ -2097,12 +2100,14 @@ public class UserLocalServiceWrapper implements UserLocalService,
 	*/
 	public int searchCount(long companyId, java.lang.String firstName,
 		java.lang.String middleName, java.lang.String lastName,
-		java.lang.String screenName, java.lang.String emailAddress, int status,
+		java.lang.String screenName, java.lang.String emailAddress,
+		java.lang.String jobTitle, int status,
 		java.util.LinkedHashMap<java.lang.String, java.lang.Object> params,
 		boolean andSearch)
 		throws com.liferay.portal.kernel.exception.SystemException {
 		return _userLocalService.searchCount(companyId, firstName, middleName,
-			lastName, screenName, emailAddress, status, params, andSearch);
+			lastName, screenName, emailAddress, jobTitle, status, params,
+			andSearch);
 	}
 
 	/**
