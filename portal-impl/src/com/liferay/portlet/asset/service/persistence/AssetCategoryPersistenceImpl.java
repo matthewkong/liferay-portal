@@ -8556,9 +8556,9 @@ public class AssetCategoryPersistenceImpl extends BasePersistenceImpl<AssetCateg
 		long leftCategoryId = assetCategory.getLeftCategoryId();
 		long rightCategoryId = assetCategory.getRightCategoryId();
 
-		long delta = (rightCategoryId - leftCategoryId) + 1;
+		long delta = 2;
 
-		shrinkTreeLeftCategoryId.shrink(groupId, rightCategoryId, delta);
+		shrinkTreeLeftCategoryId.shrink(groupId, leftCategoryId, delta);
 		shrinkTreeRightCategoryId.shrink(groupId, rightCategoryId, delta);
 
 		CacheRegistryUtil.clear(AssetCategoryImpl.class.getName());
