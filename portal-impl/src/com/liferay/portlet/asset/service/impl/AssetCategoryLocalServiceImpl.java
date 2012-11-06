@@ -166,9 +166,6 @@ public class AssetCategoryLocalServiceImpl
 			category.getCategoryId(), groupPermissions, guestPermissions);
 	}
 
-	/**
-	 * @deprecated {@link #deleteCategory(AssetCategory, boolean)}
-	 */
 	public void deleteCategory(AssetCategory category)
 		throws PortalException, SystemException {
 
