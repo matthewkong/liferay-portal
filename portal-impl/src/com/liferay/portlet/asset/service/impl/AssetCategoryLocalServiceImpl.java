@@ -15,6 +15,7 @@
 package com.liferay.portlet.asset.service.impl;
 
 import com.liferay.portal.kernel.cache.ThreadLocalCachable;
+import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.util.CharPool;
@@ -38,6 +39,7 @@ import com.liferay.portlet.asset.model.AssetCategoryConstants;
 import com.liferay.portlet.asset.model.AssetCategoryProperty;
 import com.liferay.portlet.asset.model.AssetEntry;
 import com.liferay.portlet.asset.service.base.AssetCategoryLocalServiceBaseImpl;
+import com.liferay.portlet.asset.util.AssetUtil;
 
 import java.util.Date;
 import java.util.Iterator;
@@ -182,16 +184,6 @@ public class AssetCategoryLocalServiceImpl
 			category.getCompanyId(), AssetCategory.class.getName(),
 			ResourceConstants.SCOPE_INDIVIDUAL, category.getCategoryId());
 
-		// Categories
-
-		List<AssetCategory> categories =
-			assetCategoryPersistence.findByParentCategoryId(
-				category.getCategoryId());
-
-		for (AssetCategory curCategory : categories) {
-			deleteCategory(curCategory);
-		}
-
 		// Properties
 
 		assetCategoryPropertyLocalService.deleteCategoryProperties(
@@ -214,8 +206,14 @@ public class AssetCategoryLocalServiceImpl
 	public void deleteVocabularyCategories(long vocabularyId)
 		throws PortalException, SystemException {
 
+		OrderByComparator orderByComparator =
+			AssetUtil.getAssetCategoryOrderByComparator("rightCategoryId",
+				"desc");
+
 		List<AssetCategory> categories =
-			assetCategoryPersistence.findByVocabularyId(vocabularyId);
+			getVocabularyCategories(
+				vocabularyId, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
+				orderByComparator);
 
 		for (AssetCategory category : categories) {
 			deleteCategory(category);
