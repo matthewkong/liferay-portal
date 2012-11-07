@@ -532,7 +532,7 @@ public class CalEventLocalServiceImpl extends CalEventLocalServiceBaseImpl {
 			// Time zone insensitive
 
 			Calendar tzICal = CalendarFactoryUtil.getCalendar(
-				TimeZoneUtil.getTimeZone(StringPool.UTC));
+				TimeZoneUtil.getDefault());
 
 			tzICal.set(
 				cal.get(Calendar.YEAR), cal.get(Calendar.MONTH),
@@ -1007,6 +1007,9 @@ public class CalEventLocalServiceImpl extends CalEventLocalServiceBaseImpl {
 			title = ModelHintsUtil.trimString(
 				CalEvent.class.getName(), "title",
 				event.getSummary().getValue());
+		}
+		else {
+			title = "(none)";
 		}
 
 		// Description
