@@ -1747,7 +1747,7 @@ public class CalEventLocalServiceImpl extends CalEventLocalServiceBaseImpl {
 			boolean allDay, boolean repeating, TZSRecurrence recurrence)
 		throws PortalException {
 
-		if (Validator.isNull(title)) {
+		if (title == null) {
 			throw new EventTitleException();
 		}
 
