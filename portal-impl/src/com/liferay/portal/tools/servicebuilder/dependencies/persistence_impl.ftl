@@ -3919,10 +3919,8 @@ public class ${entity.name}PersistenceImpl extends BasePersistenceImpl<${entity.
 			long left${pkColumn.methodName} = ${entity.varName}.getLeft${pkColumn.methodName}();
 			long right${pkColumn.methodName} = ${entity.varName}.getRight${pkColumn.methodName}();
 
-			long delta = (right${pkColumn.methodName} - left${pkColumn.methodName}) + 1;
-
-			shrinkTreeLeft${pkColumn.methodName}.shrink(${scopeColumn.name}, right${pkColumn.methodName}, delta);
-			shrinkTreeRight${pkColumn.methodName}.shrink(${scopeColumn.name}, right${pkColumn.methodName}, delta);
+			shrinkTreeLeft${pkColumn.methodName}.shrink(${scopeColumn.name}, left${pkColumn.methodName}, 2);
+			shrinkTreeRight${pkColumn.methodName}.shrink(${scopeColumn.name}, right${pkColumn.methodName}, 2);
 
 			CacheRegistryUtil.clear(${entity.name}Impl.class.getName());
 			EntityCacheUtil.clearCache(${entity.name}Impl.class.getName());
