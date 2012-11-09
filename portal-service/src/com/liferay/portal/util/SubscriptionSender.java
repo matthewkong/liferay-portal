@@ -33,6 +33,7 @@ import com.liferay.portal.kernel.util.ObjectValuePair;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
+import com.liferay.portal.kernel.uuid.PortalUUIDUtil;
 import com.liferay.portal.model.Company;
 import com.liferay.portal.model.Group;
 import com.liferay.portal.model.Subscription;
@@ -301,6 +302,7 @@ public class SubscriptionSender implements Serializable {
 	public void setMailId(String popPortletPrefix, Object... ids) {
 		_mailIdPopPortletPrefix = popPortletPrefix;
 		_mailIdIds = ids;
+		ArrayUtil.append(_mailIdIds, PortalUUIDUtil.generate());
 	}
 
 	public void setPortletId(String portletId) {
