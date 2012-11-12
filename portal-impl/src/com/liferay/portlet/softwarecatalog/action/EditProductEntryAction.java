@@ -169,6 +169,8 @@ public class EditProductEntryAction extends PortletAction {
 
 			byte[] bytes = null;
 
+			String contentType = uploadPortletRequest.getContentType(name);
+
 			if (preserveScreenshot) {
 				SCProductScreenshot productScreenshot = getProductScreenshot(
 					uploadPortletRequest, priority);
@@ -195,8 +197,9 @@ public class EditProductEntryAction extends PortletAction {
 				}
 			}
 
-			if ((bytes != null) && (bytes.length > 0)) {
-				images.add(bytes);
+			if ((bytes != null) && (bytes.length > 0) &&
+				contentType.contains("image")) {
+					images.add(bytes);
 			}
 			else {
 				throw new ProductEntryScreenshotsException();
