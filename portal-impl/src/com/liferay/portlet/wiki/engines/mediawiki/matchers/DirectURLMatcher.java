@@ -17,9 +17,9 @@ package com.liferay.portlet.wiki.engines.mediawiki.matchers;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.util.CallbackMatcher;
 import com.liferay.portal.kernel.util.HttpUtil;
+import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portlet.wiki.model.WikiPage;
 
 import java.util.regex.MatchResult;
@@ -36,14 +36,15 @@ public class DirectURLMatcher extends CallbackMatcher {
 		setRegex(_REGEX);
 	}
 
+	public String replaceMatches(CharSequence charSequence) {
+		return replaceMatches(charSequence, false);
+	}
+
 	public String replaceMatches(
-			CharSequence charSequence, boolean hasUnderscore) {
+		CharSequence charSequence, boolean hasUnderscore) {
 
 		if (hasUnderscore) {
 			setRegex(_UNDERSCORE_REGEX);
-		}
-		else {
-			setRegex(_REGEX);
 		}
 
 		return replaceMatches(charSequence, _callBack);
@@ -78,6 +79,7 @@ public class DirectURLMatcher extends CallbackMatcher {
 				for (FileEntry fileEntry : _page.getAttachmentsFileEntries()) {
 					if (fileName.equals(fileEntry.getTitle())) {
 						exists = true;
+
 						break;
 					}
 				}

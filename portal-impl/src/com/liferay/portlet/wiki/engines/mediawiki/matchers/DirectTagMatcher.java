@@ -58,6 +58,7 @@ public class DirectTagMatcher extends CallbackMatcher {
 				for (FileEntry fileEntry : _page.getAttachmentsFileEntries()) {
 					if (fileName.equals(fileEntry.getTitle())) {
 						exists = true;
+
 						break;
 					}
 				}
@@ -70,8 +71,8 @@ public class DirectTagMatcher extends CallbackMatcher {
 				return null;
 			}
 
-			fileName =
-				StringUtil.replace(fileName, StringPool.UNDERLINE, "%5F");
+			fileName = StringUtil.replace(
+				fileName, StringPool.UNDERLINE, "%5F");
 
 			return fileName;
 		}
