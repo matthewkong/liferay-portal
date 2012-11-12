@@ -546,7 +546,7 @@ public class AssetCategoryPersistenceImpl extends BasePersistenceImpl<AssetCateg
 		try {
 			session = openSession();
 
-			if (assetCategory.isCachedModel()) {
+			if (!session.contains(assetCategory)) {
 				assetCategory = (AssetCategory)session.get(AssetCategoryImpl.class,
 						assetCategory.getPrimaryKeyObj());
 			}
@@ -8859,8 +8859,8 @@ public class AssetCategoryPersistenceImpl extends BasePersistenceImpl<AssetCateg
 					});
 		}
 
-		protected void shrink(long groupId, long leftCategoryId, long delta) {
-			_sqlUpdate.update(new Object[] { delta, groupId, leftCategoryId });
+		protected void shrink(long groupId, long rightCategoryId, long delta) {
+			_sqlUpdate.update(new Object[] { delta, groupId, rightCategoryId });
 		}
 
 		private SqlUpdate _sqlUpdate;

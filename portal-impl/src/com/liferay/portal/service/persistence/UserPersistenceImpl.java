@@ -632,7 +632,7 @@ public class UserPersistenceImpl extends BasePersistenceImpl<User>
 		try {
 			session = openSession();
 
-			if (user.isCachedModel()) {
+			if (!session.contains(user)) {
 				user = (User)session.get(UserImpl.class, user.getPrimaryKeyObj());
 			}
 
@@ -1091,6 +1091,7 @@ public class UserPersistenceImpl extends BasePersistenceImpl<User>
 		userImpl.setScreenName(user.getScreenName());
 		userImpl.setEmailAddress(user.getEmailAddress());
 		userImpl.setFacebookId(user.getFacebookId());
+		userImpl.setLdapServerId(user.getLdapServerId());
 		userImpl.setOpenId(user.getOpenId());
 		userImpl.setPortraitId(user.getPortraitId());
 		userImpl.setLanguageId(user.getLanguageId());
