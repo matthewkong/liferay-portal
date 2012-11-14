@@ -60,6 +60,9 @@ public class UserFinderImpl
 	public static final String COUNT_BY_C_FN_MN_LN_SN_EA_S =
 		UserFinder.class.getName() + ".countByC_FN_MN_LN_SN_EA_S";
 
+	public static final String COUNT_BY_C_FN_MN_LN_SN_EA_JT_S =
+		UserFinder.class.getName() + ".countByC_FN_MN_LN_SN_EA_JT_S";
+
 	public static final String FIND_BY_NO_ANNOUNCEMENTS_DELIVERIES =
 		UserFinder.class.getName() + ".findByNoAnnouncementsDeliveries";
 
@@ -71,6 +74,9 @@ public class UserFinderImpl
 
 	public static final String FIND_BY_C_FN_MN_LN_SN_EA_S =
 		UserFinder.class.getName() + ".findByC_FN_MN_LN_SN_EA_S";
+
+	public static final String FIND_BY_C_FN_MN_LN_SN_EA_JT_S =
+		UserFinder.class.getName() + ".findByC_FN_MN_LN_SN_EA_JT_S";
 
 	public static final String JOIN_BY_CONTACT_TWITTER_SN =
 		UserFinder.class.getName() + ".joinByContactTwitterSN";
@@ -169,6 +175,7 @@ public class UserFinderImpl
 		String[] lastNames = null;
 		String[] screenNames = null;
 		String[] emailAddresses = null;
+		String[] jobTitles = null;
 		boolean andOperator = false;
 
 		if (Validator.isNotNull(keywords)) {
@@ -177,14 +184,15 @@ public class UserFinderImpl
 			lastNames = CustomSQLUtil.keywords(keywords);
 			screenNames = CustomSQLUtil.keywords(keywords);
 			emailAddresses = CustomSQLUtil.keywords(keywords);
+			jobTitles = CustomSQLUtil.keywords(keywords);
 		}
 		else {
 			andOperator = true;
 		}
 
-		return countByC_FN_MN_LN_SN_EA_S(
+		return countByC_FN_MN_LN_SN_EA_JT_S(
 			companyId, firstNames, middleNames, lastNames, screenNames,
-			emailAddresses, status, params, andOperator);
+			emailAddresses, jobTitles, status, params, andOperator);
 	}
 
 	public int countByC_FN_MN_LN_SN_EA_S(
@@ -202,6 +210,25 @@ public class UserFinderImpl
 		return countByC_FN_MN_LN_SN_EA_S(
 			companyId, firstNames, middleNames, lastNames, screenNames,
 			emailAddresses, status, params, andOperator);
+	}
+
+	public int countByC_FN_MN_LN_SN_EA_JT_S(
+			long companyId, String firstName, String middleName,
+			String lastName, String screenName, String emailAddress,
+			String jobTitle, int status, LinkedHashMap<String, Object> params,
+			boolean andOperator)
+		throws SystemException {
+
+		String[] firstNames = CustomSQLUtil.keywords(firstName);
+		String[] middleNames = CustomSQLUtil.keywords(middleName);
+		String[] lastNames = CustomSQLUtil.keywords(lastName);
+		String[] screenNames = CustomSQLUtil.keywords(screenName);
+		String[] emailAddresses = CustomSQLUtil.keywords(emailAddress);
+		String[] jobTitles = CustomSQLUtil.keywords(jobTitle);
+
+		return countByC_FN_MN_LN_SN_EA_JT_S(
+			companyId, firstNames, middleNames, lastNames, screenNames,
+			emailAddresses, jobTitles, status, params, andOperator);
 	}
 
 	public int countByC_FN_MN_LN_SN_EA_S(
@@ -307,6 +334,111 @@ public class UserFinderImpl
 		}
 	}
 
+	public int countByC_FN_MN_LN_SN_EA_JT_S(
+			long companyId, String[] firstNames, String[] middleNames,
+			String[] lastNames, String[] screenNames, String[] emailAddresses,
+			String[] jobTitles, int status, LinkedHashMap<String, Object> params,
+			boolean andOperator)
+		throws SystemException {
+
+		firstNames = CustomSQLUtil.keywords(firstNames);
+		middleNames = CustomSQLUtil.keywords(middleNames);
+		lastNames = CustomSQLUtil.keywords(lastNames);
+		screenNames = CustomSQLUtil.keywords(screenNames);
+		emailAddresses = CustomSQLUtil.keywords(emailAddresses);
+		jobTitles = CustomSQLUtil.keywords(jobTitles);
+
+		if (params == null) {
+			params = _emptyLinkedHashMap;
+		}
+
+		Long groupId = (Long)params.get("usersGroups");
+		boolean inherit = GetterUtil.getBoolean(params.get("inherit"));
+
+		boolean doUnion = Validator.isNotNull(groupId) && inherit;
+
+		LinkedHashMap<String, Object> params1 = params;
+
+		LinkedHashMap<String, Object> params2 = null;
+
+		LinkedHashMap<String, Object> params3 = null;
+
+		if (doUnion) {
+			params2 = new LinkedHashMap<String, Object>(params1);
+
+			List<Long> organizationIds = new ArrayList<Long>();
+
+			Group group = GroupLocalServiceUtil.fetchGroup(groupId);
+
+			if ((group != null) && group.isOrganization()) {
+				organizationIds.add(group.getOrganizationId());
+			}
+
+			List<Organization> organizations = GroupUtil.getOrganizations(
+				groupId);
+
+			for (Organization organization : organizations) {
+				organizationIds.add(organization.getOrganizationId());
+			}
+
+			params2.remove("usersGroups");
+			params2.put(
+				"usersOrgs",
+				organizationIds.toArray(new Long[organizationIds.size()]));
+
+			params3 = new LinkedHashMap<String, Object>(params1);
+
+			List<UserGroup> userGroups = GroupUtil.getUserGroups(groupId);
+
+			Long[] userGroupIds = new Long[userGroups.size()];
+
+			for (int i = 0; i < userGroups.size(); i++) {
+				UserGroup userGroup = userGroups.get(i);
+
+				userGroupIds[i] = userGroup.getUserGroupId();
+			}
+
+			params3.remove("usersGroups");
+			params3.put("usersUserGroups", userGroupIds);
+		}
+
+		Session session = null;
+
+		try {
+			session = openSession();
+
+			Set<Long> userIds = new HashSet<Long>();
+
+			userIds.addAll(
+				countByC_FN_MN_LN_SN_EA_JT_S(
+					session, companyId, firstNames, middleNames, lastNames,
+					screenNames, emailAddresses, jobTitles, status, params1,
+					andOperator));
+
+			if (doUnion) {
+				userIds.addAll(
+					countByC_FN_MN_LN_SN_EA_JT_S(
+						session, companyId, firstNames, middleNames, lastNames,
+						screenNames, emailAddresses, jobTitles, status, params2,
+						andOperator));
+
+				userIds.addAll(
+					countByC_FN_MN_LN_SN_EA_JT_S(
+						session, companyId, firstNames, middleNames, lastNames,
+						screenNames, emailAddresses, jobTitles, status, params3,
+						andOperator));
+			}
+
+			return userIds.size();
+		}
+		catch (Exception e) {
+			throw new SystemException(e);
+		}
+		finally {
+			closeSession(session);
+		}
+	}
+
 	public List<User> findByKeywords(
 			long companyId, String keywords, int status,
 			LinkedHashMap<String, Object> params, int start, int end,
@@ -318,6 +450,7 @@ public class UserFinderImpl
 		String[] lastNames = null;
 		String[] screenNames = null;
 		String[] emailAddresses = null;
+		String[] jobTitles = null;
 		boolean andOperator = false;
 
 		if (Validator.isNotNull(keywords)) {
@@ -326,14 +459,16 @@ public class UserFinderImpl
 			lastNames = CustomSQLUtil.keywords(keywords);
 			screenNames = CustomSQLUtil.keywords(keywords);
 			emailAddresses = CustomSQLUtil.keywords(keywords);
+			jobTitles = CustomSQLUtil.keywords(keywords);
 		}
 		else {
 			andOperator = true;
 		}
 
-		return findByC_FN_MN_LN_SN_EA_S(
+		return findByC_FN_MN_LN_SN_EA_JT_S(
 			companyId, firstNames, middleNames, lastNames, screenNames,
-			emailAddresses, status, params, andOperator, start, end, obc);
+			emailAddresses, jobTitles, status, params, andOperator, start, end,
+			obc);
 	}
 
 	public List<User> findByNoAnnouncementsDeliveries(String type)
@@ -424,6 +559,26 @@ public class UserFinderImpl
 		return findByC_FN_MN_LN_SN_EA_S(
 			companyId, firstNames, middleNames, lastNames, screenNames,
 			emailAddresses, status, params, andOperator, start, end, obc);
+	}
+
+	public List<User> findByC_FN_MN_LN_SN_EA_JT_S(
+			long companyId, String firstName, String middleName,
+			String lastName, String screenName, String emailAddress,
+			String jobTitle, int status, LinkedHashMap<String, Object> params,
+			boolean andOperator, int start, int end, OrderByComparator obc)
+		throws SystemException {
+
+		String[] firstNames = CustomSQLUtil.keywords(firstName);
+		String[] middleNames = CustomSQLUtil.keywords(middleName);
+		String[] lastNames = CustomSQLUtil.keywords(lastName);
+		String[] screenNames = CustomSQLUtil.keywords(screenName);
+		String[] emailAddresses = CustomSQLUtil.keywords(emailAddress);
+		String[] jobTitles = CustomSQLUtil.keywords(jobTitle);
+
+		return findByC_FN_MN_LN_SN_EA_JT_S(
+			companyId, firstNames, middleNames, lastNames, screenNames,
+			emailAddresses, jobTitles, status, params, andOperator, start, end,
+			obc);
 	}
 
 	public List<User> findByC_FN_MN_LN_SN_EA_S(
@@ -614,6 +769,202 @@ public class UserFinderImpl
 		}
 	}
 
+	public List<User> findByC_FN_MN_LN_SN_EA_JT_S(
+			long companyId, String[] firstNames, String[] middleNames,
+			String[] lastNames, String[] screenNames, String[] emailAddresses,
+			String[] jobTitles, int status,
+			LinkedHashMap<String, Object> params, boolean andOperator,
+			int start, int end, OrderByComparator obc)
+		throws SystemException {
+
+		firstNames = CustomSQLUtil.keywords(firstNames);
+		middleNames = CustomSQLUtil.keywords(middleNames);
+		lastNames = CustomSQLUtil.keywords(lastNames);
+		screenNames = CustomSQLUtil.keywords(screenNames);
+		emailAddresses = CustomSQLUtil.keywords(emailAddresses);
+		jobTitles = CustomSQLUtil.keywords(jobTitles);
+
+		if (params == null) {
+			params = _emptyLinkedHashMap;
+		}
+
+		Long groupId = (Long)params.get("usersGroups");
+		boolean inherit = GetterUtil.getBoolean(params.get("inherit"));
+
+		boolean doUnion = Validator.isNotNull(groupId) && inherit;
+
+		LinkedHashMap<String, Object> params1 = params;
+
+		LinkedHashMap<String, Object> params2 = null;
+
+		LinkedHashMap<String, Object> params3 = null;
+
+		if (doUnion) {
+			params2 = new LinkedHashMap<String, Object>(params1);
+
+			List<Long> organizationIds = new ArrayList<Long>();
+
+			Group group = GroupLocalServiceUtil.fetchGroup(groupId);
+
+			if ((group != null) && group.isOrganization()) {
+				organizationIds.add(group.getOrganizationId());
+			}
+
+			List<Organization> organizations = GroupUtil.getOrganizations(
+				groupId);
+
+			for (Organization organization : organizations) {
+				organizationIds.add(organization.getOrganizationId());
+			}
+
+			params2.remove("usersGroups");
+			params2.put(
+				"usersOrgs",
+				organizationIds.toArray(new Long[organizationIds.size()]));
+
+			params3 = new LinkedHashMap<String, Object>(params1);
+
+			List<UserGroup> userGroups = GroupUtil.getUserGroups(groupId);
+
+			Long[] userGroupIds = new Long[userGroups.size()];
+
+			for (int i = 0; i < userGroups.size(); i++) {
+				UserGroup userGroup = userGroups.get(i);
+
+				userGroupIds[i] = userGroup.getUserGroupId();
+			}
+
+			params3.remove("usersGroups");
+			params3.put("usersUserGroups", userGroupIds);
+		}
+
+		Session session = null;
+
+		try {
+			session = openSession();
+
+			String sql = CustomSQLUtil.get(FIND_BY_C_FN_MN_LN_SN_EA_JT_S);
+
+			sql = CustomSQLUtil.replaceKeywords(
+				sql, "lower(User_.firstName)", StringPool.LIKE, false,
+				firstNames);
+			sql = CustomSQLUtil.replaceKeywords(
+				sql, "lower(User_.middleName)", StringPool.LIKE, false,
+				middleNames);
+			sql = CustomSQLUtil.replaceKeywords(
+				sql, "lower(User_.lastName)", StringPool.LIKE, false,
+				lastNames);
+			sql = CustomSQLUtil.replaceKeywords(
+				sql, "lower(User_.screenName)", StringPool.LIKE, false,
+				screenNames);
+			sql = CustomSQLUtil.replaceKeywords(
+				sql, "lower(User_.emailAddress)", StringPool.LIKE, false,
+				emailAddresses);
+			sql = CustomSQLUtil.replaceKeywords(
+					sql, "lower(User_.jobTitle)", StringPool.LIKE, true,
+					jobTitles);
+
+			if (status == WorkflowConstants.STATUS_ANY) {
+				sql = StringUtil.replace(sql, _STATUS_SQL, StringPool.BLANK);
+			}
+
+			StringBundler sb = new StringBundler();
+
+			sb.append(StringPool.OPEN_PARENTHESIS);
+			sb.append(replaceJoinAndWhere(sql, params1));
+			sb.append(StringPool.CLOSE_PARENTHESIS);
+
+			if (doUnion) {
+				sb.append(" UNION (");
+				sb.append(replaceJoinAndWhere(sql, params2));
+				sb.append(") UNION (");
+				sb.append(replaceJoinAndWhere(sql, params3));
+				sb.append(StringPool.CLOSE_PARENTHESIS);
+			}
+
+			if (obc != null) {
+				sb.append(" ORDER BY ");
+				sb.append(obc.toString());
+			}
+
+			sql = sb.toString();
+
+			sql = CustomSQLUtil.replaceAndOperator(sql, andOperator);
+
+			SQLQuery q = session.createSQLQuery(sql);
+
+			q.addScalar("userId", Type.LONG);
+
+			QueryPos qPos = QueryPos.getInstance(q);
+
+			setJoin(qPos, params1);
+
+			qPos.add(companyId);
+			qPos.add(false);
+			qPos.add(firstNames, 2);
+			qPos.add(middleNames, 2);
+			qPos.add(lastNames, 2);
+			qPos.add(screenNames, 2);
+			qPos.add(emailAddresses, 2);
+			qPos.add(jobTitles, 2);
+
+			if (status != WorkflowConstants.STATUS_ANY) {
+				qPos.add(status);
+			}
+
+			if (doUnion) {
+				setJoin(qPos, params2);
+
+				qPos.add(companyId);
+				qPos.add(false);
+				qPos.add(firstNames, 2);
+				qPos.add(middleNames, 2);
+				qPos.add(lastNames, 2);
+				qPos.add(screenNames, 2);
+				qPos.add(emailAddresses, 2);
+				qPos.add(jobTitles, 2);
+
+				if (status != WorkflowConstants.STATUS_ANY) {
+					qPos.add(status);
+				}
+
+				setJoin(qPos, params3);
+
+				qPos.add(companyId);
+				qPos.add(false);
+				qPos.add(firstNames, 2);
+				qPos.add(middleNames, 2);
+				qPos.add(lastNames, 2);
+				qPos.add(screenNames, 2);
+				qPos.add(emailAddresses, 2);
+				qPos.add(jobTitles, 2);
+
+				if (status != WorkflowConstants.STATUS_ANY) {
+					qPos.add(status);
+				}
+			}
+
+			List<Long> userIds = (List<Long>)QueryUtil.list(
+				q, getDialect(), start, end);
+
+			List<User> users = new ArrayList<User>(userIds.size());
+
+			for (Long userId : userIds) {
+				User user = UserUtil.findByPrimaryKey(userId);
+
+				users.add(user);
+			}
+
+			return users;
+		}
+		catch (Exception e) {
+			throw new SystemException(e);
+		}
+		finally {
+			closeSession(session);
+		}
+	}
+
 	protected List<Long> countByC_FN_MN_LN_SN_EA_S(
 		Session session, long companyId, String[] firstNames,
 		String[] middleNames, String[] lastNames, String[] screenNames,
@@ -658,6 +1009,61 @@ public class UserFinderImpl
 		qPos.add(lastNames, 2);
 		qPos.add(screenNames, 2);
 		qPos.add(emailAddresses, 2);
+
+		if (status != WorkflowConstants.STATUS_ANY) {
+			qPos.add(status);
+		}
+
+		return q.list(true);
+	}
+
+	protected List<Long> countByC_FN_MN_LN_SN_EA_JT_S(
+		Session session, long companyId, String[] firstNames,
+		String[] middleNames, String[] lastNames, String[] screenNames,
+		String[] emailAddresses, String[] jobTitles, int status,
+		LinkedHashMap<String, Object> params, boolean andOperator) {
+
+		String sql = CustomSQLUtil.get(COUNT_BY_C_FN_MN_LN_SN_EA_JT_S);
+
+		sql = CustomSQLUtil.replaceKeywords(
+			sql, "lower(User_.firstName)", StringPool.LIKE, false, firstNames);
+		sql = CustomSQLUtil.replaceKeywords(
+			sql, "lower(User_.middleName)", StringPool.LIKE, false,
+			middleNames);
+		sql = CustomSQLUtil.replaceKeywords(
+			sql, "lower(User_.lastName)", StringPool.LIKE, false, lastNames);
+		sql = CustomSQLUtil.replaceKeywords(
+			sql, "lower(User_.screenName)", StringPool.LIKE, false,
+			screenNames);
+		sql = CustomSQLUtil.replaceKeywords(
+			sql, "lower(User_.emailAddress)", StringPool.LIKE, false,
+			emailAddresses);
+		sql = CustomSQLUtil.replaceKeywords(
+			sql, "lower(User_.jobTitle)", StringPool.LIKE, true, jobTitles);
+
+		if (status == WorkflowConstants.STATUS_ANY) {
+			sql = StringUtil.replace(sql, _STATUS_SQL, StringPool.BLANK);
+		}
+
+		sql = replaceJoinAndWhere(sql, params);
+		sql = CustomSQLUtil.replaceAndOperator(sql, andOperator);
+
+		SQLQuery q = session.createSQLQuery(sql);
+
+		q.addScalar("userId", Type.LONG);
+
+		QueryPos qPos = QueryPos.getInstance(q);
+
+		setJoin(qPos, params);
+
+		qPos.add(companyId);
+		qPos.add(false);
+		qPos.add(firstNames, 2);
+		qPos.add(middleNames, 2);
+		qPos.add(lastNames, 2);
+		qPos.add(screenNames, 2);
+		qPos.add(emailAddresses, 2);
+		qPos.add(jobTitles, 2);
 
 		if (status != WorkflowConstants.STATUS_ANY) {
 			qPos.add(status);
