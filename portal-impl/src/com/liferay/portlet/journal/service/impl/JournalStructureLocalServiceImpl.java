@@ -586,7 +586,7 @@ public class JournalStructureLocalServiceImpl
 				throw new StructureXsdException();
 			}
 			else {
-				String completePath = elName;
+				String completePath = "";
 
 				Element parentElement = element.getParent();
 
@@ -598,12 +598,12 @@ public class JournalStructureLocalServiceImpl
 					parentElement = parentElement.getParent();
 				}
 
-				String elNameLowerCase = completePath.toLowerCase();
-
-				if (elNames.contains(elNameLowerCase)) {
+				if (elNames.contains(elName)) {
 					throw new DuplicateStructureElementException();
 				}
 				else {
+					completePath += elName;
+					String elNameLowerCase = completePath.toLowerCase();
 					elNames.add(elNameLowerCase);
 				}
 			}
