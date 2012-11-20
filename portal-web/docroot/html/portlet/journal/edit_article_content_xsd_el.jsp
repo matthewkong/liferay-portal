@@ -36,6 +36,18 @@ if (liveGroup.isStagingGroup()) {
 }
 
 Element el = (Element)request.getAttribute(WebKeys.JOURNAL_STRUCTURE_EL);
+
+Element parentElement = el.getParent();
+String completePath = StringPool.BLANK;
+
+while (!parentElement.isRootElement()) {
+	completePath =
+		parentElement.attributeValue("name", StringPool.BLANK) +
+			StringPool.UNDERLINE + completePath;
+
+	parentElement = parentElement.getParent();
+}
+
 IntegerWrapper count = (IntegerWrapper)request.getAttribute(WebKeys.JOURNAL_STRUCTURE_EL_COUNT);
 Integer depth = (Integer)request.getAttribute(WebKeys.JOURNAL_STRUCTURE_EL_DEPTH);
 
@@ -155,7 +167,7 @@ Element contentEl = (Element)request.getAttribute(WebKeys.JOURNAL_ARTICLE_CONTEN
 				<c:if test='<%= elType.equals("text_area") %>'>
 
 					<%
-					String textAreaInputName = "structure_el_" + elName + elRepeatCount + "_content";
+					String textAreaInputName = "structure_el_" + completePath + elName + elRepeatCount + "_content";
 
 					if (Validator.isNull(elContent)) {
 						elContent = ParamUtil.getString(request, textAreaInputName);
