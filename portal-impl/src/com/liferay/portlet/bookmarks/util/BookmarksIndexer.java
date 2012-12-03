@@ -59,6 +59,7 @@ public class BookmarksIndexer extends BaseIndexer {
 	public static final String PORTLET_ID = PortletKeys.BOOKMARKS;
 
 	public BookmarksIndexer() {
+		setFilterSearch(true);
 		setPermissionAware(true);
 	}
 
