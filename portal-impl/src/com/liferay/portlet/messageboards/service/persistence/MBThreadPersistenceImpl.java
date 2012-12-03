@@ -11637,8 +11637,17 @@ public class MBThreadPersistenceImpl extends BasePersistenceImpl<MBThread>
 			MBThreadImpl.class, mbThread.getPrimaryKey(), mbThread);
 
 		if (isNew) {
-			FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_ROOTMESSAGEID,
-				new Object[] { Long.valueOf(mbThread.getRootMessageId()) },
+			Object[] args = null;
+
+			args = new Object[] { Long.valueOf(mbThread.getRootMessageId()) };
+
+			FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_ROOTMESSAGEID,
+				args);
+
+			FinderCacheUtil.removeResult(FINDER_PATH_FETCH_BY_ROOTMESSAGEID,
+				args);
+
+			FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_ROOTMESSAGEID, args,
 				mbThread);
 		}
 		else {

@@ -1550,11 +1550,19 @@ public class AssetTagStatsPersistenceImpl extends BasePersistenceImpl<AssetTagSt
 			assetTagStats);
 
 		if (isNew) {
-			FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_T_C,
-				new Object[] {
+			Object[] args = null;
+
+			args = new Object[] {
 					Long.valueOf(assetTagStats.getTagId()),
 					Long.valueOf(assetTagStats.getClassNameId())
-				}, assetTagStats);
+				};
+
+			FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_T_C, args);
+
+			FinderCacheUtil.removeResult(FINDER_PATH_FETCH_BY_T_C, args);
+
+			FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_T_C, args,
+				assetTagStats);
 		}
 		else {
 			if ((assetTagStatsModelImpl.getColumnBitmask() &

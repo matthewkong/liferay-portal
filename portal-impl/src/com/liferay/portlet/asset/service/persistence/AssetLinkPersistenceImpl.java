@@ -3160,12 +3160,20 @@ public class AssetLinkPersistenceImpl extends BasePersistenceImpl<AssetLink>
 			AssetLinkImpl.class, assetLink.getPrimaryKey(), assetLink);
 
 		if (isNew) {
-			FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_E_E_T,
-				new Object[] {
+			Object[] args = null;
+
+			args = new Object[] {
 					Long.valueOf(assetLink.getEntryId1()),
 					Long.valueOf(assetLink.getEntryId2()),
 					Integer.valueOf(assetLink.getType())
-				}, assetLink);
+				};
+
+			FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_E_E_T, args);
+
+			FinderCacheUtil.removeResult(FINDER_PATH_FETCH_BY_E_E_T, args);
+
+			FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_E_E_T, args,
+				assetLink);
 		}
 		else {
 			if ((assetLinkModelImpl.getColumnBitmask() &
