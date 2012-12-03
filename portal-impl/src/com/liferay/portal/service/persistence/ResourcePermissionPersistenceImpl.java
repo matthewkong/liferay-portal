@@ -8336,18 +8336,28 @@ public class ResourcePermissionPersistenceImpl extends BasePersistenceImpl<Resou
 			resourcePermission);
 
 		if (isNew) {
-			FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_C_N_S_P_R_O_A,
-				new Object[] {
+			Object[] args = null;
+
+			args = new Object[] {
 					Long.valueOf(resourcePermission.getCompanyId()),
 					
-				resourcePermission.getName(),
+					resourcePermission.getName(),
 					Integer.valueOf(resourcePermission.getScope()),
 					
-				resourcePermission.getPrimKey(),
+					resourcePermission.getPrimKey(),
 					Long.valueOf(resourcePermission.getRoleId()),
 					Long.valueOf(resourcePermission.getOwnerId()),
 					Long.valueOf(resourcePermission.getActionIds())
-				}, resourcePermission);
+				};
+
+			FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_C_N_S_P_R_O_A,
+				args);
+
+			FinderCacheUtil.removeResult(FINDER_PATH_FETCH_BY_C_N_S_P_R_O_A,
+				args);
+
+			FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_C_N_S_P_R_O_A, args,
+				resourcePermission);
 		}
 		else {
 			if ((resourcePermissionModelImpl.getColumnBitmask() &

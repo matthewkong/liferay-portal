@@ -4380,11 +4380,19 @@ public class BookmarksFolderPersistenceImpl extends BasePersistenceImpl<Bookmark
 			bookmarksFolder);
 
 		if (isNew) {
-			FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_UUID_G,
-				new Object[] {
+			Object[] args = null;
+
+			args = new Object[] {
 					bookmarksFolder.getUuid(),
 					Long.valueOf(bookmarksFolder.getGroupId())
-				}, bookmarksFolder);
+				};
+
+			FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_UUID_G, args);
+
+			FinderCacheUtil.removeResult(FINDER_PATH_FETCH_BY_UUID_G, args);
+
+			FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_UUID_G, args,
+				bookmarksFolder);
 		}
 		else {
 			if ((bookmarksFolderModelImpl.getColumnBitmask() &

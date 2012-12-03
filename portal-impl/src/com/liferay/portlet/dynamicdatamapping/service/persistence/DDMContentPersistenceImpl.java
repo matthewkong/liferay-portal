@@ -2679,10 +2679,18 @@ public class DDMContentPersistenceImpl extends BasePersistenceImpl<DDMContent>
 			DDMContentImpl.class, ddmContent.getPrimaryKey(), ddmContent);
 
 		if (isNew) {
-			FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_UUID_G,
-				new Object[] {
+			Object[] args = null;
+
+			args = new Object[] {
 					ddmContent.getUuid(), Long.valueOf(ddmContent.getGroupId())
-				}, ddmContent);
+				};
+
+			FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_UUID_G, args);
+
+			FinderCacheUtil.removeResult(FINDER_PATH_FETCH_BY_UUID_G, args);
+
+			FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_UUID_G, args,
+				ddmContent);
 		}
 		else {
 			if ((ddmContentModelImpl.getColumnBitmask() &

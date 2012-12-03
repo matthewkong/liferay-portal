@@ -5994,12 +5994,20 @@ public class LayoutRevisionPersistenceImpl extends BasePersistenceImpl<LayoutRev
 			layoutRevision);
 
 		if (isNew) {
-			FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_L_H_P,
-				new Object[] {
+			Object[] args = null;
+
+			args = new Object[] {
 					Long.valueOf(layoutRevision.getLayoutSetBranchId()),
 					Boolean.valueOf(layoutRevision.getHead()),
 					Long.valueOf(layoutRevision.getPlid())
-				}, layoutRevision);
+				};
+
+			FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_L_H_P, args);
+
+			FinderCacheUtil.removeResult(FINDER_PATH_FETCH_BY_L_H_P, args);
+
+			FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_L_H_P, args,
+				layoutRevision);
 		}
 		else {
 			if ((layoutRevisionModelImpl.getColumnBitmask() &

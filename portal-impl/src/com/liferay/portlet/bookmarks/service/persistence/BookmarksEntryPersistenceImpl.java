@@ -5219,11 +5219,19 @@ public class BookmarksEntryPersistenceImpl extends BasePersistenceImpl<Bookmarks
 			bookmarksEntry);
 
 		if (isNew) {
-			FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_UUID_G,
-				new Object[] {
+			Object[] args = null;
+
+			args = new Object[] {
 					bookmarksEntry.getUuid(),
 					Long.valueOf(bookmarksEntry.getGroupId())
-				}, bookmarksEntry);
+				};
+
+			FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_UUID_G, args);
+
+			FinderCacheUtil.removeResult(FINDER_PATH_FETCH_BY_UUID_G, args);
+
+			FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_UUID_G, args,
+				bookmarksEntry);
 		}
 		else {
 			if ((bookmarksEntryModelImpl.getColumnBitmask() &

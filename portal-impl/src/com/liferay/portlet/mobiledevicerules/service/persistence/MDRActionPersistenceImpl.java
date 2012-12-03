@@ -2196,10 +2196,18 @@ public class MDRActionPersistenceImpl extends BasePersistenceImpl<MDRAction>
 			MDRActionImpl.class, mdrAction.getPrimaryKey(), mdrAction);
 
 		if (isNew) {
-			FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_UUID_G,
-				new Object[] {
+			Object[] args = null;
+
+			args = new Object[] {
 					mdrAction.getUuid(), Long.valueOf(mdrAction.getGroupId())
-				}, mdrAction);
+				};
+
+			FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_UUID_G, args);
+
+			FinderCacheUtil.removeResult(FINDER_PATH_FETCH_BY_UUID_G, args);
+
+			FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_UUID_G, args,
+				mdrAction);
 		}
 		else {
 			if ((mdrActionModelImpl.getColumnBitmask() &
