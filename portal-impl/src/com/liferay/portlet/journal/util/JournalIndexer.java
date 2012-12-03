@@ -81,6 +81,7 @@ public class JournalIndexer extends BaseIndexer {
 	public static final String PORTLET_ID = PortletKeys.JOURNAL;
 
 	public JournalIndexer() {
+		setFilterSearch(true);
 		setPermissionAware(true);
 	}
 

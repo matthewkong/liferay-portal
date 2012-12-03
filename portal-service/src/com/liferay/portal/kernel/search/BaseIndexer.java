@@ -49,6 +49,8 @@ import com.liferay.portal.model.BaseModel;
 import com.liferay.portal.model.Country;
 import com.liferay.portal.model.Group;
 import com.liferay.portal.model.GroupedModel;
+import com.liferay.portal.model.Layout;
+import com.liferay.portal.model.LayoutTypePortlet;
 import com.liferay.portal.model.Region;
 import com.liferay.portal.model.ResourcedModel;
 import com.liferay.portal.model.User;
@@ -58,10 +60,12 @@ import com.liferay.portal.security.permission.PermissionChecker;
 import com.liferay.portal.security.permission.PermissionThreadLocal;
 import com.liferay.portal.service.CountryServiceUtil;
 import com.liferay.portal.service.GroupLocalServiceUtil;
+import com.liferay.portal.service.LayoutLocalServiceUtil;
 import com.liferay.portal.service.RegionServiceUtil;
 import com.liferay.portal.service.ServiceContext;
 import com.liferay.portal.service.ServiceContextThreadLocal;
 import com.liferay.portal.service.UserLocalServiceUtil;
+import com.liferay.portal.service.permission.LayoutPermissionUtil;
 import com.liferay.portal.util.PortalUtil;
 import com.liferay.portlet.asset.model.AssetCategory;
 import com.liferay.portlet.asset.service.AssetCategoryLocalServiceUtil;
@@ -1042,13 +1046,30 @@ public abstract class BaseIndexer implements Indexer {
 				long entryClassPK = GetterUtil.getLong(
 					document.get(Field.ENTRY_CLASS_PK));
 
+				String groupId = document.get(Field.GROUP_ID);
+				String portletId = document.get(Field.PORTLET_ID);
+				boolean hasLayoutPermission = true;
+
+				List<Layout> layouts = LayoutLocalServiceUtil.getLayouts(
+					Long.valueOf(groupId), true);
+
+				for (Layout layout : layouts) {
+					LayoutTypePortlet layoutTypePortlet =
+						(LayoutTypePortlet)layout.getLayoutType();
+
+					if (layoutTypePortlet.hasPortletId(portletId)) {
+						hasLayoutPermission = LayoutPermissionUtil.contains(
+							permissionChecker, layout, ActionKeys.VIEW);
+					}
+				}
+
 				Indexer indexer = IndexerRegistryUtil.getIndexer(
 					entryClassName);
 
 				if ((indexer.isFilterSearch() &&
 					 indexer.hasPermission(
 						 permissionChecker, entryClassName, entryClassPK,
-						 ActionKeys.VIEW)) ||
+						 ActionKeys.VIEW) && hasLayoutPermission) ||
 					!indexer.isFilterSearch() ||
 					!indexer.isPermissionAware()) {
 

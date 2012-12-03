@@ -63,6 +63,7 @@ public class WikiPageIndexer extends BaseIndexer {
 	public static final String PORTLET_ID = PortletKeys.WIKI;
 
 	public WikiPageIndexer() {
+		setFilterSearch(true);
 		setPermissionAware(true);
 	}
 
