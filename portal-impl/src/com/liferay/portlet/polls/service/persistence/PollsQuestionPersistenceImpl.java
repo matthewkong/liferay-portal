@@ -2558,11 +2558,19 @@ public class PollsQuestionPersistenceImpl extends BasePersistenceImpl<PollsQuest
 			pollsQuestion);
 
 		if (isNew) {
-			FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_UUID_G,
-				new Object[] {
+			Object[] args = null;
+
+			args = new Object[] {
 					pollsQuestion.getUuid(),
 					Long.valueOf(pollsQuestion.getGroupId())
-				}, pollsQuestion);
+				};
+
+			FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_UUID_G, args);
+
+			FinderCacheUtil.removeResult(FINDER_PATH_FETCH_BY_UUID_G, args);
+
+			FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_UUID_G, args,
+				pollsQuestion);
 		}
 		else {
 			if ((pollsQuestionModelImpl.getColumnBitmask() &

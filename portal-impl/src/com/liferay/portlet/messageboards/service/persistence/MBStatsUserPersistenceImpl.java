@@ -2077,11 +2077,19 @@ public class MBStatsUserPersistenceImpl extends BasePersistenceImpl<MBStatsUser>
 			MBStatsUserImpl.class, mbStatsUser.getPrimaryKey(), mbStatsUser);
 
 		if (isNew) {
-			FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_G_U,
-				new Object[] {
+			Object[] args = null;
+
+			args = new Object[] {
 					Long.valueOf(mbStatsUser.getGroupId()),
 					Long.valueOf(mbStatsUser.getUserId())
-				}, mbStatsUser);
+				};
+
+			FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_G_U, args);
+
+			FinderCacheUtil.removeResult(FINDER_PATH_FETCH_BY_G_U, args);
+
+			FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_G_U, args,
+				mbStatsUser);
 		}
 		else {
 			if ((mbStatsUserModelImpl.getColumnBitmask() &

@@ -827,18 +827,32 @@ public class PasswordPolicyPersistenceImpl extends BasePersistenceImpl<PasswordP
 			passwordPolicy);
 
 		if (isNew) {
-			FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_C_DP,
-				new Object[] {
+			Object[] args = null;
+
+			args = new Object[] {
 					Long.valueOf(passwordPolicy.getCompanyId()),
 					Boolean.valueOf(passwordPolicy.getDefaultPolicy())
-				}, passwordPolicy);
+				};
 
-			FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_C_N,
-				new Object[] {
+			FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_C_DP, args);
+
+			FinderCacheUtil.removeResult(FINDER_PATH_FETCH_BY_C_DP, args);
+
+			FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_C_DP, args,
+				passwordPolicy);
+
+			args = new Object[] {
 					Long.valueOf(passwordPolicy.getCompanyId()),
 					
-				passwordPolicy.getName()
-				}, passwordPolicy);
+					passwordPolicy.getName()
+				};
+
+			FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_C_N, args);
+
+			FinderCacheUtil.removeResult(FINDER_PATH_FETCH_BY_C_N, args);
+
+			FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_C_N, args,
+				passwordPolicy);
 		}
 		else {
 			if ((passwordPolicyModelImpl.getColumnBitmask() &

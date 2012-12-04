@@ -5128,22 +5128,41 @@ public class JournalTemplatePersistenceImpl extends BasePersistenceImpl<JournalT
 			journalTemplate);
 
 		if (isNew) {
-			FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_UUID_G,
-				new Object[] {
+			Object[] args = null;
+
+			args = new Object[] {
 					journalTemplate.getUuid(),
 					Long.valueOf(journalTemplate.getGroupId())
-				}, journalTemplate);
+				};
 
-			FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_SMALLIMAGEID,
-				new Object[] { Long.valueOf(journalTemplate.getSmallImageId()) },
+			FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_UUID_G, args);
+
+			FinderCacheUtil.removeResult(FINDER_PATH_FETCH_BY_UUID_G, args);
+
+			FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_UUID_G, args,
 				journalTemplate);
 
-			FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_G_T,
-				new Object[] {
+			args = new Object[] { Long.valueOf(journalTemplate.getSmallImageId()) };
+
+			FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_SMALLIMAGEID, args);
+
+			FinderCacheUtil.removeResult(FINDER_PATH_FETCH_BY_SMALLIMAGEID, args);
+
+			FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_SMALLIMAGEID, args,
+				journalTemplate);
+
+			args = new Object[] {
 					Long.valueOf(journalTemplate.getGroupId()),
 					
-				journalTemplate.getTemplateId()
-				}, journalTemplate);
+					journalTemplate.getTemplateId()
+				};
+
+			FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_G_T, args);
+
+			FinderCacheUtil.removeResult(FINDER_PATH_FETCH_BY_G_T, args);
+
+			FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_G_T, args,
+				journalTemplate);
 		}
 		else {
 			if ((journalTemplateModelImpl.getColumnBitmask() &

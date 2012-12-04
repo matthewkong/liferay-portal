@@ -4731,17 +4731,30 @@ public class WikiNodePersistenceImpl extends BasePersistenceImpl<WikiNode>
 			WikiNodeImpl.class, wikiNode.getPrimaryKey(), wikiNode);
 
 		if (isNew) {
-			FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_UUID_G,
-				new Object[] {
-					wikiNode.getUuid(), Long.valueOf(wikiNode.getGroupId())
-				}, wikiNode);
+			Object[] args = null;
 
-			FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_G_N,
-				new Object[] {
+			args = new Object[] {
+					wikiNode.getUuid(), Long.valueOf(wikiNode.getGroupId())
+				};
+
+			FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_UUID_G, args);
+
+			FinderCacheUtil.removeResult(FINDER_PATH_FETCH_BY_UUID_G, args);
+
+			FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_UUID_G, args,
+				wikiNode);
+
+			args = new Object[] {
 					Long.valueOf(wikiNode.getGroupId()),
 					
-				wikiNode.getName()
-				}, wikiNode);
+					wikiNode.getName()
+				};
+
+			FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_G_N, args);
+
+			FinderCacheUtil.removeResult(FINDER_PATH_FETCH_BY_G_N, args);
+
+			FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_G_N, args, wikiNode);
 		}
 		else {
 			if ((wikiNodeModelImpl.getColumnBitmask() &

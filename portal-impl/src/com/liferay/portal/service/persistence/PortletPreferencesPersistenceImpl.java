@@ -3458,14 +3458,22 @@ public class PortletPreferencesPersistenceImpl extends BasePersistenceImpl<Portl
 			portletPreferences);
 
 		if (isNew) {
-			FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_O_O_P_P,
-				new Object[] {
+			Object[] args = null;
+
+			args = new Object[] {
 					Long.valueOf(portletPreferences.getOwnerId()),
 					Integer.valueOf(portletPreferences.getOwnerType()),
 					Long.valueOf(portletPreferences.getPlid()),
 					
-				portletPreferences.getPortletId()
-				}, portletPreferences);
+					portletPreferences.getPortletId()
+				};
+
+			FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_O_O_P_P, args);
+
+			FinderCacheUtil.removeResult(FINDER_PATH_FETCH_BY_O_O_P_P, args);
+
+			FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_O_O_P_P, args,
+				portletPreferences);
 		}
 		else {
 			if ((portletPreferencesModelImpl.getColumnBitmask() &

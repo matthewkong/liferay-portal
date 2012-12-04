@@ -1445,12 +1445,19 @@ public class AssetTagPersistenceImpl extends BasePersistenceImpl<AssetTag>
 			AssetTagImpl.class, assetTag.getPrimaryKey(), assetTag);
 
 		if (isNew) {
-			FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_G_N,
-				new Object[] {
+			Object[] args = null;
+
+			args = new Object[] {
 					Long.valueOf(assetTag.getGroupId()),
 					
-				assetTag.getName()
-				}, assetTag);
+					assetTag.getName()
+				};
+
+			FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_G_N, args);
+
+			FinderCacheUtil.removeResult(FINDER_PATH_FETCH_BY_G_N, args);
+
+			FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_G_N, args, assetTag);
 		}
 		else {
 			if ((assetTagModelImpl.getColumnBitmask() &
