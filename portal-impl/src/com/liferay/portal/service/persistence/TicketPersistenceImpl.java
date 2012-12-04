@@ -551,8 +551,15 @@ public class TicketPersistenceImpl extends BasePersistenceImpl<Ticket>
 			TicketImpl.class, ticket.getPrimaryKey(), ticket);
 
 		if (isNew) {
-			FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_KEY,
-				new Object[] { ticket.getKey() }, ticket);
+			Object[] args = null;
+
+			args = new Object[] { ticket.getKey() };
+
+			FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_KEY, args);
+
+			FinderCacheUtil.removeResult(FINDER_PATH_FETCH_BY_KEY, args);
+
+			FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_KEY, args, ticket);
 		}
 		else {
 			if ((ticketModelImpl.getColumnBitmask() &

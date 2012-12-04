@@ -2176,12 +2176,20 @@ public class AssetCategoryPropertyPersistenceImpl extends BasePersistenceImpl<As
 			assetCategoryProperty.getPrimaryKey(), assetCategoryProperty);
 
 		if (isNew) {
-			FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_CA_K,
-				new Object[] {
+			Object[] args = null;
+
+			args = new Object[] {
 					Long.valueOf(assetCategoryProperty.getCategoryId()),
 					
-				assetCategoryProperty.getKey()
-				}, assetCategoryProperty);
+					assetCategoryProperty.getKey()
+				};
+
+			FinderCacheUtil.removeResult(FINDER_PATH_COUNT_BY_CA_K, args);
+
+			FinderCacheUtil.removeResult(FINDER_PATH_FETCH_BY_CA_K, args);
+
+			FinderCacheUtil.putResult(FINDER_PATH_FETCH_BY_CA_K, args,
+				assetCategoryProperty);
 		}
 		else {
 			if ((assetCategoryPropertyModelImpl.getColumnBitmask() &
