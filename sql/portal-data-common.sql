@@ -283,23 +283,23 @@ insert into Region (regionId, countryId, regionCode, name, active_) values (3007
 insert into Region (regionId, countryId, regionCode, name, active_) values (3008, 3, 'G', 'Champagne-Ardenne', TRUE);
 insert into Region (regionId, countryId, regionCode, name, active_) values (3009, 3, 'H', 'Corse', TRUE);
 insert into Region (regionId, countryId, regionCode, name, active_) values (3010, 3, 'GF', 'Guyane', TRUE);
-insert into Region (regionId, countryId, regionCode, name, active_) values (3011, 3, 'I', 'Franche Comté', TRUE);
+insert into Region (regionId, countryId, regionCode, name, active_) values (3011, 3, 'I', 'Franche ComtÃ©', TRUE);
 insert into Region (regionId, countryId, regionCode, name, active_) values (3012, 3, 'GP', 'Guadeloupe', TRUE);
 insert into Region (regionId, countryId, regionCode, name, active_) values (3013, 3, 'Q', 'Haute-Normandie', TRUE);
-insert into Region (regionId, countryId, regionCode, name, active_) values (3014, 3, 'J', 'Île-de-France', TRUE);
+insert into Region (regionId, countryId, regionCode, name, active_) values (3014, 3, 'J', 'ÃŽle-de-France', TRUE);
 insert into Region (regionId, countryId, regionCode, name, active_) values (3015, 3, 'K', 'Languedoc-Roussillon', TRUE);
 insert into Region (regionId, countryId, regionCode, name, active_) values (3016, 3, 'L', 'Limousin', TRUE);
 insert into Region (regionId, countryId, regionCode, name, active_) values (3017, 3, 'M', 'Lorraine', TRUE);
 insert into Region (regionId, countryId, regionCode, name, active_) values (3018, 3, 'MQ', 'Martinique', TRUE);
-insert into Region (regionId, countryId, regionCode, name, active_) values (3019, 3, 'N', 'Midi-Pyrénées', TRUE);
+insert into Region (regionId, countryId, regionCode, name, active_) values (3019, 3, 'N', 'Midi-PyrÃ©nÃ©es', TRUE);
 insert into Region (regionId, countryId, regionCode, name, active_) values (3020, 3, 'O', 'Nord Pas de Calais', TRUE);
 insert into Region (regionId, countryId, regionCode, name, active_) values (3021, 3, 'R', 'Pays de la Loire', TRUE);
 insert into Region (regionId, countryId, regionCode, name, active_) values (3022, 3, 'S', 'Picardie', TRUE);
 insert into Region (regionId, countryId, regionCode, name, active_) values (3023, 3, 'T', 'Poitou-Charentes', TRUE);
-insert into Region (regionId, countryId, regionCode, name, active_) values (3024, 3, 'U', 'Provence-Alpes-Côte-d\'Azur', TRUE);
-insert into Region (regionId, countryId, regionCode, name, active_) values (3025, 3, 'RE', 'Réunion', TRUE);
-insert into Region (regionId, countryId, regionCode, name, active_) values (3026, 3, 'V', 'Rhône-Alpes', TRUE);
-insert into Region (regionId, countryId, regionCode, name, active_) values (4001, 4, 'BW', 'Baden-Württemberg', TRUE);
+insert into Region (regionId, countryId, regionCode, name, active_) values (3024, 3, 'U', 'Provence-Alpes-CÃ´te-d\'Azur', TRUE);
+insert into Region (regionId, countryId, regionCode, name, active_) values (3025, 3, 'RE', 'RÃ©union', TRUE);
+insert into Region (regionId, countryId, regionCode, name, active_) values (3026, 3, 'V', 'RhÃ´ne-Alpes', TRUE);
+insert into Region (regionId, countryId, regionCode, name, active_) values (4001, 4, 'BW', 'Baden-WÃ¼rttemberg', TRUE);
 insert into Region (regionId, countryId, regionCode, name, active_) values (4002, 4, 'BY', 'Bayern', TRUE);
 insert into Region (regionId, countryId, regionCode, name, active_) values (4003, 4, 'BE', 'Berlin', TRUE);
 insert into Region (regionId, countryId, regionCode, name, active_) values (4004, 4, 'BR', 'Brandenburg', TRUE);
@@ -314,7 +314,7 @@ insert into Region (regionId, countryId, regionCode, name, active_) values (4012
 insert into Region (regionId, countryId, regionCode, name, active_) values (4013, 4, 'SN', 'Sachsen', TRUE);
 insert into Region (regionId, countryId, regionCode, name, active_) values (4014, 4, 'ST', 'Sachsen-Anhalt', TRUE);
 insert into Region (regionId, countryId, regionCode, name, active_) values (4015, 4, 'SH', 'Schleswig-Holstein', TRUE);
-insert into Region (regionId, countryId, regionCode, name, active_) values (4016, 4, 'TH', 'Thüringen', TRUE);
+insert into Region (regionId, countryId, regionCode, name, active_) values (4016, 4, 'TH', 'ThÃ¼ringen', TRUE);
 insert into Region (regionId, countryId, regionCode, name, active_) values (8001, 8, 'AG', 'Agrigento', TRUE);
 insert into Region (regionId, countryId, regionCode, name, active_) values (8002, 8, 'AL', 'Alessandria', TRUE);
 insert into Region (regionId, countryId, regionCode, name, active_) values (8003, 8, 'AN', 'Ancona', TRUE);
@@ -538,7 +538,7 @@ insert into Region (regionId, countryId, regionCode, name, active_) values (1440
 insert into Region (regionId, countryId, regionCode, name, active_) values (144020, 144, 'MX-PUE', 'Puebla', TRUE);
 insert into Region (regionId, countryId, regionCode, name, active_) values (144021, 144, 'MX-QRO', 'Queretaro', TRUE);
 insert into Region (regionId, countryId, regionCode, name, active_) values (144023, 144, 'MX-ROO', 'Quintana Roo', TRUE);
-insert into Region (regionId, countryId, regionCode, name, active_) values (144024, 144, 'MX-SLP', 'San Luis Potosí', TRUE);
+insert into Region (regionId, countryId, regionCode, name, active_) values (144024, 144, 'MX-SLP', 'San Luis PotosÃ­', TRUE);
 insert into Region (regionId, countryId, regionCode, name, active_) values (144025, 144, 'MX-SIN', 'Sinaloa', TRUE);
 insert into Region (regionId, countryId, regionCode, name, active_) values (144026, 144, 'MX-SON', 'Sonora', TRUE);
 insert into Region (regionId, countryId, regionCode, name, active_) values (144027, 144, 'MX-TAB', 'Tabasco', TRUE);
@@ -547,7 +547,7 @@ insert into Region (regionId, countryId, regionCode, name, active_) values (1440
 insert into Region (regionId, countryId, regionCode, name, active_) values (144030, 144, 'MX-VER', 'Veracruz', TRUE);
 insert into Region (regionId, countryId, regionCode, name, active_) values (144031, 144, 'MX-YUC', 'Yucatan', TRUE);
 insert into Region (regionId, countryId, regionCode, name, active_) values (144032, 144, 'MX-ZAC', 'Zacatecas', TRUE);
-insert into Region (regionId, countryId, regionCode, name, active_) values (164001, 164, '01', 'Østfold', TRUE);
+insert into Region (regionId, countryId, regionCode, name, active_) values (164001, 164, '01', 'Ã˜stfold', TRUE);
 insert into Region (regionId, countryId, regionCode, name, active_) values (164002, 164, '02', 'Akershus', TRUE);
 insert into Region (regionId, countryId, regionCode, name, active_) values (164003, 164, '03', 'Oslo', TRUE);
 insert into Region (regionId, countryId, regionCode, name, active_) values (164004, 164, '04', 'Hedmark', TRUE);
@@ -560,9 +560,9 @@ insert into Region (regionId, countryId, regionCode, name, active_) values (1640
 insert into Region (regionId, countryId, regionCode, name, active_) values (164011, 164, '11', 'Rogaland', TRUE);
 insert into Region (regionId, countryId, regionCode, name, active_) values (164012, 164, '12', 'Hordaland', TRUE);
 insert into Region (regionId, countryId, regionCode, name, active_) values (164013, 164, '14', 'Sogn og Fjordane', TRUE);
-insert into Region (regionId, countryId, regionCode, name, active_) values (164014, 164, '15', 'Møre of Romsdal', TRUE);
-insert into Region (regionId, countryId, regionCode, name, active_) values (164015, 164, '16', 'Sør-Trøndelag', TRUE);
-insert into Region (regionId, countryId, regionCode, name, active_) values (164016, 164, '17', 'Nord-Trøndelag', TRUE);
+insert into Region (regionId, countryId, regionCode, name, active_) values (164014, 164, '15', 'MÃ¸re of Romsdal', TRUE);
+insert into Region (regionId, countryId, regionCode, name, active_) values (164015, 164, '16', 'SÃ¸r-TrÃ¸ndelag', TRUE);
+insert into Region (regionId, countryId, regionCode, name, active_) values (164016, 164, '17', 'Nord-TrÃ¸ndelag', TRUE);
 insert into Region (regionId, countryId, regionCode, name, active_) values (164017, 164, '18', 'Nordland', TRUE);
 insert into Region (regionId, countryId, regionCode, name, active_) values (164018, 164, '19', 'Troms', TRUE);
 insert into Region (regionId, countryId, regionCode, name, active_) values (164019, 164, '20', 'Finnmark', TRUE);
@@ -575,10 +575,10 @@ insert into Region (regionId, countryId, regionCode, name, active_) values (2020
 insert into Region (regionId, countryId, regionCode, name, active_) values (202007, 202, 'FR', 'Fribourg', TRUE);
 insert into Region (regionId, countryId, regionCode, name, active_) values (202008, 202, 'GE', 'Geneva', TRUE);
 insert into Region (regionId, countryId, regionCode, name, active_) values (202009, 202, 'GL', 'Glarus', TRUE);
-insert into Region (regionId, countryId, regionCode, name, active_) values (202010, 202, 'GR', 'Graubünden', TRUE);
+insert into Region (regionId, countryId, regionCode, name, active_) values (202010, 202, 'GR', 'GraubÃ¼nden', TRUE);
 insert into Region (regionId, countryId, regionCode, name, active_) values (202011, 202, 'JU', 'Jura', TRUE);
 insert into Region (regionId, countryId, regionCode, name, active_) values (202012, 202, 'LU', 'Lucerne', TRUE);
-insert into Region (regionId, countryId, regionCode, name, active_) values (202013, 202, 'NE', 'Neuchâtel', TRUE);
+insert into Region (regionId, countryId, regionCode, name, active_) values (202013, 202, 'NE', 'NeuchÃ¢tel', TRUE);
 insert into Region (regionId, countryId, regionCode, name, active_) values (202014, 202, 'NW', 'Nidwalden', TRUE);
 insert into Region (regionId, countryId, regionCode, name, active_) values (202015, 202, 'OW', 'Obwalden', TRUE);
 insert into Region (regionId, countryId, regionCode, name, active_) values (202016, 202, 'SH', 'Schaffhausen', TRUE);
@@ -591,7 +591,7 @@ insert into Region (regionId, countryId, regionCode, name, active_) values (2020
 insert into Region (regionId, countryId, regionCode, name, active_) values (202023, 202, 'VS', 'Valais', TRUE);
 insert into Region (regionId, countryId, regionCode, name, active_) values (202024, 202, 'VD', 'Vaud', TRUE);
 insert into Region (regionId, countryId, regionCode, name, active_) values (202025, 202, 'ZG', 'Zug', TRUE);
-insert into Region (regionId, countryId, regionCode, name, active_) values (202026, 202, 'ZH', 'Zürich', TRUE);
+insert into Region (regionId, countryId, regionCode, name, active_) values (202026, 202, 'ZH', 'ZÃ¼rich', TRUE);
 
 ##
 ## List types for accounts
