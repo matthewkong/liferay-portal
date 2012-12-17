@@ -687,9 +687,12 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 
 		Company company = companyPersistence.findByPrimaryKey(companyId);
 		screenName = getScreenName(screenName);
-		emailAddress = emailAddress.trim().toLowerCase();
 		openId = openId.trim();
 		Date now = new Date();
+
+		if (Validator.isNotNull(emailAddress)) {
+			emailAddress = StringUtil.lowerCase(StringUtil.trim(emailAddress));
+		}
 
 		if (PrefsPropsUtil.getBoolean(
 				companyId, PropsKeys.USERS_SCREEN_NAME_ALWAYS_AUTOGENERATE)) {
@@ -3403,11 +3406,11 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 			return;
 		}
 
-		emailAddress = emailAddress.trim().toLowerCase();
-
 		if (Validator.isNull(emailAddress)) {
 			throw new UserEmailAddressException();
 		}
+
+		emailAddress = emailAddress.trim().toLowerCase();
 
 		User user = userPersistence.findByC_EA(companyId, emailAddress);
 
@@ -4787,7 +4790,6 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 			user.getCompanyId());
 		String password = oldPassword;
 		screenName = getScreenName(screenName);
-		emailAddress = emailAddress.trim().toLowerCase();
 		openId = openId.trim();
 		String oldFullName = user.getFullName();
 		aimSn = aimSn.trim().toLowerCase();
@@ -4800,6 +4802,10 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 		twitterSn = twitterSn.trim().toLowerCase();
 		ymSn = ymSn.trim().toLowerCase();
 		Date now = new Date();
+
+		if (Validator.isNotNull(emailAddress)) {
+			emailAddress = StringUtil.lowerCase(StringUtil.trim(emailAddress));
+		}
 
 		EmailAddressGenerator emailAddressGenerator =
 			EmailAddressGeneratorFactory.getInstance();
