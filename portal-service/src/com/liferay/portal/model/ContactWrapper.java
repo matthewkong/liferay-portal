@@ -18,6 +18,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.liferay.portal.kernel.util.StringPool;
+
 /**
  * <p>
  * This class is a wrapper for {@link Contact}.
@@ -584,6 +586,34 @@ public class ContactWrapper implements Contact, ModelWrapper<Contact> {
 	}
 
 	/**
+	* Returns the prefix string of this contact.
+	*
+	* @param prefixId the prefix ID of this contact
+	* 
+	* @return the prefix string of this contact
+	*/
+	public String getPrefix(int prefixId) {
+		String prefix = StringPool.BLANK;
+		if (prefixId == 11014) {
+			prefix = "Dr.";
+		}
+		else if (prefixId == 11014) {
+			prefix = "Mr.";
+		}
+		else if (prefixId == 11014) {
+			prefix = "Mrs.";
+		}
+		else if (prefixId == 11014) {
+			prefix = "Ms.";
+		}
+		else {
+			prefix = StringPool.BLANK;
+		}
+
+		return prefix;
+	}
+
+	/**
 	* Returns the prefix ID of this contact.
 	*
 	* @return the prefix ID of this contact
@@ -599,6 +629,40 @@ public class ContactWrapper implements Contact, ModelWrapper<Contact> {
 	*/
 	public void setPrefixId(int prefixId) {
 		_contact.setPrefixId(prefixId);
+	}
+
+	/**
+	* Returns the suffix string of this contact.
+	*
+	* @param suffixId the suffix ID of this contact
+	* 
+	* @return the suffix string of this contact
+	*/
+	public String getSuffix(int suffixId) {
+		String suffix = StringPool.BLANK;
+		if (suffixId == 11020) {
+			suffix = "II";
+		}
+		else if (suffixId == 11021) {
+			suffix = "III";
+		}
+		else if (suffixId == 11022) {
+			suffix = "IV";
+		}
+		else if (suffixId == 11023) {
+			suffix = "Jr.";
+		}
+		else if (suffixId == 11024) {
+			suffix = "Phd.";
+		}
+		else if (suffixId == 11025) {
+			suffix = "Sr.";
+		}
+		else {
+			suffix = StringPool.BLANK;
+		}
+
+		return suffix;
 	}
 
 	/**

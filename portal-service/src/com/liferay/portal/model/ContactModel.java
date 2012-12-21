@@ -285,6 +285,15 @@ public interface ContactModel extends AttachedModel, AuditedModel,
 	public void setLastName(String lastName);
 
 	/**
+	 * Returns the prefix of this contact.
+	 *
+	 * @param prefixId the prefix ID of this contact
+	 * 
+	 * @return the prefix string of this contact
+	 */
+	public String getPrefix(int prefixId);
+
+	/**
 	 * Returns the prefix ID of this contact.
 	 *
 	 * @return the prefix ID of this contact
@@ -297,6 +306,15 @@ public interface ContactModel extends AttachedModel, AuditedModel,
 	 * @param prefixId the prefix ID of this contact
 	 */
 	public void setPrefixId(int prefixId);
+
+	/**
+	 * Returns the prefix string of this contact.
+	 *
+	 * @param prefixId the prefix ID of this contact
+	 * 
+	 * @return the prefix string of this contact
+	 */
+	public String getSuffix(int suffixId);
 
 	/**
 	 * Returns the suffix ID of this contact.
