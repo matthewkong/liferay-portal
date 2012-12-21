@@ -688,6 +688,27 @@ public class ContactModelImpl extends BaseModelImpl<Contact>
 		_lastName = lastName;
 	}
 
+	public String getPrefix(int prefixId) {
+		String prefix = StringPool.BLANK;
+		if (prefixId == 11014) {
+			prefix = "Dr.";
+		}
+		else if (prefixId == 11015) {
+			prefix = "Mr.";
+		}
+		else if (prefixId == 11016) {
+			prefix = "Mrs.";
+		}
+		else if (prefixId == 11017) {
+			prefix = "Ms.";
+		}
+		else {
+			prefix = StringPool.BLANK;
+		}
+
+		return prefix;
+	}
+
 	@JSON
 	public int getPrefixId() {
 		return _prefixId;
@@ -695,6 +716,33 @@ public class ContactModelImpl extends BaseModelImpl<Contact>
 
 	public void setPrefixId(int prefixId) {
 		_prefixId = prefixId;
+	}
+
+	public String getSuffix(int suffixId) {
+		String suffix = StringPool.BLANK;
+		if (suffixId == 11020) {
+			suffix = "II";
+		}
+		else if (suffixId == 11021) {
+			suffix = "III";
+		}
+		else if (suffixId == 11022) {
+			suffix = "IV";
+		}
+		else if (suffixId == 11023) {
+			suffix = "Jr.";
+		}
+		else if (suffixId == 11024) {
+			suffix = "Phd.";
+		}
+		else if (suffixId == 11025) {
+			suffix = "Sr.";
+		}
+		else {
+			suffix = StringPool.BLANK;
+		}
+
+		return suffix;
 	}
 
 	@JSON

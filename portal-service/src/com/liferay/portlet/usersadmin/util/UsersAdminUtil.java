@@ -233,18 +233,11 @@ public class UsersAdminUtil {
 		return getUsersAdmin().getWebsites(actionRequest, defaultWebsites);
 	}
 
-	public static boolean hasUpdateEmailAddress(
+	public static boolean hasUpdatePermission(
 			PermissionChecker permissionChecker, User user)
 		throws PortalException, SystemException {
 
-		return getUsersAdmin().hasUpdateEmailAddress(permissionChecker, user);
-	}
-
-	public static boolean hasUpdateScreenName(
-			PermissionChecker permissionChecker, User user)
-		throws PortalException, SystemException {
-
-		return getUsersAdmin().hasUpdateScreenName(permissionChecker, user);
+		return getUsersAdmin().hasUpdatePermission(permissionChecker, user);
 	}
 
 	public static long[] removeRequiredRoles(long userId, long[] roleIds)

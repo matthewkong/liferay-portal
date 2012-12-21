@@ -14,21 +14,60 @@
  */
 --%>
 
-<aui:select bean="<%= selContact %>" label="title[person]" listType="<%= ListTypeConstants.CONTACT_PREFIX %>" listTypeFieldName="prefixId" model="<%= Contact.class %>" name="prefixId" showEmptyOption="<%= true %>" />
-
 <liferay-ui:error exception="<%= ContactFirstNameException.class %>" message="please-enter-a-valid-first-name" />
 <liferay-ui:error exception="<%= ContactFullNameException.class %>" message="please-enter-a-valid-first-middle-and-last-name" />
 
-<aui:input name="firstName" />
+<c:choose>
+	<c:when test="<%= hasUpdatePermission %>">
+		<aui:select bean="<%= selContact %>" label="title[person]" listType="<%= ListTypeConstants.CONTACT_PREFIX %>" listTypeFieldName="prefixId" model="<%= Contact.class %>" name="prefixId" showEmptyOption="<%= true %>" />
 
-<aui:input name="middleName" />
+		<aui:input name="firstName" />
 
-<liferay-ui:error exception="<%= ContactLastNameException.class %>" message="please-enter-a-valid-last-name" />
+		<aui:input name="middleName" />
 
-<aui:input name="lastName">
-	<c:if test="<%= PrefsPropsUtil.getBoolean(company.getCompanyId(), PropsKeys.USERS_LAST_NAME_REQUIRED, PropsValues.USERS_LAST_NAME_REQUIRED) %>">
-		<aui:validator name="required" />
-	</c:if>
-</aui:input>
+		<liferay-ui:error exception="<%= ContactLastNameException.class %>" message="please-enter-a-valid-last-name" />
 
-<aui:select bean="<%= selContact %>" label="suffix" listType="<%= ListTypeConstants.CONTACT_SUFFIX %>" listTypeFieldName="suffixId" model="<%= Contact.class %>" name="suffixId" showEmptyOption="<%= true %>" />
+		<aui:input name="lastName">
+			<c:if test="<%= PrefsPropsUtil.getBoolean(company.getCompanyId(), PropsKeys.USERS_LAST_NAME_REQUIRED, PropsValues.USERS_LAST_NAME_REQUIRED) %>">
+				<aui:validator name="required" />
+			</c:if>
+		</aui:input>
+
+		<aui:select bean="<%= selContact %>" label="suffix" listType="<%= ListTypeConstants.CONTACT_SUFFIX %>" listTypeFieldName="suffixId" model="<%= Contact.class %>" name="suffixId" showEmptyOption="<%= true %>" />
+	</c:when>
+	<c:otherwise>
+		<c:if test="<%= selContact != null %>">
+			<aui:field-wrapper name="title">
+				<%= selContact.getPrefix(selContact.getPrefixId()) %>
+
+				<aui:input name="prefixId" type="hidden" value="<%= selContact.getPrefixId() %>" />
+			</aui:field-wrapper>
+		</c:if>
+		<c:if test="<%= selUser != null %>">
+			<aui:field-wrapper name="firstName">
+				<%= selUser.getFirstName() %>
+
+				<aui:input name="firstName" type="hidden" value="<%= selUser.getFirstName() %>" />
+			</aui:field-wrapper>
+
+			<aui:field-wrapper name="middleName">
+				<%= selUser.getMiddleName() %>
+
+				<aui:input name="middleName" type="hidden" value="<%= selUser.getMiddleName() %>" />
+			</aui:field-wrapper>
+
+			<aui:field-wrapper name="lastName">
+				<%= selUser.getLastName() %>
+
+				<aui:input name="lastName" type="hidden" value="<%= selUser.getLastName() %>" />
+			</aui:field-wrapper>
+		</c:if>
+		<c:if test="<%= selContact != null %>">
+			<aui:field-wrapper name="suffix">
+				<%= selContact.getSuffix(selContact.getSuffixId()) %>
+
+				<aui:input name="suffixId" type="hidden" value="<%= selContact.getSuffixId() %>" />
+			</aui:field-wrapper>
+		</c:if>
+	</c:otherwise>
+</c:choose>
