@@ -593,10 +593,11 @@ public class DLFolderLocalServiceUtil {
 		getService().updateLastPostDate(folderId, lastPostDate);
 	}
 
-	public static void updateModifiedDate(long folderId, java.util.Date date)
+	public static void updateModifiedDate(long folderId,
+		java.util.Date modifiedDate)
 		throws com.liferay.portal.kernel.exception.PortalException,
 			com.liferay.portal.kernel.exception.SystemException {
-		getService().updateModifiedDate(folderId, date);
+		getService().updateModifiedDate(folderId, modifiedDate);
 	}
 
 	public static com.liferay.portlet.documentlibrary.model.DLFolder updateStatus(
