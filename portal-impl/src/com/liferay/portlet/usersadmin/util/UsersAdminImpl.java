@@ -996,13 +996,16 @@ public class UsersAdminImpl implements UsersAdmin {
 		return websites;
 	}
 
+	/**
+	* @deprecated
+	*/
 	public boolean hasUpdateEmailAddress(
 			PermissionChecker permissionChecker, User user)
 		throws PortalException, SystemException {
 
-		String[] fieldEditiableUserEmailAddress =
-			PropsValues.
-				FIELD_EDITABLE_COM_LIFERAY_PORTAL_MODEL_USER_EMAILADDRESS;
+		String[] fieldEditiableUserEmailAddress = ArrayUtil.append(
+			PropsValues.USER_DETAIL_FIELDS_EDITABLE_DOMAIN,
+				PropsValues.USER_DETAIL_FIELDS_EDITABLE_ROLES);
 
 		if (ArrayUtil.contains(
 				fieldEditiableUserEmailAddress, "administrator") &&
@@ -1028,13 +1031,55 @@ public class UsersAdminImpl implements UsersAdmin {
 		return false;
 	}
 
+	public boolean hasUpdatePermission(
+			PermissionChecker permissionChecker, User user)
+		throws PortalException, SystemException {
+
+		List<Role> userRoles = user.getRoles();
+
+		String[] fieldEditableDomain =
+			PropsValues.USER_DETAIL_FIELDS_EDITABLE_DOMAIN;
+
+		String[] fieldEditableRoles =
+			PropsValues.USER_DETAIL_FIELDS_EDITABLE_ROLES;
+
+		if (ArrayUtil.contains(
+				fieldEditableDomain, "user-with-mx") &&
+			user.hasCompanyMx()) {
+
+			return true;
+		}
+
+		if (ArrayUtil.contains(
+				fieldEditableDomain, "user-without-mx") &&
+			!user.hasCompanyMx()) {
+
+			return true;
+		}
+
+		if (Validator.isNotNull(fieldEditableRoles)) {
+			for (Role role : userRoles) {
+				String roleName = StringUtil.lowerCase(role.getName());
+
+				if (ArrayUtil.contains(fieldEditableRoles, roleName)) {
+					return true;
+				}
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	* @deprecated
+	*/
 	public boolean hasUpdateScreenName(
 			PermissionChecker permissionChecker, User user)
 		throws PortalException, SystemException {
 
-		String[] fieldEditiableUserScreenName =
-			PropsValues.
-				FIELD_EDITABLE_COM_LIFERAY_PORTAL_MODEL_USER_SCREENNAME;
+		String[] fieldEditiableUserScreenName = ArrayUtil.append(
+			PropsValues.USER_DETAIL_FIELDS_EDITABLE_DOMAIN,
+				PropsValues.USER_DETAIL_FIELDS_EDITABLE_ROLES);
 
 		if (ArrayUtil.contains(
 				fieldEditiableUserScreenName, "administrator") &&
