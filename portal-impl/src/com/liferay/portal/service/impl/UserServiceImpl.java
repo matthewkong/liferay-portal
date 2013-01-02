@@ -16,13 +16,13 @@ package com.liferay.portal.service.impl;
 
 import com.liferay.portal.RequiredUserException;
 import com.liferay.portal.ReservedUserEmailAddressException;
-import com.liferay.portal.UserEmailAddressException;
 import com.liferay.portal.UserScreenNameException;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.search.Indexer;
 import com.liferay.portal.kernel.search.IndexerRegistryUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
+import com.liferay.portal.kernel.util.CalendarFactoryUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.kernel.workflow.WorkflowThreadLocal;
@@ -56,8 +56,10 @@ import com.liferay.portal.service.permission.UserGroupRolePermissionUtil;
 import com.liferay.portal.service.permission.UserPermissionUtil;
 import com.liferay.portal.util.PropsValues;
 import com.liferay.portlet.announcements.model.AnnouncementsDelivery;
+import com.liferay.portlet.usersadmin.util.UserUpdatePermissionException;
 import com.liferay.portlet.usersadmin.util.UsersAdminUtil;
 
+import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 
@@ -1557,11 +1559,10 @@ public class UserServiceImpl extends UserServiceBaseImpl {
 		long curUserId = getUserId();
 
 		if (curUserId == userId) {
-			screenName = screenName.trim().toLowerCase();
-
-			if (!screenName.equalsIgnoreCase(user.getScreenName())) {
-				validateScreenName(user, screenName);
-			}
+			updatedUserDetails(
+				user, screenName, emailAddress, firstName, middleName, lastName,
+				prefixId, suffixId, birthdayMonth, birthdayDay, birthdayYear,
+				male, jobTitle);
 
 			emailAddress = emailAddress.trim().toLowerCase();
 
@@ -1976,14 +1977,40 @@ public class UserServiceImpl extends UserServiceBaseImpl {
 		}
 	}
 
-	protected void validateEmailAddress(User user, String emailAddress)
+	protected void updatedUserDetails(
+			User user, String screenName, String emailAddress, String firstName,
+			String middleName, String lastName, int prefixId, int suffixId,
+			int birthdayMonth, int birthdayDay, int birthdayYear, boolean male,
+			String jobTitle)
 		throws PortalException, SystemException {
 
-		PermissionChecker permissionChecker = getPermissionChecker();
+		long contactId = user.getContactId();
 
-		if (!UsersAdminUtil.hasUpdateEmailAddress(permissionChecker, user)) {
-			throw new UserEmailAddressException();
+		Contact contact = contactPersistence.fetchByPrimaryKey(contactId);
+
+		Calendar birthday = CalendarFactoryUtil.getCalendar();
+
+		birthday.setTime(contact.getBirthday());
+
+		if (!screenName.equalsIgnoreCase(user.getScreenName()) ||
+			!emailAddress.equalsIgnoreCase(user.getEmailAddress()) ||
+			!firstName.equalsIgnoreCase(user.getFirstName()) ||
+			!middleName.equalsIgnoreCase(user.getMiddleName()) ||
+			!lastName.equalsIgnoreCase(user.getLastName()) ||
+			!(prefixId == contact.getPrefixId()) ||
+			!(suffixId == contact.getSuffixId()) ||
+			!(birthdayMonth == birthday.get(Calendar.MONTH)) ||
+			!(birthdayDay == birthday.get(Calendar.DATE)) ||
+			!(birthdayYear == birthday.get(Calendar.YEAR)) ||
+			!(male == contact.getMale()) ||
+			!jobTitle.equalsIgnoreCase(user.getJobTitle())) {
+
+				validateUpdatePermission(user);
 		}
+	}
+
+	protected void validateEmailAddress(User user, String emailAddress)
+		throws PortalException, SystemException {
 
 		if (!user.hasCompanyMx() && user.hasCompanyMx(emailAddress)) {
 			Company company = companyPersistence.findByPrimaryKey(
@@ -2029,6 +2056,9 @@ public class UserServiceImpl extends UserServiceBaseImpl {
 		}
 	}
 
+	/**
+	* @deprecated
+	*/
 	protected void validateScreenName(User user, String screenName)
 		throws PortalException, SystemException {
 
@@ -2036,6 +2066,16 @@ public class UserServiceImpl extends UserServiceBaseImpl {
 
 		if (!UsersAdminUtil.hasUpdateScreenName(permissionChecker, user)) {
 			throw new UserScreenNameException();
+		}
+	}
+
+	protected void validateUpdatePermission(User user)
+		throws PortalException, SystemException {
+
+		PermissionChecker permissionChecker = getPermissionChecker();
+
+		if (!UsersAdminUtil.hasUpdatePermission(permissionChecker, user)) {
+			throw new UserUpdatePermissionException();
 		}
 	}
 

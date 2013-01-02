@@ -52,6 +52,7 @@ page import="com.liferay.portal.UserPortraitSizeException" %><%@
 page import="com.liferay.portal.UserScreenNameException" %><%@
 page import="com.liferay.portal.UserSmsException" %><%@
 page import="com.liferay.portal.WebsiteURLException" %><%@
+page import="com.liferay.portal.model.Contact" %><%@
 page import="com.liferay.portal.service.permission.OrganizationPermissionUtil" %><%@
 page import="com.liferay.portal.service.permission.PortalPermissionUtil" %><%@
 page import="com.liferay.portal.service.permission.UserPermissionUtil" %><%@
@@ -76,6 +77,7 @@ page import="com.liferay.portlet.usersadmin.search.UserDisplayTerms" %><%@
 page import="com.liferay.portlet.usersadmin.search.UserOrganizationChecker" %><%@
 page import="com.liferay.portlet.usersadmin.search.UserSearch" %><%@
 page import="com.liferay.portlet.usersadmin.search.UserSearchTerms" %><%@
+page import="com.liferay.portlet.usersadmin.util.UserUpdatePermissionException" %><%@
 page import="com.liferay.portlet.usersadmin.util.UsersAdminUtil" %>
 
 <%
