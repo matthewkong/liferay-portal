@@ -605,14 +605,14 @@ public class DLFolderLocalServiceImpl extends DLFolderLocalServiceBaseImpl {
 		dlFolderPersistence.update(dlFolder);
 	}
 
-	public void updateModifiedDate(long folderId, Date date)
+	public void updateModifiedDate(long folderId, Date modifiedDate)
 		throws PortalException, SystemException {
 
-		DLFolder currentFolder = dlFolderPersistence.findByPrimaryKey(folderId);
+		DLFolder dlFolder = dlFolderPersistence.findByPrimaryKey(folderId);
 
-		currentFolder.setModifiedDate(date);
+		dlFolder.setModifiedDate(modifiedDate);
 
-		dlFolderPersistence.update(currentFolder);
+		dlFolderPersistence.update(dlFolder);
 	}
 
 	public DLFolder updateStatus(

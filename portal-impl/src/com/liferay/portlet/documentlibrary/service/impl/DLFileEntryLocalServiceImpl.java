@@ -2240,6 +2240,8 @@ public class DLFileEntryLocalServiceImpl
 				fieldsMap, version, size, dlFileVersion.getStatus(),
 				serviceContext.getModifiedDate(now), serviceContext);
 
+			// Folder
+
 			dlFolderLocalService.updateModifiedDate(
 				dlFileEntry.getFolderId(), now);
 
