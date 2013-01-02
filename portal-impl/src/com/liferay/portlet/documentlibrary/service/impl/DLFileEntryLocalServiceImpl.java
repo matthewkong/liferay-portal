@@ -81,6 +81,7 @@ import com.liferay.portlet.documentlibrary.model.DLFolder;
 import com.liferay.portlet.documentlibrary.model.DLFolderConstants;
 import com.liferay.portlet.documentlibrary.model.DLSyncConstants;
 import com.liferay.portlet.documentlibrary.model.impl.DLFileEntryImpl;
+import com.liferay.portlet.documentlibrary.service.DLFolderLocalServiceUtil;
 import com.liferay.portlet.documentlibrary.service.base.DLFileEntryLocalServiceBaseImpl;
 import com.liferay.portlet.documentlibrary.store.DLStoreUtil;
 import com.liferay.portlet.documentlibrary.util.DLAppUtil;
@@ -206,6 +207,9 @@ public class DLFileEntryLocalServiceImpl
 			dlFolderLocalService.updateLastPostDate(
 				dlFileEntry.getFolderId(), dlFileEntry.getModifiedDate());
 		}
+
+		DLFolderLocalServiceUtil.updateModifiedDate(
+				dlFileEntry.getFolderId(), now);
 
 		// File
 
@@ -2237,6 +2241,9 @@ public class DLFileEntryLocalServiceImpl
 				description, changeLog, extraSettings, fileEntryTypeId,
 				fieldsMap, version, size, dlFileVersion.getStatus(),
 				serviceContext.getModifiedDate(now), serviceContext);
+
+			DLFolderLocalServiceUtil.updateModifiedDate(
+				dlFileEntry.getFolderId(), now);
 
 			// App helper
 
