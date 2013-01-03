@@ -33,12 +33,6 @@ if (selContact != null) {
 boolean deletePortrait = ParamUtil.getBoolean(request, "deletePortrait");
 
 boolean hasUpdatePermission = UsersAdminUtil.hasUpdatePermission(permissionChecker, user);
-
-boolean isMale = true;
-
-if (selUser != null) {
-	isMale = selUser.isMale();
-}
 %>
 
 <liferay-ui:error-marker key="errorSection" value="details" />
@@ -157,26 +151,9 @@ if (selUser != null) {
 
 	<c:choose>
 		<c:when test="<%= PrefsPropsUtil.getBoolean(company.getCompanyId(), PropsKeys.FIELD_ENABLE_COM_LIFERAY_PORTAL_MODEL_CONTACT_BIRTHDAY) %>">
-			<c:if test="<%= hasUpdatePermission %>">
-				<liferay-ui:error exception="<%= ContactBirthdayException.class %>" message="please-enter-a-valid-date" />
+			<liferay-ui:error exception="<%= ContactBirthdayException.class %>" message="please-enter-a-valid-date" />
 
-				<aui:input bean="<%= selContact %>" model="<%= Contact.class %>" name="birthday" value="<%= birthday %>" />
-			</c:if>
-			<c:if test="<%= !hasUpdatePermission && (selUser != null) %>">
-				<aui:field-wrapper name="birthday">
-					<% StringBundler sb = new StringBundler(5);
-						sb.append(birthday.get(Calendar.MONTH) + 1);
-						sb.append("/");
-						sb.append(birthday.get(Calendar.DATE));
-						sb.append("/");
-						sb.append(birthday.get(Calendar.YEAR));
-					%>
-
-					<%= sb.toString() %>
-
-					<aui:input name="birthday" type="hidden" value="<%= selUser.getBirthday() %>" />
-				</aui:field-wrapper>
-			</c:if>
+			<aui:input bean="<%= selContact %>" disabled="<%= !hasUpdatePermission %>" model="<%= Contact.class %>" name="birthday" value="<%= birthday %>" />
 		</c:when>
 		<c:otherwise>
 			<aui:input name="birthdayMonth" type="hidden" value="<%= Calendar.JANUARY %>" />
@@ -186,44 +163,11 @@ if (selUser != null) {
 	</c:choose>
 
 	<c:if test="<%= PrefsPropsUtil.getBoolean(company.getCompanyId(), PropsKeys.FIELD_ENABLE_COM_LIFERAY_PORTAL_MODEL_CONTACT_MALE) %>">
-		<c:choose>
-			<c:when test="<%= hasUpdatePermission %>">
-				<aui:select bean="<%= selContact %>" label="gender" model="<%= Contact.class %>" name="male">
-					<aui:option label="male" value="true" />
-					<aui:option label="female" selected="<%= !isMale %>" value="false" />
-				</aui:select>
-			</c:when>
-			<c:when test="<%= (selUser != null) %>">
-				<c:choose>
-					<c:when test="<%= !hasUpdatePermission && selUser.isMale() %>">
-						<aui:field-wrapper name="gender">
-							<%= "Male" %>
-
-							<aui:input name="gender" type="hidden" value="<%= selUser.isMale() %>" />
-						</aui:field-wrapper>
-					</c:when>
-					<c:otherwise>
-						<aui:field-wrapper name="gender">
-							<%= "Female" %>
-
-							<aui:input name="gender" type="hidden" value="<%= selUser.isMale() %>" />
-						</aui:field-wrapper>
-					</c:otherwise>
-				</c:choose>
-			</c:when>
-		</c:choose>
+		<aui:select bean="<%= selContact %>" disabled="<%= !hasUpdatePermission %>" label="gender" model="<%= Contact.class %>" name="male">
+			<aui:option label="male" value="true" />
+			<aui:option label="female" value="false" />
+		</aui:select>
 	</c:if>
 
-	<c:choose>
-		<c:when test="<%= !hasUpdatePermission && (selUser != null) %>">
-			<aui:field-wrapper name="jobTitle">
-				<%= selUser.getJobTitle() %>
-
-				<aui:input name="jobTitle" type="hidden" value="<%= selUser.getJobTitle() %>" />
-			</aui:field-wrapper>
-		</c:when>
-		<c:otherwise>
-			<aui:input name="jobTitle" />
-		</c:otherwise>
-	</c:choose>
+	<aui:input disabled="<%= !hasUpdatePermission %>" name="jobTitle" />
 </aui:fieldset>

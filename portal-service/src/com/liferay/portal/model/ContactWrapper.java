@@ -1015,16 +1015,6 @@ public class ContactWrapper implements Contact, ModelWrapper<Contact> {
 		return _contact.getFullName();
 	}
 
-	public java.lang.String getPrefix(com.liferay.portal.model.Contact contact)
-		throws java.lang.Exception {
-		return _contact.getPrefix(contact);
-	}
-
-	public java.lang.String getSuffix(com.liferay.portal.model.Contact contact)
-		throws java.lang.Exception {
-		return _contact.getSuffix(contact);
-	}
-
 	public boolean isUser() {
 		return _contact.isUser();
 	}

@@ -31,11 +31,5 @@ public interface Contact extends ContactModel, PersistedModel {
 	 */
 	public java.lang.String getFullName();
 
-	public java.lang.String getPrefix(com.liferay.portal.model.Contact contact)
-		throws java.lang.Exception;
-
-	public java.lang.String getSuffix(com.liferay.portal.model.Contact contact)
-		throws java.lang.Exception;
-
 	public boolean isUser();
 }
