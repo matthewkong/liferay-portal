@@ -203,8 +203,12 @@ public class DLFileEntryLocalServiceImpl
 		// Folder
 
 		if (folderId != DLFolderConstants.DEFAULT_PARENT_FOLDER_ID) {
-			dlFolderLocalService.updateLastPostDate(
-				dlFileEntry.getFolderId(), dlFileEntry.getModifiedDate());
+			DLFolder dlFolder = dlFolderLocalService.getDLFolder(folderId);
+
+			dlFolder.setLastPostDate(serviceContext.getModifiedDate(now));
+			dlFolder.setModifiedDate(serviceContext.getModifiedDate(now));
+
+			dlFolderPersistence.update(dlFolder);
 		}
 
 		// File
@@ -345,8 +349,13 @@ public class DLFileEntryLocalServiceImpl
 		if (dlFileEntry.getFolderId() !=
 				DLFolderConstants.DEFAULT_PARENT_FOLDER_ID) {
 
-			dlFolderLocalService.updateLastPostDate(
-				dlFileEntry.getFolderId(), dlFileEntry.getModifiedDate());
+			Date now = new Date();
+
+			DLFolder dlfolder = dlFolderLocalService.getFolder(
+				dlFileEntry.getFolderId());
+
+			dlfolder.setLastPostDate(serviceContext.getModifiedDate(now));
+			dlfolder.setModifiedDate(serviceContext.getModifiedDate(now));
 		}
 
 		// Workflow
@@ -2237,6 +2246,19 @@ public class DLFileEntryLocalServiceImpl
 				description, changeLog, extraSettings, fileEntryTypeId,
 				fieldsMap, version, size, dlFileVersion.getStatus(),
 				serviceContext.getModifiedDate(now), serviceContext);
+
+			// Folder
+
+			if (dlFileEntry.getFolderId() !=
+				DLFolderConstants.DEFAULT_PARENT_FOLDER_ID) {
+				DLFolder dlFolder = dlFolderLocalService.getDLFolder(
+					dlFileEntry.getFolderId());
+
+				dlFolder.setLastPostDate(serviceContext.getModifiedDate(now));
+				dlFolder.setModifiedDate(serviceContext.getModifiedDate(now));
+
+				dlFolderPersistence.update(dlFolder);
+			}
 
 			// App helper
 
