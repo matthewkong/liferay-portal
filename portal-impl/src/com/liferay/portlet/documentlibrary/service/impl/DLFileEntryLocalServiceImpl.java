@@ -203,12 +203,10 @@ public class DLFileEntryLocalServiceImpl
 		// Folder
 
 		if (folderId != DLFolderConstants.DEFAULT_PARENT_FOLDER_ID) {
-			now = new Date();
-
 			DLFolder dlfolder = dlFolderLocalService.getFolder(
 				dlFileEntry.getFolderId());
 
-			dlfolder.setLastPostDate(now);
+			dlfolder.setLastPostDate(dlFileEntry.getModifiedDate());
 
 			dlFolderPersistence.update(dlfolder);
 		}
@@ -366,12 +364,10 @@ public class DLFileEntryLocalServiceImpl
 		if (dlFileEntry.getFolderId() !=
 				DLFolderConstants.DEFAULT_PARENT_FOLDER_ID) {
 
-			Date now = new Date();
-
 			DLFolder dlfolder = dlFolderLocalService.getFolder(
 				dlFileEntry.getFolderId());
 
-			dlfolder.setLastPostDate(now);
+			dlfolder.setLastPostDate(dlFileEntry.getModifiedDate());
 
 			dlFolderPersistence.update(dlfolder);
 		}
@@ -528,22 +524,6 @@ public class DLFileEntryLocalServiceImpl
 					existingDLFileVersion.getSize(),
 					WorkflowConstants.STATUS_DRAFT, new Date(), serviceContext);
 			}
-
-			//folder
-
-		if (dlFileEntry.getFolderId() !=
-				DLFolderConstants.DEFAULT_PARENT_FOLDER_ID) {
-
-			Date now = new Date();
-
-			DLFolder dlfolder = dlFolderLocalService.getFolder(
-				dlFileEntry.getFolderId());
-
-			dlfolder.setLastPostDate(now);
-
-			dlFolderPersistence.update(dlfolder);
-		}
-
 			else {
 				long oldDLFileVersionId = dlFileVersion.getFileVersionId();
 
@@ -581,6 +561,21 @@ public class DLFileEntryLocalServiceImpl
 				dlFileEntry.getCompanyId(), dlFileVersion.getFileEntryTypeId(),
 				fileEntryId, dlFileVersionId, dlFileVersion.getFileVersionId(),
 				serviceContext);
+		}
+
+		//folder
+
+		if (dlFileEntry.getFolderId() !=
+				DLFolderConstants.DEFAULT_PARENT_FOLDER_ID) {
+
+			Date now = new Date();
+
+			DLFolder dlfolder = dlFolderLocalService.getFolder(
+				dlFileEntry.getFolderId());
+
+			dlfolder.setLastPostDate(now);
+
+			dlFolderPersistence.update(dlfolder);
 		}
 
 		return dlFileEntry;
@@ -2285,10 +2280,11 @@ public class DLFileEntryLocalServiceImpl
 
 			if (dlFileEntry.getFolderId() !=
 				DLFolderConstants.DEFAULT_PARENT_FOLDER_ID) {
+
 				DLFolder dlFolder = dlFolderLocalService.getDLFolder(
 					dlFileEntry.getFolderId());
 
-				dlFolder.setLastPostDate(now);
+				dlFolder.setLastPostDate(serviceContext.getModifiedDate(now));
 
 				dlFolderPersistence.update(dlFolder);
 			}
