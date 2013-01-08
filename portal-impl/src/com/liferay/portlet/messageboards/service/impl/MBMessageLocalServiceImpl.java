@@ -540,7 +540,8 @@ public class MBMessageLocalServiceImpl extends MBMessageLocalServiceBaseImpl {
 			if ((message.getCategoryId() !=
 					MBCategoryConstants.DEFAULT_PARENT_CATEGORY_ID) &&
 				(message.getCategoryId() !=
-					MBCategoryConstants.DISCUSSION_CATEGORY_ID)) {
+					MBCategoryConstants.DISCUSSION_CATEGORY_ID) &&
+				(_messageStatus != WorkflowConstants.STATUS_DENIED)) {
 
 				MBCategory category = mbCategoryPersistence.findByPrimaryKey(
 					message.getCategoryId());
@@ -1515,6 +1516,8 @@ public class MBMessageLocalServiceImpl extends MBMessageLocalServiceBaseImpl {
 
 		MBMessage message = getMessage(messageId);
 
+		_messageStatus = status;
+
 		int oldStatus = message.getStatus();
 
 		User user = userPersistence.findByPrimaryKey(userId);
@@ -2216,5 +2219,7 @@ public class MBMessageLocalServiceImpl extends MBMessageLocalServiceBaseImpl {
 
 	private static Log _log = LogFactoryUtil.getLog(
 		MBMessageLocalServiceImpl.class);
+
+	private int _messageStatus;
 
 }
