@@ -997,38 +997,13 @@ public class UsersAdminImpl implements UsersAdmin {
 	}
 
 	/**
-	* @deprecated
-	*/
+	 * @deprecated
+	 */
 	public boolean hasUpdateEmailAddress(
 			PermissionChecker permissionChecker, User user)
 		throws PortalException, SystemException {
 
-		String[] fieldEditiableUserEmailAddress = ArrayUtil.append(
-			PropsValues.USER_DETAIL_FIELDS_EDITABLE_DOMAIN,
-				PropsValues.USER_DETAIL_FIELDS_EDITABLE_ROLES);
-
-		if (ArrayUtil.contains(
-				fieldEditiableUserEmailAddress, "administrator") &&
-			permissionChecker.isCompanyAdmin()) {
-
-			return true;
-		}
-
-		if (ArrayUtil.contains(
-				fieldEditiableUserEmailAddress, "user-with-mx") &&
-			user.hasCompanyMx()) {
-
-			return true;
-		}
-
-		if (ArrayUtil.contains(
-				fieldEditiableUserEmailAddress, "user-without-mx") &&
-			!user.hasCompanyMx()) {
-
-			return true;
-		}
-
-		return false;
+		return hasUpdatePermission(permissionChecker, user);
 	}
 
 	public boolean hasUpdatePermission(
@@ -1071,38 +1046,13 @@ public class UsersAdminImpl implements UsersAdmin {
 	}
 
 	/**
-	* @deprecated
-	*/
+	 * @deprecated
+	 */
 	public boolean hasUpdateScreenName(
 			PermissionChecker permissionChecker, User user)
 		throws PortalException, SystemException {
 
-		String[] fieldEditiableUserScreenName = ArrayUtil.append(
-			PropsValues.USER_DETAIL_FIELDS_EDITABLE_DOMAIN,
-				PropsValues.USER_DETAIL_FIELDS_EDITABLE_ROLES);
-
-		if (ArrayUtil.contains(
-				fieldEditiableUserScreenName, "administrator") &&
-			permissionChecker.isCompanyAdmin()) {
-
-			return true;
-		}
-
-		if (ArrayUtil.contains(
-				fieldEditiableUserScreenName, "user-with-mx") &&
-			user.hasCompanyMx()) {
-
-			return true;
-		}
-
-		if (ArrayUtil.contains(
-				fieldEditiableUserScreenName, "user-without-mx") &&
-			!user.hasCompanyMx()) {
-
-			return true;
-		}
-
-		return false;
+		return hasUpdatePermission(permissionChecker, user);
 	}
 
 	public long[] removeRequiredRoles(long userId, long[] roleIds)

@@ -16,7 +16,6 @@ package com.liferay.portal.service.impl;
 
 import com.liferay.portal.RequiredUserException;
 import com.liferay.portal.ReservedUserEmailAddressException;
-import com.liferay.portal.UserScreenNameException;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.search.Indexer;
@@ -1559,7 +1558,7 @@ public class UserServiceImpl extends UserServiceBaseImpl {
 		long curUserId = getUserId();
 
 		if (curUserId == userId) {
-			updatedUserDetails(
+			validateUpdatePermission(
 				user, screenName, emailAddress, firstName, middleName, lastName,
 				prefixId, suffixId, birthdayMonth, birthdayDay, birthdayYear,
 				male, jobTitle);
@@ -1977,38 +1976,6 @@ public class UserServiceImpl extends UserServiceBaseImpl {
 		}
 	}
 
-	protected void updatedUserDetails(
-			User user, String screenName, String emailAddress, String firstName,
-			String middleName, String lastName, int prefixId, int suffixId,
-			int birthdayMonth, int birthdayDay, int birthdayYear, boolean male,
-			String jobTitle)
-		throws PortalException, SystemException {
-
-		long contactId = user.getContactId();
-
-		Contact contact = contactPersistence.fetchByPrimaryKey(contactId);
-
-		Calendar birthday = CalendarFactoryUtil.getCalendar();
-
-		birthday.setTime(contact.getBirthday());
-
-		if (!screenName.equalsIgnoreCase(user.getScreenName()) ||
-			!emailAddress.equalsIgnoreCase(user.getEmailAddress()) ||
-			!firstName.equalsIgnoreCase(user.getFirstName()) ||
-			!middleName.equalsIgnoreCase(user.getMiddleName()) ||
-			!lastName.equalsIgnoreCase(user.getLastName()) ||
-			!(prefixId == contact.getPrefixId()) ||
-			!(suffixId == contact.getSuffixId()) ||
-			!(birthdayMonth == birthday.get(Calendar.MONTH)) ||
-			!(birthdayDay == birthday.get(Calendar.DATE)) ||
-			!(birthdayYear == birthday.get(Calendar.YEAR)) ||
-			!(male == contact.getMale()) ||
-			!jobTitle.equalsIgnoreCase(user.getJobTitle())) {
-
-				validateUpdatePermission(user);
-		}
-	}
-
 	protected void validateEmailAddress(User user, String emailAddress)
 		throws PortalException, SystemException {
 
@@ -2056,26 +2023,37 @@ public class UserServiceImpl extends UserServiceBaseImpl {
 		}
 	}
 
-	/**
-	* @deprecated
-	*/
-	protected void validateScreenName(User user, String screenName)
+	protected void validateUpdatePermission(
+			User user, String screenName, String emailAddress, String firstName,
+			String middleName, String lastName, int prefixId, int suffixId,
+			int birthdayMonth, int birthdayDay, int birthdayYear, boolean male,
+			String jobTitle)
 		throws PortalException, SystemException {
 
-		PermissionChecker permissionChecker = getPermissionChecker();
+		Contact contact = user.getContact();
 
-		if (!UsersAdminUtil.hasUpdateScreenName(permissionChecker, user)) {
-			throw new UserScreenNameException();
-		}
-	}
+		Calendar birthday = CalendarFactoryUtil.getCalendar();
 
-	protected void validateUpdatePermission(User user)
-		throws PortalException, SystemException {
+		birthday.setTime(contact.getBirthday());
 
-		PermissionChecker permissionChecker = getPermissionChecker();
+		if (!screenName.equalsIgnoreCase(user.getScreenName()) ||
+			!emailAddress.equalsIgnoreCase(user.getEmailAddress()) ||
+			!firstName.equalsIgnoreCase(user.getFirstName()) ||
+			!middleName.equalsIgnoreCase(user.getMiddleName()) ||
+			!lastName.equalsIgnoreCase(user.getLastName()) ||
+			(prefixId != contact.getPrefixId()) ||
+			(suffixId != contact.getSuffixId()) ||
+			(birthdayMonth != birthday.get(Calendar.MONDAY)) ||
+			(birthdayDay != birthday.get(Calendar.DATE)) ||
+			(birthdayYear != birthday.get(Calendar.YEAR)) ||
+			(male != contact.getMale()) ||
+			!jobTitle.equalsIgnoreCase(user.getJobTitle())) {
 
-		if (!UsersAdminUtil.hasUpdatePermission(permissionChecker, user)) {
-			throw new UserUpdatePermissionException();
+			PermissionChecker permissionChecker = getPermissionChecker();
+
+			if (!UsersAdminUtil.hasUpdatePermission(permissionChecker, user)) {
+				throw new UserUpdatePermissionException();
+			}
 		}
 	}
 
