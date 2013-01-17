@@ -987,6 +987,19 @@ public class MainServlet extends ActionServlet {
 		throws PortalException, SystemException {
 
 		if ((userId > 0) || (remoteUser == null)) {
+			long companyId = PortalUtil.getCompanyId(request);
+
+			String path = PrefsPropsUtil.getString(
+				companyId, PropsKeys.DEFAULT_LANDING_PAGE_PATH);
+
+			if (Validator.isNotNull(path)) {
+				LastPath lastPath = new LastPath(StringPool.BLANK, path);
+
+				HttpSession session = request.getSession();
+
+				session.setAttribute(WebKeys.LAST_PATH, lastPath);
+			}
+
 			return userId;
 		}
 

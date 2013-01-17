@@ -196,6 +196,7 @@ public abstract class BaseIndexer implements Indexer {
 			addSearchAssetTagNames(contextQuery, searchContext);
 			addSearchEntryClassNames(contextQuery, searchContext);
 			addSearchGroupId(contextQuery, searchContext);
+			addSearchUserId(contextQuery, searchContext);
 
 			BooleanQuery fullQuery = createFullQuery(
 				contextQuery, searchContext);
@@ -779,6 +780,18 @@ public abstract class BaseIndexer implements Indexer {
 		else {
 			searchQuery.addTerm(field, value, like);
 		}
+	}
+
+	protected void addSearchUserId(
+			BooleanQuery contextQuery, SearchContext searchContext)
+		throws Exception {
+
+		MultiValueFacet multiValueFacet = new MultiValueFacet(searchContext);
+
+		multiValueFacet.setFieldName(Field.USER_ID);
+		multiValueFacet.setStatic(true);
+
+		searchContext.addFacet(multiValueFacet);
 	}
 
 	protected void addStagingGroupKeyword(Document document, long groupId)

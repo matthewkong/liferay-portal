@@ -292,18 +292,15 @@ if ((row == null) && (portletName.equals(PortletKeys.DOCUMENT_LIBRARY_DISPLAY) |
 				</c:otherwise>
 			</c:choose>
 
-			<c:if test="<%= DLFolderPermission.contains(permissionChecker, scopeGroupId, folderId, ActionKeys.SUBSCRIBE) && ((folder == null) || folder.isSupportsSubscribing()) %>">
+			<c:if test="<%= DLPermission.contains(permissionChecker, scopeGroupId, ActionKeys.SUBSCRIBE) && ((folder == null) || folder.isSupportsSubscribing()) %>">
 
 				<%
-				Set<Long> folderSubscriptionClassPKs = null;
+				Set<Long> folderSubscriptionClassPKs = (Set<Long>)request.getAttribute("folder_action.jsp-folderSubscriptionClassPKs");
 
 				if (themeDisplay.isSignedIn() && (folderSubscriptionClassPKs == null)) {
 					folderSubscriptionClassPKs = DLUtil.getFolderSubscriptionClassPKs(user.getUserId());
 
 					request.setAttribute("folder_action.jsp-folderSubscriptionClassPKs", folderSubscriptionClassPKs);
-				}
-				else {
-					folderSubscriptionClassPKs = (Set<Long>)request.getAttribute("folder_action.jsp-folderSubscriptionClassPKs");
 				}
 				%>
 

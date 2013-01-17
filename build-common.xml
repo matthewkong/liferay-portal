@@ -43,6 +43,7 @@
 		<fileset dir="${project.dir}/lib/development" includes="*.jar" />
 		<fileset dir="${project.dir}/lib/global" includes="*.jar" />
 		<fileset dir="${project.dir}/lib/portal" includes="*.jar" />
+		<fileset dir="${project.dir}/osgi/lib/common/core" includes="*.jar" />
 	</path>
 
 	<path id="project.classpath">
@@ -483,7 +484,7 @@ Please set the environment variable ANT_OPTS to the recommended value of
 
 	<target name="compile-test-functional">
 		<ant target="compile-test-cmd">
-			<property name="test.type" value="" />
+			<property name="test.type" value="functional" />
 		</ant>
 	</target>
 

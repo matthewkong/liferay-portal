@@ -26,8 +26,6 @@ import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.UniqueList;
 import com.liferay.portal.kernel.util.Validator;
-import com.liferay.portal.module.framework.LogBridge;
-import com.liferay.portal.module.framework.ModuleFrameworkConstants;
 import com.liferay.portal.module.framework.ModuleFrameworkException;
 import com.liferay.portal.security.auth.PrincipalException;
 import com.liferay.portal.security.pacl.PACLClassLoaderUtil;
@@ -285,8 +283,6 @@ public class ModuleFrameworkImpl
 
 		_framework.init();
 
-		_setupLogBridge();
-
 		_framework.start();
 	}
 
@@ -330,10 +326,6 @@ public class ModuleFrameworkImpl
 		if (_framework == null) {
 			return;
 		}
-
-		BundleContext bundleContext = _framework.getBundleContext();
-
-		_logBridge.stop(bundleContext);
 
 		_framework.stop();
 	}
@@ -515,9 +507,10 @@ public class ModuleFrameworkImpl
 
 		Hashtable<String, Object> properties = new Hashtable<String, Object>();
 
-		properties.put(BEAN_ID, beanName);
-		properties.put(ORIGINAL_BEAN, Boolean.TRUE);
-		properties.put(SERVICE_VENDOR, ReleaseInfo.getVendor());
+		properties.put(SERVICE_PROPERTY_KEY_BEAN_ID, beanName);
+		properties.put(SERVICE_PROPERTY_KEY_ORIGINAL_BEAN, Boolean.TRUE);
+		properties.put(
+			SERVICE_PROPERTY_KEY_SERVICE_VENDOR, ReleaseInfo.getVendor());
 
 		bundleContext.registerService(
 			names.toArray(new String[names.size()]), bean, properties);
@@ -528,26 +521,19 @@ public class ModuleFrameworkImpl
 
 		Hashtable<String, Object> properties = new Hashtable<String, Object>();
 
-		properties.put(BEAN_ID, ServletContext.class.getName());
-		properties.put(ORIGINAL_BEAN, Boolean.TRUE);
-		properties.put(SERVICE_VENDOR, ReleaseInfo.getVendor());
+		properties.put(
+			SERVICE_PROPERTY_KEY_BEAN_ID, ServletContext.class.getName());
+		properties.put(SERVICE_PROPERTY_KEY_ORIGINAL_BEAN, Boolean.TRUE);
+		properties.put(
+			SERVICE_PROPERTY_KEY_SERVICE_VENDOR, ReleaseInfo.getVendor());
 
 		bundleContext.registerService(
 			new String[] {ServletContext.class.getName()}, servletContext,
 			properties);
 	}
 
-	private void _setupLogBridge() throws Exception {
-		BundleContext bundleContext = _framework.getBundleContext();
-
-		_logBridge = new LogBridge();
-
-		_logBridge.start(bundleContext);
-	}
-
 	private static Log _log = LogFactoryUtil.getLog(ModuleFrameworkUtil.class);
 
 	private Framework _framework;
-	private LogBridge _logBridge;
 
 }
