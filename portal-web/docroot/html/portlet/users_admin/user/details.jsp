@@ -31,8 +31,6 @@ if (selContact != null) {
 }
 
 boolean deletePortrait = ParamUtil.getBoolean(request, "deletePortrait");
-
-boolean hasUpdatePermission = UsersAdminUtil.hasUpdatePermission(permissionChecker, user);
 %>
 
 <liferay-ui:error-marker key="errorSection" value="details" />
@@ -63,7 +61,7 @@ boolean hasUpdatePermission = UsersAdminUtil.hasUpdatePermission(permissionCheck
 
 	<c:if test="<%= !PrefsPropsUtil.getBoolean(company.getCompanyId(), PropsKeys.USERS_SCREEN_NAME_ALWAYS_AUTOGENERATE) || (selUser != null) %>">
 		<c:choose>
-			<c:when test="<%= PrefsPropsUtil.getBoolean(company.getCompanyId(), PropsKeys.USERS_SCREEN_NAME_ALWAYS_AUTOGENERATE) || (!hasUpdatePermission && (selUser != null)) %>">
+			<c:when test="<%= PrefsPropsUtil.getBoolean(company.getCompanyId(), PropsKeys.USERS_SCREEN_NAME_ALWAYS_AUTOGENERATE) || (!UsersAdminUtil.hasUpdatePermission(permissionChecker, user, "screenName") && (selUser != null)) %>">
 				<aui:input disabled="true" name="screenName" />
 			</c:when>
 			<c:otherwise>

@@ -811,6 +811,12 @@ public interface PropsKeys {
 
 	public static final String FACEBOOK_CONNECT_VERIFIED_ACCOUNT_REQUIRED = "facebook.connect.verified.account.required";
 
+	public static final String FIELD_EDITABLE_COM_LIFERAY_PORTAL_MODEL_USER = "field.editable.com.liferay.portal.model.User";
+
+	public static final String FIELD_EDITABLE_COM_LIFERAY_PORTAL_MODEL_USER_DEFAULT = "field.editable.com.liferay.portal.model.User.default";
+
+	public static final String FIELD_EDITABLE_COM_LIFERAY_PORTAL_MODEL_USER_FIELDS = "field.editable.com.liferay.portal.model.User.fields";
+
 	public static final String FIELD_ENABLE_COM_LIFERAY_PORTAL_MODEL_CONTACT_BIRTHDAY = "field.enable.com.liferay.portal.model.Contact.birthday";
 
 	public static final String FIELD_ENABLE_COM_LIFERAY_PORTAL_MODEL_CONTACT_MALE = "field.enable.com.liferay.portal.model.Contact.male";
@@ -2298,10 +2304,6 @@ public interface PropsKeys {
 	public static final String UPLOAD_SERVLET_REQUEST_IMPL_MAX_SIZE = "com.liferay.portal.upload.UploadServletRequestImpl.max.size";
 
 	public static final String UPLOAD_SERVLET_REQUEST_IMPL_TEMP_DIR = "com.liferay.portal.upload.UploadServletRequestImpl.temp.dir";
-
-	public static final String USER_DETAIL_FIELDS_EDITABLE_DOMAIN = "user.detail.fields.editable.domain";
-
-	public static final String USER_DETAIL_FIELDS_EDITABLE_ROLES = "user.detail.fields.editable.roles";
 
 	public static final String USER_GROUPS_COPY_LAYOUTS_TO_USER_PERSONAL_SITE = "user.groups.copy.layouts.to.user.personal.site";
 
