@@ -18,6 +18,11 @@ import com.liferay.portal.kernel.exception.PortalException;
 
 import java.io.InputStream;
 
+import java.net.URL;
+
+import java.util.List;
+import java.util.Map;
+
 import org.osgi.framework.launch.Framework;
 
 /**
@@ -34,6 +39,14 @@ public class ModuleFrameworkUtil {
 		throws PortalException {
 
 		return getModuleFramework().addBundle(location, inputStream);
+	}
+
+	public static Map<String, List<URL>> getExtraPackageMap() {
+		return getModuleFramework().getExtraPackageMap();
+	}
+
+	public static List<URL> getExtraPackageURLs() {
+		return getModuleFramework().getExtraPackageURLs();
 	}
 
 	public static Framework getFramework() {

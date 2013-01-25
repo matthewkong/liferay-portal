@@ -26,6 +26,12 @@ String typeSelection = ParamUtil.getString(request, "typeSelection", StringPool.
 AssetRendererFactory rendererFactory = AssetRendererFactoryRegistryUtil.getAssetRendererFactoryByClassName(typeSelection);
 
 List<AssetRendererFactory> classTypesAssetRendererFactories = new ArrayList<AssetRendererFactory>();
+
+String emailParam = "emailAssetEntryAdded";
+
+String currentLanguageId = LanguageUtil.getLanguageId(request);
+
+String editorParam = emailParam + "Body_" + currentLanguageId;
 %>
 
 <liferay-portlet:actionURL portletConfiguration="true" var="configurationActionURL" />
@@ -45,26 +51,28 @@ List<AssetRendererFactory> classTypesAssetRendererFactories = new ArrayList<Asse
 	String rootPortletId = PortletConstants.getRootPortletId(portletResource);
 	%>
 
-	<c:choose>
-		<c:when test="<%= rootPortletId.equals(PortletKeys.RELATED_ASSETS) %>">
-			<aui:input name="preferences--selectionStyle--" type="hidden" value="dynamic" />
-		</c:when>
-		<c:otherwise>
-			<aui:select label="asset-selection" name="preferences--selectionStyle--" onChange='<%= renderResponse.getNamespace() + "chooseSelectionStyle();" %>'>
-				<aui:option label="dynamic" selected='<%= selectionStyle.equals("dynamic") %>'/>
-				<aui:option label="manual" selected='<%= selectionStyle.equals("manual") %>'/>
-			</aui:select>
-		</c:otherwise>
-	</c:choose>
+	<liferay-util:buffer var="selectStyle">
+		<c:choose>
+			<c:when test="<%= rootPortletId.equals(PortletKeys.RELATED_ASSETS) %>">
+				<aui:input name="preferences--selectionStyle--" type="hidden" value="dynamic" />
+			</c:when>
+			<c:otherwise>
+				<aui:select label="asset-selection" name="preferences--selectionStyle--" onChange='<%= renderResponse.getNamespace() + "chooseSelectionStyle();" %>'>
+					<aui:option label="dynamic" selected='<%= selectionStyle.equals("dynamic") %>'/>
+					<aui:option label="manual" selected='<%= selectionStyle.equals("manual") %>'/>
+				</aui:select>
+			</c:otherwise>
+		</c:choose>
+	</liferay-util:buffer>
 
 	<liferay-util:buffer var="selectScope">
-		<aui:select label="" name="preferences--defaultScope--" onChange='<%= renderResponse.getNamespace() + "selectScope();" %>'>
+		<aui:select label="" name="preferences--scopeId--" onChange='<%= renderResponse.getNamespace() + "selectScope();" %>'>
 
 			<%
 			long layoutScopeGroupId = 0;
 			%>
 
-			<aui:option label="<%= _getName(themeDisplay, themeDisplay.getScopeGroup()) %>" selected="<%= (groupIds.length == 1) && (themeDisplay.getScopeGroupId() == groupIds[0]) %>" value="<%= true %>" />
+			<aui:option label="<%= _getName(themeDisplay, themeDisplay.getScopeGroup()) %>" selected="<%= (groupIds.length == 1) && (themeDisplay.getScopeGroupId() == groupIds[0]) %>" value="<%= AssetPublisherUtil.getScopeId(layout.getGroup(), themeDisplay.getScopeGroupId()) %>" />
 
 			<c:if test="<%= layout.hasScopeGroup() %>">
 
@@ -81,7 +89,7 @@ List<AssetRendererFactory> classTypesAssetRendererFactories = new ArrayList<Asse
 
 			<optgroup label="----------"></optgroup>
 
-			<aui:option cssClass="advanced-options" label='<%= LanguageUtil.get(pageContext,"advanced-options") + "..." %>' selected="<%= (groupIds.length > 1) || ((groupIds.length == 1) && (groupIds[0] != themeDisplay.getScopeGroupId()) && (groupIds[0] != layoutScopeGroupId) && (groupIds[0] != themeDisplay.getCompanyGroupId())) %>" value="<%= false %>" />
+			<aui:option cssClass="advanced-options" label='<%= LanguageUtil.get(pageContext,"advanced-options") + "..." %>' selected="<%= (groupIds.length > 1) || ((groupIds.length == 1) && (groupIds[0] != themeDisplay.getScopeGroupId()) && (groupIds[0] != layoutScopeGroupId) && (groupIds[0] != themeDisplay.getCompanyGroupId())) %>" value="advanced-options" />
 		</aui:select>
 
 		<%
@@ -181,9 +189,12 @@ List<AssetRendererFactory> classTypesAssetRendererFactories = new ArrayList<Asse
 	<%
 	request.setAttribute("configuration.jsp-classTypesAssetRendererFactories", classTypesAssetRendererFactories);
 	request.setAttribute("configuration.jsp-configurationRenderURL", configurationRenderURL);
+	request.setAttribute("configuration.jsp-editorParam", editorParam);
+	request.setAttribute("configuration.jsp-emailParam", emailParam);
 	request.setAttribute("configuration.jsp-redirect", redirect);
 	request.setAttribute("configuration.jsp-rootPortletId", rootPortletId);
 	request.setAttribute("configuration.jsp-selectScope", selectScope);
+	request.setAttribute("configuration.jsp-selectStyle", selectStyle);
 	%>
 
 	<c:choose>
@@ -228,7 +239,7 @@ List<AssetRendererFactory> classTypesAssetRendererFactories = new ArrayList<Asse
 	function <portlet:namespace />selectScope() {
 		document.<portlet:namespace />fm.<portlet:namespace /><%= Constants.CMD %>.value = 'select-scope';
 
-		if (document.<portlet:namespace />fm.<portlet:namespace />defaultScope.value != 'false') {
+		if (document.<portlet:namespace />fm.<portlet:namespace />scopeId.value != 'advanced-options') {
 			submitForm(document.<portlet:namespace />fm);
 		}
 	}
@@ -255,6 +266,7 @@ List<AssetRendererFactory> classTypesAssetRendererFactories = new ArrayList<Asse
 			%>
 
 			document.<portlet:namespace />fm.<portlet:namespace />metadataFields.value = Liferay.Util.listSelect(document.<portlet:namespace />fm.<portlet:namespace />currentMetadataFields);
+			document.<portlet:namespace />fm.<portlet:namespace /><%= editorParam %>.value = window.<portlet:namespace />editor.getHTML();
 
 			submitForm(document.<portlet:namespace />fm);
 		},
@@ -262,7 +274,7 @@ List<AssetRendererFactory> classTypesAssetRendererFactories = new ArrayList<Asse
 	);
 
 	Liferay.Util.toggleSelectBox('<portlet:namespace />anyAssetType','false','<portlet:namespace />classNamesBoxes');
-	Liferay.Util.toggleSelectBox('<portlet:namespace />defaultScope','false','<portlet:namespace />scopesBoxes');
+	Liferay.Util.toggleSelectBox('<portlet:namespace />scopeId','advanced-options','<portlet:namespace />scopesBoxes');
 
 	Liferay.Util.focusFormField(document.<portlet:namespace />fm.<portlet:namespace />selectionStyle);
 </aui:script>

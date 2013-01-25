@@ -66,7 +66,13 @@ public class ConfigurationActionImpl extends DefaultConfigurationAction {
 			PortletPreferencesFactoryUtil.getPortletSetup(
 				actionRequest, portletResource);
 
-		if (cmd.equals(Constants.UPDATE)) {
+		if (cmd.equals(Constants.TRANSLATE)) {
+			super.processAction(portletConfig, actionRequest, actionResponse);
+		}
+		else if (cmd.equals(Constants.UPDATE)) {
+			validateEmailAssetEntryAdded(actionRequest);
+			validateEmailFrom(actionRequest);
+
 			updateDisplaySettings(actionRequest);
 
 			String selectionStyle = getParameter(
@@ -327,11 +333,10 @@ public class ConfigurationActionImpl extends DefaultConfigurationAction {
 			ActionRequest actionRequest, PortletPreferences preferences)
 		throws Exception {
 
-		String defaultScope = getParameter(actionRequest, "defaultScope");
-		String[] scopeIds = StringUtil.split(
-			getParameter(actionRequest, "scopeIds"));
+		String scopeId = getParameter(actionRequest, "scopeId");
+		String[] scopeIds = new String[]{scopeId};
 
-		preferences.setValue("defaultScope", defaultScope);
+		preferences.setValue("defaultScope", StringPool.TRUE);
 		preferences.setValues("scopeIds", scopeIds);
 	}
 
@@ -480,6 +485,39 @@ public class ConfigurationActionImpl extends DefaultConfigurationAction {
 			i++;
 
 			values = preferences.getValues("queryValues" + i, new String[0]);
+		}
+	}
+
+	protected void validateEmailAssetEntryAdded(ActionRequest actionRequest)
+		throws Exception {
+
+		String emailAssetEntryAddedSubject = getLocalizedParameter(
+			actionRequest, "emailAssetEntryAddedSubject");
+		String emailAssetEntryAddedBody = getLocalizedParameter(
+			actionRequest, "emailAssetEntryAddedBody");
+
+		if (Validator.isNull(emailAssetEntryAddedSubject)) {
+			SessionErrors.add(actionRequest, "emailAssetEntryAddedSubject");
+		}
+		else if (Validator.isNull(emailAssetEntryAddedBody)) {
+			SessionErrors.add(actionRequest, "emailAssetEntryAddedBody");
+		}
+	}
+
+	protected void validateEmailFrom(ActionRequest actionRequest)
+		throws Exception {
+
+		String emailFromName = getParameter(actionRequest, "emailFromName");
+		String emailFromAddress = getParameter(
+			actionRequest, "emailFromAddress");
+
+		if (Validator.isNull(emailFromName)) {
+			SessionErrors.add(actionRequest, "emailFromName");
+		}
+		else if (!Validator.isEmailAddress(emailFromAddress) &&
+			!Validator.isVariableTerm(emailFromAddress)) {
+
+			SessionErrors.add(actionRequest, "emailFromAddress");
 		}
 	}
 

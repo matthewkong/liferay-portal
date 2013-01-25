@@ -193,7 +193,7 @@ public abstract class BaseIndexer implements Indexer {
 		try {
 			searchContext.setSearchEngineId(getSearchEngineId());
 
-			String[] entryClassNames = {getClassName(searchContext)};
+			String[] entryClassNames = getClassNames();
 
 			if (searchContext.isIncludeAttachments()) {
 				entryClassNames = ArrayUtil.append(
@@ -213,7 +213,7 @@ public abstract class BaseIndexer implements Indexer {
 				searchContext.isIncludeDiscussions()) {
 
 				searchContext.setAttribute(
-					"relatedEntryClassName", getClassName(searchContext));
+					"relatedEntryClassNames", getClassNames());
 			}
 
 			BooleanQuery contextQuery = BooleanQueryFactoryUtil.create(
@@ -482,6 +482,45 @@ public abstract class BaseIndexer implements Indexer {
 		throws Exception {
 
 		addSearchLocalizedTerm(searchQuery, searchContext, field, like);
+	}
+
+	protected void addRelatedClassNames(
+			BooleanQuery contextQuery, SearchContext searchContext)
+		throws Exception {
+
+		String[] relatedEntryClassNames = (String[])searchContext.getAttribute(
+			"relatedEntryClassNames");
+
+		if ((relatedEntryClassNames == null) ||
+			(relatedEntryClassNames.length == 0)) {
+
+			return;
+		}
+
+		BooleanQuery relatedQueries = BooleanQueryFactoryUtil.create(
+			searchContext);
+
+		for (String relatedEntryClassName : relatedEntryClassNames) {
+			Indexer indexer = IndexerRegistryUtil.getIndexer(
+				relatedEntryClassName);
+
+			if (indexer == null) {
+				continue;
+			}
+
+			BooleanQuery relatedQuery = BooleanQueryFactoryUtil.create(
+				searchContext);
+
+			indexer.postProcessContextQuery(relatedQuery, searchContext);
+
+			relatedQuery.addRequiredTerm(
+				Field.CLASS_NAME_ID,
+				PortalUtil.getClassNameId(relatedEntryClassName));
+
+			relatedQueries.add(relatedQuery, BooleanClauseOccur.SHOULD);
+		}
+
+		contextQuery.add(relatedQueries, BooleanClauseOccur.MUST);
 	}
 
 	protected void addSearchArrayQuery(
@@ -1101,7 +1140,9 @@ public abstract class BaseIndexer implements Indexer {
 			catch (Exception e) {
 			}
 
-			if (paginationType.equals("more") && (docs.size() > end)) {
+			if (paginationType.equals("more") && (end > 0) &&
+				(docs.size() > end)) {
+
 				hasMore = true;
 
 				break;
@@ -1244,12 +1285,6 @@ public abstract class BaseIndexer implements Indexer {
 
 	protected String getClassName(SearchContext searchContext) {
 		String[] classNames = getClassNames();
-
-		if (classNames.length != 1) {
-			throw new UnsupportedOperationException(
-				"Search method needs to be manually implemented for " +
-					"indexers with more than one class name");
-		}
 
 		return classNames[0];
 	}

@@ -98,8 +98,13 @@ public class LiferaySeleniumHelper {
 	public static void assertNotPartialText(
 		LiferaySelenium liferaySelenium, String locator, String pattern) {
 
-		BaseTestCase.assertFalse(
-			liferaySelenium.isPartialText(locator, pattern));
+		liferaySelenium.assertElementPresent(locator);
+
+		if (liferaySelenium.isPartialText(locator, pattern)) {
+			String text = liferaySelenium.getText(locator);
+
+			BaseTestCase.fail(text + " contains " + pattern + " at " + locator);
+		}
 	}
 
 	public static void assertNotSelectedLabel(
@@ -118,8 +123,7 @@ public class LiferaySeleniumHelper {
 			String text = liferaySelenium.getText(locator);
 
 			BaseTestCase.fail(
-				"Pattern " + pattern + " does not match " + text + " at " +
-					locator);
+				"Pattern " + pattern + " matches " + text + " at " + locator);
 		}
 	}
 
@@ -139,8 +143,14 @@ public class LiferaySeleniumHelper {
 	public static void assertPartialText(
 		LiferaySelenium liferaySelenium, String locator, String pattern) {
 
-		BaseTestCase.assertTrue(
-			liferaySelenium.isPartialText(locator, pattern));
+		liferaySelenium.assertElementPresent(locator);
+
+		if (liferaySelenium.isNotPartialText(locator, pattern)) {
+			String text = liferaySelenium.getText(locator);
+
+			BaseTestCase.fail(
+				text + " does not contain " + pattern + " at " + locator);
+		}
 	}
 
 	public static void assertSelectedLabel(
@@ -159,7 +169,8 @@ public class LiferaySeleniumHelper {
 			String text = liferaySelenium.getText(locator);
 
 			BaseTestCase.fail(
-				"Pattern " + pattern + " matches " + text + " at " + locator);
+				"Pattern " + pattern + " does not match " + text + " at " +
+					locator);
 		}
 	}
 
@@ -226,51 +237,36 @@ public class LiferaySeleniumHelper {
 		return StringUtil.valueOf(GetterUtil.getInteger(value) + 1);
 	}
 
+	public static boolean isElementNotPresent(
+		LiferaySelenium liferaySelenium, String locator) {
+
+		return !liferaySelenium.isElementPresent(locator);
+	}
+
 	public static boolean isNotChecked(
 		LiferaySelenium liferaySelenium, String locator) {
 
-		liferaySelenium.setTimeoutImplicit("1");
+		return !liferaySelenium.isChecked(locator);
+	}
 
-		try {
-			return !liferaySelenium.isChecked(locator);
-		}
-		finally {
-			liferaySelenium.setDefaultTimeoutImplicit();
-		}
+	public static boolean isNotPartialText(
+		LiferaySelenium liferaySelenium, String locator, String value) {
+
+		return !liferaySelenium.isPartialText(locator, value);
 	}
 
 	public static boolean isNotText(
 		LiferaySelenium liferaySelenium, String locator, String value) {
 
-		if (liferaySelenium.isElementNotPresent(locator)) {
-			return false;
-		}
-
-		liferaySelenium.setTimeoutImplicit("1");
-
-		try {
-			return !value.equals(liferaySelenium.getText(locator));
-		}
-		finally {
-			liferaySelenium.setDefaultTimeoutImplicit();
-		}
+		return !liferaySelenium.isText(locator, value);
 	}
 
 	public static boolean isText(
 		LiferaySelenium liferaySelenium, String locator, String value) {
 
-		if (liferaySelenium.isElementNotPresent(locator)) {
-			return false;
-		}
-
 		liferaySelenium.setTimeoutImplicit("1");
 
-		try {
-			return value.equals(liferaySelenium.getText(locator));
-		}
-		finally {
-			liferaySelenium.setDefaultTimeoutImplicit();
-		}
+		return value.equals(liferaySelenium.getText(locator));
 	}
 
 	public static void pause(String waitTime) throws Exception {
@@ -353,11 +349,11 @@ public class LiferaySeleniumHelper {
 
 		for (int second = 0;; second++) {
 			if (second >= TestPropsValues.TIMEOUT_EXPLICIT_WAIT) {
-				BaseTestCase.fail("Timeout");
+				liferaySelenium.assertNotPartialText(locator, value);
 			}
 
 			try {
-				if (!liferaySelenium.isPartialText(locator, value)) {
+				if (liferaySelenium.isNotPartialText(locator, value)) {
 					break;
 				}
 			}
@@ -468,7 +464,7 @@ public class LiferaySeleniumHelper {
 
 		for (int second = 0;; second++) {
 			if (second >= TestPropsValues.TIMEOUT_EXPLICIT_WAIT) {
-				BaseTestCase.fail("Timeout");
+				liferaySelenium.assertPartialText(locator, value);
 			}
 
 			try {

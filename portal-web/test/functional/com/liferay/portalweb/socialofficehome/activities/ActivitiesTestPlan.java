@@ -15,6 +15,7 @@
 package com.liferay.portalweb.socialofficehome.activities;
 
 import com.liferay.portalweb.portal.BaseTestSuite;
+import com.liferay.portalweb.socialofficehome.activities.activitiesblockedsouser.ActivitiesBlockedSOUserTestPlan;
 import com.liferay.portalweb.socialofficehome.activities.mbentryactivity.MBEntryActivityTestPlan;
 
 import junit.framework.Test;
@@ -28,6 +29,7 @@ public class ActivitiesTestPlan extends BaseTestSuite {
 	public static Test suite() {
 		TestSuite testSuite = new TestSuite();
 
+		testSuite.addTest(ActivitiesBlockedSOUserTestPlan.suite());
 		testSuite.addTest(MBEntryActivityTestPlan.suite());
 
 		return testSuite;

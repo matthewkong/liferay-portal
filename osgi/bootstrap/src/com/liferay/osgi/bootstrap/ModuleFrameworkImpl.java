@@ -14,13 +14,21 @@
 
 package com.liferay.osgi.bootstrap;
 
+import aQute.lib.osgi.Analyzer;
+import aQute.lib.osgi.Builder;
+import aQute.lib.osgi.Jar;
+import aQute.lib.osgi.Verifier;
+
 import aQute.libg.header.OSGiHeader;
 import aQute.libg.version.Version;
 
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.PropsKeys;
+import com.liferay.portal.kernel.util.PropsUtil;
 import com.liferay.portal.kernel.util.ReleaseInfo;
 import com.liferay.portal.kernel.util.ServiceLoader;
 import com.liferay.portal.kernel.util.ServiceLoaderCondition;
@@ -36,15 +44,18 @@ import com.liferay.portal.security.permission.PermissionChecker;
 import com.liferay.portal.security.permission.PermissionThreadLocal;
 import com.liferay.portal.util.PropsValues;
 
+import edu.emory.mathcs.backport.java.util.Collections;
+
 import java.io.BufferedInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 
+import java.net.JarURLConnection;
 import java.net.URL;
+import java.net.URLConnection;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.Dictionary;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -53,10 +64,16 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
+import java.util.TreeMap;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.jar.Attributes;
 import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.servlet.ServletContext;
 
@@ -192,6 +209,33 @@ public class ModuleFrameworkImpl
 		BundleContext bundleContext = _framework.getBundleContext();
 
 		return bundleContext.getBundle(bundleId);
+	}
+
+	public Map<String, List<URL>> getExtraPackageMap() {
+		return _extraPackageMap;
+	}
+
+	public List<URL> getExtraPackageURLs() {
+		if (_extraPackageURLs != null) {
+			return _extraPackageURLs;
+		}
+
+		_extraPackageLock.lock();
+
+		try {
+			List<URL> extraPackageURLs = new ArrayList<URL>();
+
+			for (List<URL> urls : _extraPackageMap.values()) {
+				extraPackageURLs.addAll(urls);
+			}
+
+			_extraPackageURLs = Collections.unmodifiableList(extraPackageURLs);
+		}
+		finally {
+			_extraPackageLock.unlock();
+		}
+
+		return _extraPackageURLs;
 	}
 
 	public Framework getFramework() {
@@ -431,6 +475,14 @@ public class ModuleFrameworkImpl
 		properties.put(Constants.BUNDLE_NAME, ReleaseInfo.getName());
 		properties.put(Constants.BUNDLE_VENDOR, ReleaseInfo.getVendor());
 		properties.put(Constants.BUNDLE_VERSION, ReleaseInfo.getVersion());
+		properties.put(FELIX_FILEINSTALL_DIR, _getFelixFileInstallDir());
+		properties.put(
+			FELIX_FILEINSTALL_LOG_LEVEL, _getFelixFileInstallLogLevel());
+		properties.put(
+			FELIX_FILEINSTALL_POLL,
+			String.valueOf(PropsValues.MODULE_FRAMEWORK_AUTO_DEPLOY_INTERVAL));
+		properties.put(
+			FELIX_FILEINSTALL_TMPDIR, System.getProperty("java.io.tmpdir"));
 		properties.put(
 			Constants.FRAMEWORK_BEGINNING_STARTLEVEL,
 			String.valueOf(PropsValues.MODULE_FRAMEWORK_BEGINNING_START_LEVEL));
@@ -441,27 +493,106 @@ public class ModuleFrameworkImpl
 			Constants.FRAMEWORK_STORAGE,
 			PropsValues.MODULE_FRAMEWORK_STATE_DIR);
 
-		UniqueList<String> packages = new UniqueList<String>();
+		Properties extraProperties = PropsUtil.getProperties(
+			PropsKeys.MODULE_FRAMEWORK_PROPERTIES, true);
+
+		for (Map.Entry<Object, Object> entry : extraProperties.entrySet()) {
+			String key = (String)entry.getKey();
+			String value = (String)entry.getValue();
+
+			// We need to support an empty string and a null value distinctly.
+			// This is due to some different behaviors between OSGi
+			// implementations. If a property is passed as xyz= it will be
+			// treated as an empty string. Otherwise, xyz=null will be treated
+			// as an explicit null value.
+
+			if (value.equals(StringPool.NULL)) {
+				value = null;
+			}
+
+			properties.put(key, value);
+		}
+
+		String systemPackagesExtra = _getSystemPackagesExtra();
+
+		properties.put(
+			Constants.FRAMEWORK_SYSTEMPACKAGES_EXTRA, systemPackagesExtra);
+
+		return properties;
+	}
+
+	private Manifest _calculateManifest(URL url, Manifest manifest) {
+		Analyzer analyzer = new Analyzer();
+
+		Jar jar = null;
 
 		try {
-			_getBundleExportPackages(
-				PropsValues.MODULE_FRAMEWORK_SYSTEM_BUNDLE_EXPORT_PACKAGES,
-				packages);
+			URLConnection urlConnection = url.openConnection();
+
+			String fileName = url.getFile();
+
+			if (urlConnection instanceof JarURLConnection) {
+				JarURLConnection jarURLConnection =
+					(JarURLConnection)urlConnection;
+
+				URL jarFileURL = jarURLConnection.getJarFileURL();
+
+				fileName = jarFileURL.getFile();
+			}
+
+			File file = new File(fileName);
+
+			if (!file.exists() || !file.canRead()) {
+				return manifest;
+			}
+
+			fileName = file.getName();
+
+			analyzer.setJar(new Jar(fileName, file));
+
+			jar = analyzer.getJar();
+
+			String bundleSymbolicName = fileName;
+
+			Matcher matcher = _bundleSymbolicNamePattern.matcher(
+				bundleSymbolicName);
+
+			if (matcher.matches()) {
+				bundleSymbolicName = matcher.group(1);
+			}
+
+			analyzer.setProperty(
+				Analyzer.BUNDLE_SYMBOLICNAME, bundleSymbolicName);
+
+			String exportPackage = analyzer.calculateExportsFromContents(jar);
+
+			analyzer.setProperty(Analyzer.EXPORT_PACKAGE, exportPackage);
+
+			analyzer.mergeManifest(manifest);
+
+			String bundleVersion = analyzer.getProperty(
+				Analyzer.BUNDLE_VERSION);
+
+			if (bundleVersion != null) {
+				bundleVersion = Builder.cleanupVersion(bundleVersion);
+
+				analyzer.setProperty(Analyzer.BUNDLE_VERSION, bundleVersion);
+			}
+
+			return analyzer.calcManifest();
 		}
 		catch (Exception e) {
 			_log.error(e, e);
+
+			return manifest;
 		}
+		finally {
+			if (jar != null) {
+				jar.close();
+			}
 
-		packages.addAll(
-			Arrays.asList(PropsValues.MODULE_FRAMEWORK_SYSTEM_PACKAGES_EXTRA));
-
-		Collections.sort(packages);
-
-		properties.put(
-			Constants.FRAMEWORK_SYSTEMPACKAGES_EXTRA,
-			StringUtil.merge(packages));
-
-		return properties;
+			analyzer.close();
+		}
 	}
 
 	private void _checkPermission() throws PrincipalException {
@@ -473,77 +604,28 @@ public class ModuleFrameworkImpl
 		}
 	}
 
-	private void _getBundleExportPackages(
-			String[] bundleSymbolicNames, List<String> packages)
-		throws Exception {
+	private String _getFelixFileInstallDir() {
+		return PropsValues.MODULE_FRAMEWORK_LIB_DIR + StringPool.COMMA +
+			StringUtil.merge(PropsValues.MODULE_FRAMEWORK_AUTO_DEPLOY_DIRS);
+	}
 
-		ClassLoader classLoader = PACLClassLoaderUtil.getPortalClassLoader();
+	private String _getFelixFileInstallLogLevel() {
+		int level = 0;
 
-		Enumeration<URL> enu = classLoader.getResources("META-INF/MANIFEST.MF");
-
-		while (enu.hasMoreElements()) {
-			URL url = enu.nextElement();
-
-			Manifest manifest = new Manifest(url.openStream());
-
-			Attributes attributes = manifest.getMainAttributes();
-
-			String bundleSymbolicName = attributes.getValue(
-				Constants.BUNDLE_SYMBOLICNAME);
-
-			if (Validator.isNull(bundleSymbolicName)) {
-				continue;
-			}
-
-			for (String curBundleSymbolicName : bundleSymbolicNames) {
-				if (!bundleSymbolicName.startsWith(curBundleSymbolicName)) {
-					continue;
-				}
-
-				String exportPackage = attributes.getValue(
-					Constants.EXPORT_PACKAGE);
-
-				Map<String, Map<String, String>> exportPackageMap =
-					OSGiHeader.parseHeader(exportPackage);
-
-				for (Map.Entry<String, Map<String, String>> entry :
-						exportPackageMap.entrySet()) {
-
-					String javaPackage = entry.getKey();
-					Map<String, String> javaPackageMap = entry.getValue();
-
-					StringBundler sb = new StringBundler(6);
-
-					sb.append(javaPackage);
-					sb.append(";");
-					sb.append(Constants.VERSION_ATTRIBUTE);
-					sb.append("=\"");
-
-					if (javaPackageMap.containsKey(
-							Constants.VERSION_ATTRIBUTE)) {
-
-						String version = javaPackageMap.get(
-							Constants.VERSION_ATTRIBUTE);
-
-						sb.append(version);
-					}
-					else {
-						String bundleVersionString = attributes.getValue(
-							Constants.BUNDLE_VERSION);
-
-						sb.append(bundleVersionString);
-					}
-
-					sb.append("\"");
-
-					javaPackage = sb.toString();
-
-					packages.add(javaPackage);
-				}
-
-				break;
-			}
+		if (_log.isDebugEnabled()) {
+			level = 4;
 		}
+		else if (_log.isErrorEnabled()) {
+			level = 1;
+		}
+		else if (_log.isInfoEnabled()) {
+			level = 3;
+		}
+		else if (_log.isWarnEnabled()) {
+			level = 2;
+		}
+
+		return String.valueOf(level);
 	}
 
 	private Set<Class<?>> _getInterfaces(Object bean) {
@@ -564,6 +646,60 @@ public class ModuleFrameworkImpl
 		}
 
 		return interfaces;
+	}
+
+	private String _getSystemPackagesExtra() {
+		_extraPackageMap = new TreeMap<String, List<URL>>();
+
+		StringBundler sb = new StringBundler();
+
+		for (String extraPackage :
+				PropsValues.MODULE_FRAMEWORK_SYSTEM_PACKAGES_EXTRA) {
+
+			sb.append(extraPackage);
+			sb.append(StringPool.COMMA);
+		}
+
+		List<URL> urls = new UniqueList<URL>();
+
+		ClassLoader classLoader = PACLClassLoaderUtil.getPortalClassLoader();
+
+		Enumeration<URL> enu = Collections.enumeration(Collections.emptyList());
+
+		try {
+			enu = classLoader.getResources(MANIFEST_PATH);
+		}
+		catch (IOException ioe) {
+			_log.error(ioe, ioe);
+		}
+
+		while (enu.hasMoreElements()) {
+			URL url = enu.nextElement();
+
+			urls.add(url);
+		}
+
+		for (URL url : urls) {
+			_processURL(
+				sb, url,
+				PropsValues.MODULE_FRAMEWORK_SYSTEM_BUNDLE_IGNORED_FRAGMENTS);
+		}
+
+		_extraPackageMap = Collections.unmodifiableMap(_extraPackageMap);
+
+		sb.setIndex(sb.index() - 1);
+
+		if (_log.isTraceEnabled()) {
+			String s = sb.toString();
+
+			s = s.replace(",", "\n");
+
+			_log.trace(
+				"The portal's system bundle is exporting the following " +
+					"packages:\n" +s);
+		}
+
+		return sb.toString();
 	}
 
 	private boolean _hasLazyActivationPolicy(Bundle bundle) {
@@ -677,6 +813,100 @@ public class ModuleFrameworkImpl
 		}
 	}
 
+	private void _processURL(
+		StringBundler sb, URL url, String[] ignoredFragments) {
+
+		Manifest manifest = null;
+
+		try {
+			manifest = new Manifest(url.openStream());
+		}
+		catch (IOException ioe) {
+			_log.error(ioe, ioe);
+
+			return;
+		}
+
+		Attributes attributes = manifest.getMainAttributes();
+
+		String bundleSymbolicName = attributes.getValue(
+			Constants.BUNDLE_SYMBOLICNAME);
+
+		if (Validator.isNull(bundleSymbolicName)) {
+			String urlString = url.toString();
+
+			if (urlString.contains(PropsValues.LIFERAY_LIB_PORTAL_DIR)) {
+				manifest = _calculateManifest(url, manifest);
+
+				attributes = manifest.getMainAttributes();
+
+				bundleSymbolicName = attributes.getValue(
+					new Attributes.Name(Constants.BUNDLE_SYMBOLICNAME));
+
+				if (Validator.isNull(bundleSymbolicName)) {
+					return;
+				}
+			}
+			else {
+				return;
+			}
+		}
+
+		String rootBundleSymbolicName = bundleSymbolicName;
+
+		int index = rootBundleSymbolicName.indexOf(StringPool.SEMICOLON);
+
+		if (index != -1) {
+			rootBundleSymbolicName = rootBundleSymbolicName.substring(0, index);
+		}
+
+		for (String ignoredFragment : ignoredFragments) {
+			String ignoredFramentPrefix = ignoredFragment.substring(
+				0, ignoredFragment.length() - 1);
+
+			if (rootBundleSymbolicName.equals(ignoredFragment) ||
+				(ignoredFragment.endsWith(StringPool.STAR) &&
+				 rootBundleSymbolicName.startsWith(ignoredFramentPrefix))) {
+
+				return;
+			}
+		}
+
+		String exportPackage = GetterUtil.getString(
+			attributes.getValue(Constants.EXPORT_PACKAGE));
+
+		Map<String, Map<String, String>> exportPackageMap =
+			OSGiHeader.parseHeader(exportPackage);
+
+		for (Map.Entry<String, Map<String, String>> entry :
+				exportPackageMap.entrySet()) {
+
+			String key = entry.getKey();
+
+			List<URL> urls = _extraPackageMap.get(key);
+
+			if (urls == null) {
+				urls = new ArrayList<URL>();
+
+				_extraPackageMap.put(key, urls);
+			}
+
+			urls.add(url);
+
+			sb.append(key);
+
+			Map<String, String> value = entry.getValue();
+
+			if (value.containsKey("version")) {
+				sb.append(";version=\"");
+				sb.append(value.get("version"));
+				sb.append("\"");
+			}
+
+			sb.append(StringPool.COMMA);
+		}
+	}
+
 	private void _registerApplicationContext(
 		ApplicationContext applicationContext) {
 
@@ -712,7 +942,18 @@ public class ModuleFrameworkImpl
 		List<String> names = new ArrayList<String>(interfaces.size());
 
 		for (Class<?> interfaceClass : interfaces) {
+			if (ArrayUtil.contains(
+					PropsValues.MODULE_FRAMEWORK_SERVICES_IGNORED_INTERFACES,
+					interfaceClass.getName())) {
+
+				continue;
+			}
+
 			names.add(interfaceClass.getName());
+		}
+
+		if (names.isEmpty()) {
+			return;
 		}
 
 		Hashtable<String, Object> properties = new Hashtable<String, Object>();
@@ -764,8 +1005,13 @@ public class ModuleFrameworkImpl
 		frameworkWiring.refreshBundles(refreshBundles, frameworkListener);
 	}
 
-	private static Log _log = LogFactoryUtil.getLog(ModuleFrameworkUtil.class);
+	private static Log _log = LogFactoryUtil.getLog(ModuleFrameworkImpl.class);
 
+	private Pattern _bundleSymbolicNamePattern = Pattern.compile(
+		"(" + Verifier.SYMBOLICNAME.pattern() + ")(-[0-9])?.*\\.jar");
+	private Lock _extraPackageLock = new ReentrantLock();
+	private Map<String, List<URL>> _extraPackageMap;
+	private List<URL> _extraPackageURLs;
 	private Framework _framework;
 
 	private class ModuleFrameworkServiceLoaderCondition

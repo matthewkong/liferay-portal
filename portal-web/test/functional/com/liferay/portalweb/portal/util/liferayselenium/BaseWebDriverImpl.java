@@ -173,7 +173,9 @@ public abstract class BaseWebDriverImpl
 	}
 
 	public String getFirstNumber(String locator) {
-		String text = getWebElement(locator).getText();
+		WebElement webElement = getWebElement(locator);
+
+		String text = webElement.getText();
 
 		if (text == null) {
 			return StringPool.BLANK;
@@ -222,11 +224,15 @@ public abstract class BaseWebDriverImpl
 	}
 
 	public boolean isElementNotPresent(String locator) {
-		return !isElementPresent(locator);
+		return LiferaySeleniumHelper.isElementNotPresent(this, locator);
 	}
 
 	public boolean isNotChecked(String locator) {
 		return LiferaySeleniumHelper.isNotChecked(this, locator);
+	}
+
+	public boolean isNotPartialText(String locator, String value) {
+		return LiferaySeleniumHelper.isNotPartialText(this, locator, value);
 	}
 
 	public boolean isNotText(String locator, String value) {
@@ -234,7 +240,7 @@ public abstract class BaseWebDriverImpl
 	}
 
 	public boolean isPartialText(String locator, String value) {
-		WebElement webElement = getWebElement(locator);
+		WebElement webElement = getWebElement(locator, "1");
 
 		String text = webElement.getText();
 
@@ -290,14 +296,6 @@ public abstract class BaseWebDriverImpl
 	}
 
 	public void setDefaultTimeout() {
-	}
-
-	public void setDefaultTimeoutImplicit() {
-		WebDriverHelper.setDefaultTimeoutImplicit(this);
-	}
-
-	public void setTimeoutImplicit(String timeout) {
-		WebDriverHelper.setTimeoutImplicit(this, timeout);
 	}
 
 	public void uploadCommonFile(String location, String value) {
