@@ -415,7 +415,8 @@ public abstract class BaseUpgradeAttachments extends UpgradeProcess {
 		Timestamp createDate = new Timestamp(System.currentTimeMillis());
 
 		long repositoryId = getRepositoryId(
-			groupId, companyId, userId, userName, createDate, getClassNameId(),
+			groupId, companyId, userId, userName, createDate,
+			PortalUtil.getClassNameId(_LIFERAY_REPOSITORY_CLASS_NAME),
 			getPortletId());
 		long containerModelFolderId = getContainerModelFolderId(
 			groupId, companyId, resourcePrimKey, containerModelId, userId,
@@ -462,6 +463,9 @@ public abstract class BaseUpgradeAttachments extends UpgradeProcess {
 			}
 		}
 	}
+
+	private static final String _LIFERAY_REPOSITORY_CLASS_NAME =
+		"com.liferay.portal.repository.liferayrepository.LiferayRepository";
 
 	private static Log _log = LogFactoryUtil.getLog(
 		BaseUpgradeAttachments.class);
