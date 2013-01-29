@@ -17,6 +17,7 @@ package com.liferay.portlet.usersadmin.util;
 import com.liferay.portal.NoSuchOrganizationException;
 import com.liferay.portal.NoSuchUserException;
 import com.liferay.portal.NoSuchUserGroupException;
+import com.liferay.portal.kernel.configuration.Filter;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.search.Document;
@@ -29,6 +30,8 @@ import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.ParamUtil;
+import com.liferay.portal.kernel.util.PropsKeys;
+import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Tuple;
 import com.liferay.portal.kernel.util.UniqueList;
@@ -70,6 +73,7 @@ import com.liferay.portal.service.permission.UserGroupPermissionUtil;
 import com.liferay.portal.service.permission.UserGroupRolePermissionUtil;
 import com.liferay.portal.service.persistence.UserGroupRolePK;
 import com.liferay.portal.util.PortalUtil;
+import com.liferay.portal.util.PropsUtil;
 import com.liferay.portal.util.PropsValues;
 import com.liferay.portal.util.comparator.GroupNameComparator;
 import com.liferay.portal.util.comparator.GroupTypeComparator;
@@ -996,31 +1000,89 @@ public class UsersAdminImpl implements UsersAdmin {
 		return websites;
 	}
 
+	/**
+	 * @deprecated
+	 */
 	public boolean hasUpdateEmailAddress(
 			PermissionChecker permissionChecker, User user)
 		throws PortalException, SystemException {
 
-		String[] fieldEditiableUserEmailAddress =
-			PropsValues.
-				FIELD_EDITABLE_COM_LIFERAY_PORTAL_MODEL_USER_EMAILADDRESS;
+		return hasUpdatePermission(permissionChecker, user, "emailAddress");
+	}
 
-		if (ArrayUtil.contains(
-				fieldEditiableUserEmailAddress, "administrator") &&
-			permissionChecker.isCompanyAdmin()) {
+	public boolean hasUpdatePermission(
+			PermissionChecker permissionChecker, User user, String field)
+		throws PortalException, SystemException {
 
+		String[] fieldEditableExceptionArray = null;
+
+		String[] fieldDomainCanEditArray =
+			PropsValues.USER_DETAILS_UPDATE_ENABLED_DOMAIN_WHITELIST;
+
+		String[] fieldRoleCanEditArray =
+			PropsValues.USER_DETAILS_UPDATE_ENABLED_ROLE_WHITELIST;
+
+		if (ArrayUtil.contains(PropsValues.FIELDS_EDITABLE_EXCEPTIONS, field)) {
+
+			fieldEditableExceptionArray = PropsUtil.getArray(
+				PropsKeys.FIELDS_EDITABLE_USERS, new Filter(field));
+		}
+
+		if (fieldDomainCanEditArray.equals(StringPool.ASTERISK)) {
 			return true;
 		}
 
-		if (ArrayUtil.contains(
-				fieldEditiableUserEmailAddress, "user-with-mx") &&
-			user.hasCompanyMx()) {
+		for (String fieldDomainCanEdit : fieldDomainCanEditArray) {
+			if (hasUpdatePermissionDomain(fieldDomainCanEdit, user)) {
+				return true;
+			}
+		}
 
+		for (String fieldRoleCanEdit : fieldRoleCanEditArray) {
+			if (hasUpdatePermissionRole(fieldRoleCanEdit, user)) {
+				return true;
+			}
+		}
+
+		if (Validator.isNull(fieldEditableExceptionArray)) {
+			return false;
+		}
+
+		for (String fieldEditableException : fieldEditableExceptionArray) {
+			if (hasUpdatePermissionDomain(fieldEditableException, user)) {
+				return true;
+			}
+
+			if (hasUpdatePermissionRole(fieldEditableException, user)) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	public boolean hasUpdatePermissionDomain(String field, User user)
+			throws PortalException, SystemException {
+
+		if ((Validator.equals(field, "user-with-mx") && user.hasCompanyMx()) ||
+				(Validator.equals(field, "user-without-mx") &&
+					!user.hasCompanyMx()) ||
+				(field.startsWith(StringPool.AT) &&
+					user.getEmailAddress().endsWith(field))) {
 			return true;
 		}
 
-		if (ArrayUtil.contains(
-				fieldEditiableUserEmailAddress, "user-without-mx") &&
-			!user.hasCompanyMx()) {
+		return false;
+	}
+
+	public boolean hasUpdatePermissionRole(String field, User user)
+			throws PortalException, SystemException {
+
+		Role role = RoleLocalServiceUtil.fetchRole(user.getCompanyId(), field);
+
+		if ((role != null) &&
+			RoleLocalServiceUtil.hasUserRole(
+				user.getUserId(), role.getRoleId())) {
 
 			return true;
 		}
@@ -1028,36 +1090,14 @@ public class UsersAdminImpl implements UsersAdmin {
 		return false;
 	}
 
+	/**
+	 * @deprecated
+	 */
 	public boolean hasUpdateScreenName(
 			PermissionChecker permissionChecker, User user)
 		throws PortalException, SystemException {
 
-		String[] fieldEditiableUserScreenName =
-			PropsValues.
-				FIELD_EDITABLE_COM_LIFERAY_PORTAL_MODEL_USER_SCREENNAME;
-
-		if (ArrayUtil.contains(
-				fieldEditiableUserScreenName, "administrator") &&
-			permissionChecker.isCompanyAdmin()) {
-
-			return true;
-		}
-
-		if (ArrayUtil.contains(
-				fieldEditiableUserScreenName, "user-with-mx") &&
-			user.hasCompanyMx()) {
-
-			return true;
-		}
-
-		if (ArrayUtil.contains(
-				fieldEditiableUserScreenName, "user-without-mx") &&
-			!user.hasCompanyMx()) {
-
-			return true;
-		}
-
-		return false;
+		return hasUpdatePermission(permissionChecker, user, "screenName");
 	}
 
 	public long[] removeRequiredRoles(long userId, long[] roleIds)
