@@ -164,10 +164,6 @@ public class MBCategoryPermission {
 
 					return true;
 				}
-
-				if (actionId.equals(ActionKeys.VIEW)) {
-					break;
-				}
 			}
 
 			return false;
