@@ -63,7 +63,7 @@ public class WikiPagePermission {
 
 	public static void check(
 			PermissionChecker permissionChecker, WikiPage page, String actionId)
-		throws PortalException {
+		throws PortalException, SystemException {
 
 		if (!contains(permissionChecker, page, actionId)) {
 			throw new PrincipalException();
@@ -121,7 +121,8 @@ public class WikiPagePermission {
 	}
 
 	public static boolean contains(
-		PermissionChecker permissionChecker, WikiPage page, String actionId) {
+			PermissionChecker permissionChecker, WikiPage page, String actionId)
+		throws PortalException, SystemException {
 
 		if (actionId.equals(ActionKeys.VIEW)) {
 			WikiPage redirectPage = page.getRedirectPage();
@@ -147,27 +148,48 @@ public class WikiPagePermission {
 			return true;
 		}
 
+		long nodeId = page.getNodeId();
+
+		WikiPage parentPage = page.getParentPage();
+
+		if (actionId.equals(ActionKeys.VIEW)) {
+			if (PropsValues.PERMISSIONS_VIEW_DYNAMIC_INHERITANCE) {
+				if (!WikiNodePermission.contains(
+						permissionChecker, nodeId, actionId)) {
+
+					return false;
+				}
+
+				if ((parentPage != null) &&
+						!contains(permissionChecker, parentPage, actionId)) {
+
+					return false;
+				}
+			}
+		}
+		else {
+			if (actionId.equals(ActionKeys.DELETE) ||
+				actionId.equals(ActionKeys.SUBSCRIBE)) {
+
+				if (WikiNodePermission.contains(
+						permissionChecker, nodeId, actionId)) {
+
+					return true;
+				}
+			}
+
+			if ((parentPage != null) &&
+				contains(permissionChecker, parentPage, actionId)) {
+
+				return true;
+			}
+		}
+
 		if (permissionChecker.hasOwnerPermission(
 				page.getCompanyId(), WikiPage.class.getName(),
 				page.getResourcePrimKey(), page.getUserId(), actionId)) {
 
 			return true;
-		}
-
-		if (PropsValues.PERMISSIONS_VIEW_DYNAMIC_INHERITANCE) {
-			if (!WikiNodePermission.contains(
-					permissionChecker, page.getNode(), ActionKeys.VIEW)) {
-
-				return false;
-			}
-
-			WikiPage parentPage = page.getParentPage();
-
-			if ((parentPage != null) &&
-				!contains(permissionChecker, parentPage, ActionKeys.VIEW)) {
-
-				return false;
-			}
 		}
 
 		return permissionChecker.hasPermission(
