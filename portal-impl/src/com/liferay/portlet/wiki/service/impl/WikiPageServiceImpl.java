@@ -300,16 +300,11 @@ public class WikiPageServiceImpl extends WikiPageServiceBaseImpl {
 
 		WikiNode node = wikiNodePersistence.findByPrimaryKey(nodeId);
 
-		long companyId = node.getCompanyId();
-		String name = node.getName();
-		String description = node.getDescription();
 		List<WikiPage> pages = getNodePages(nodeId, max);
-		boolean diff = false;
-		Locale locale = null;
 
 		return exportToRSS(
-			companyId, name, description, type, version, displayStyle, feedURL,
-			entryURL, pages, diff, locale);
+			node.getCompanyId(), node.getName(), node.getDescription(), type,
+			version, displayStyle, feedURL, entryURL, pages, false, null);
 	}
 
 	public List<WikiPage> getOrphans(long groupId, long nodeId)
@@ -438,14 +433,12 @@ public class WikiPageServiceImpl extends WikiPageServiceBaseImpl {
 		WikiPagePermission.check(
 			getPermissionChecker(), nodeId, title, ActionKeys.VIEW);
 
-		String description = title;
 		List<WikiPage> pages = wikiPageLocalService.getPages(
 			nodeId, title, 0, max, new PageCreateDateComparator(true));
-		boolean diff = true;
 
 		return exportToRSS(
-			companyId, title, description, type, version, displayStyle, feedURL,
-			entryURL, pages, diff, locale);
+			companyId, title, title, type, version, displayStyle, feedURL,
+			entryURL, pages, true, locale);
 	}
 
 	public List<WikiPage> getRecentChanges(
@@ -638,14 +631,21 @@ public class WikiPageServiceImpl extends WikiPageServiceBaseImpl {
 			}
 
 			if (diff) {
-				if (latestPage != null) {
+				if ((latestPage != null) || (pages.size() == 1)) {
 					sb.append(StringPool.QUESTION);
 					sb.append(PortalUtil.getPortletNamespace(PortletKeys.WIKI));
 					sb.append("version=");
 					sb.append(page.getVersion());
 
-					String value = getPageDiff(
-						companyId, latestPage, page, locale);
+					String value = null;
+
+					if (latestPage == null) {
+						value = page.getContent();
+					}
+					else {
+						value = getPageDiff(
+							companyId, latestPage, page, locale);
+					}
 
 					syndContent.setValue(value);
 
@@ -737,12 +737,16 @@ public class WikiPageServiceImpl extends WikiPageServiceBaseImpl {
 			template.put("languageUtil", LanguageUtil.getLanguage());
 			template.put("locale", locale);
 
-			String sourceContent = WikiUtil.processContent(
-				latestPage.getContent());
-			String targetContent = WikiUtil.processContent(page.getContent());
+			String sourceContent = StringPool.BLANK;
+			String targetContent = StringPool.BLANK;
 
-			sourceContent = HtmlUtil.escape(sourceContent);
-			targetContent = HtmlUtil.escape(targetContent);
+			if (latestPage != null) {
+				sourceContent = WikiUtil.convert(latestPage, null, null, null);
+			}
+
+			if (page != null) {
+				targetContent = WikiUtil.convert(page, null, null, null);
+			}
 
 			List<DiffResult>[] diffResults = DiffUtil.diff(
 				new UnsyncStringReader(sourceContent),
