@@ -1014,77 +1014,41 @@ public class UsersAdminImpl implements UsersAdmin {
 			PermissionChecker permissionChecker, User user, String field)
 		throws PortalException, SystemException {
 
-		String[] fieldEditableExceptionArray = null;
+		String[] fieldsEditableWhitelist =
+			PropsValues.FIELDS_EDITABLE_WHITELIST_COM_LIFERAY_PORTAL_MODEL_USER;
 
-		String[] fieldDomainCanEditArray =
-			PropsValues.USER_DETAILS_UPDATE_ENABLED_DOMAIN_WHITELIST;
+		for (String fieldEditable : fieldsEditableWhitelist) {
+			if (hasUpdatePermission(
+					fieldEditable, permissionChecker.getUser(), user)) {
 
-		String[] fieldRoleCanEditArray =
-			PropsValues.USER_DETAILS_UPDATE_ENABLED_ROLE_WHITELIST;
-
-		if (ArrayUtil.contains(PropsValues.FIELDS_EDITABLE_EXCEPTIONS, field)) {
-
-			fieldEditableExceptionArray = PropsUtil.getArray(
-				PropsKeys.FIELDS_EDITABLE_USERS, new Filter(field));
-		}
-
-		if (fieldDomainCanEditArray.equals(StringPool.ASTERISK)) {
-			return true;
-		}
-
-		for (String fieldDomainCanEdit : fieldDomainCanEditArray) {
-			if (hasUpdatePermissionDomain(fieldDomainCanEdit, user)) {
 				return true;
 			}
 		}
 
-		for (String fieldRoleCanEdit : fieldRoleCanEditArray) {
-			if (hasUpdatePermissionRole(fieldRoleCanEdit, user)) {
+		String[] fieldsEditable = null;
+
+		String[] fieldsEditableExceptions =
+			PropsValues.
+				FIELDS_EDITABLE_EXCEPTIONS_COM_LIFERAY_PORTAL_MODEL_USER;
+
+		if (ArrayUtil.contains(fieldsEditableExceptions, field)) {
+			fieldsEditable = PropsUtil.getArray(
+				PropsKeys.
+					FIELDS_EDITABLE_EXCEPTIONS_COM_LIFERAY_PORTAL_MODEL_USER,
+				new Filter(field));
+		}
+		else {
+			fieldsEditable = PropsUtil.getArray(
+				PropsKeys.FIELDS_EDITABLE_DEFAULT_COM_LIFERAY_PORTAL_MODEL_USER,
+				new Filter(field));
+		}
+
+		for (String fieldEditable : fieldsEditable) {
+			if (hasUpdatePermission(
+					fieldEditable, permissionChecker.getUser(), user)) {
+
 				return true;
 			}
-		}
-
-		if (Validator.isNull(fieldEditableExceptionArray)) {
-			return false;
-		}
-
-		for (String fieldEditableException : fieldEditableExceptionArray) {
-			if (hasUpdatePermissionDomain(fieldEditableException, user)) {
-				return true;
-			}
-
-			if (hasUpdatePermissionRole(fieldEditableException, user)) {
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-	public boolean hasUpdatePermissionDomain(String field, User user)
-			throws PortalException, SystemException {
-
-		if ((Validator.equals(field, "user-with-mx") && user.hasCompanyMx()) ||
-				(Validator.equals(field, "user-without-mx") &&
-					!user.hasCompanyMx()) ||
-				(field.startsWith(StringPool.AT) &&
-					user.getEmailAddress().endsWith(field))) {
-			return true;
-		}
-
-		return false;
-	}
-
-	public boolean hasUpdatePermissionRole(String field, User user)
-			throws PortalException, SystemException {
-
-		Role role = RoleLocalServiceUtil.fetchRole(user.getCompanyId(), field);
-
-		if ((role != null) &&
-			RoleLocalServiceUtil.hasUserRole(
-				user.getUserId(), role.getRoleId())) {
-
-			return true;
 		}
 
 		return false;
@@ -1323,6 +1287,40 @@ public class UsersAdminImpl implements UsersAdmin {
 				WebsiteServiceUtil.deleteWebsite(website.getWebsiteId());
 			}
 		}
+	}
+
+	protected boolean hasUpdatePermission(String field, User curUser, User user)
+		throws PortalException, SystemException {
+
+		if (Validator.equals(field, "user-with-mx") && user.hasCompanyMx()) {
+			return true;
+		}
+
+		if (Validator.equals(field, "user-without-mx") &&
+			!user.hasCompanyMx()) {
+
+			return true;
+		}
+
+		if (field.startsWith(StringPool.AT)) {
+			String emailAddress = user.getEmailAddress();
+
+			if (emailAddress.endsWith(field)) {
+				return true;
+			}
+		}
+
+		Role role = RoleLocalServiceUtil.fetchRole(
+			curUser.getCompanyId(), field);
+
+		if ((role != null) &&
+			RoleLocalServiceUtil.hasUserRole(
+				curUser.getUserId(), role.getRoleId())) {
+
+			return true;
+		}
+
+		return false;
 	}
 
 }

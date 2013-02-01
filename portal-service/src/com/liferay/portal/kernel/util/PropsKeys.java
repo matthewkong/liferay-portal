@@ -827,9 +827,11 @@ public interface PropsKeys {
 
 	public static final String FIELD_ENABLE_COM_LIFERAY_PORTAL_MODEL_ORGANIZATION_STATUS = "field.enable.com.liferay.portal.model.Organization.status";
 
-	public static final String FIELDS_EDITABLE_EXCEPTIONS = "fields.editable.exceptions";
+	public static final String FIELDS_EDITABLE_DEFAULT_COM_LIFERAY_PORTAL_MODEL_USER = "fields.editable.default.com.liferay.portal.model.User";
 
-	public static final String FIELDS_EDITABLE_USERS = "fields.editable.users";
+	public static final String FIELDS_EDITABLE_EXCEPTIONS_COM_LIFERAY_PORTAL_MODEL_USER = "fields.editable.exceptions.com.liferay.portal.model.User";
+
+	public static final String FIELDS_EDITABLE_WHITELIST_COM_LIFERAY_PORTAL_MODEL_USER = "fields.editable.whitelist.com.liferay.portal.model.User";
 
 	public static final String FINALIZE_MANAGER_THREAD_ENABLED = "finalize.manager.thread.enabled";
 
@@ -2324,10 +2326,6 @@ public interface PropsKeys {
 	public static final String UPLOAD_SERVLET_REQUEST_IMPL_MAX_SIZE = "com.liferay.portal.upload.UploadServletRequestImpl.max.size";
 
 	public static final String UPLOAD_SERVLET_REQUEST_IMPL_TEMP_DIR = "com.liferay.portal.upload.UploadServletRequestImpl.temp.dir";
-
-	public static final String USER_DETAILS_UPDATE_ENABLED_DOMAIN_WHITELIST = "user.details.update.enabled.domain.whitelist";
-
-	public static final String USER_DETAILS_UPDATE_ENABLED_ROLE_WHITELIST = "user.details.update.enabled.role.whitelist";
 
 	public static final String USER_GROUPS_COPY_LAYOUTS_TO_USER_PERSONAL_SITE = "user.groups.copy.layouts.to.user.personal.site";
 

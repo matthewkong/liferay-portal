@@ -56,7 +56,7 @@ import com.liferay.portal.service.permission.UserGroupRolePermissionUtil;
 import com.liferay.portal.service.permission.UserPermissionUtil;
 import com.liferay.portal.util.PropsValues;
 import com.liferay.portlet.announcements.model.AnnouncementsDelivery;
-import com.liferay.portlet.usersadmin.util.UserUpdatePermissionException;
+import com.liferay.portlet.usersadmin.UserUpdatePermissionException;
 import com.liferay.portlet.usersadmin.util.UsersAdminUtil;
 
 import java.util.ArrayList;
@@ -2040,23 +2040,23 @@ public class UserServiceImpl extends UserServiceBaseImpl {
 
 		List<String> changedFieldsList = new ArrayList<String>();
 
-		if (!emailAddress.equalsIgnoreCase(user.getScreenName())) {
+		if (!Validator.equals(screenName, user.getScreenName())) {
 			changedFieldsList.add("screenName");
 		}
 
-		if (!emailAddress.equalsIgnoreCase(user.getEmailAddress())) {
+		if (!Validator.equals(emailAddress, user.getEmailAddress())) {
 			changedFieldsList.add("emailAddress");
 		}
 
-		if (!firstName.equalsIgnoreCase(user.getFirstName())) {
+		if (!Validator.equals(firstName, user.getFirstName())) {
 			changedFieldsList.add("firstName");
 		}
 
-		if (!middleName.equalsIgnoreCase(user.getMiddleName())) {
+		if (!Validator.equals(middleName, user.getMiddleName())) {
 			changedFieldsList.add("middleName");
 		}
 
-		if (!lastName.equalsIgnoreCase(user.getLastName())) {
+		if (!Validator.equals(lastName, user.getLastName())) {
 			changedFieldsList.add("lastName");
 		}
 

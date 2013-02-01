@@ -12,7 +12,7 @@
  * details.
  */
 
-package com.liferay.portlet.usersadmin.util;
+package com.liferay.portlet.usersadmin;
 
 import com.liferay.portal.kernel.exception.PortalException;
 

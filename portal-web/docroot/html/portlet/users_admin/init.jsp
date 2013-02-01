@@ -67,6 +67,7 @@ page import="com.liferay.portlet.rolesadmin.util.RolesAdminUtil" %><%@
 page import="com.liferay.portlet.usergroupsadmin.search.UserGroupGroupChecker" %><%@
 page import="com.liferay.portlet.usergroupsadmin.search.UserGroupSearch" %><%@
 page import="com.liferay.portlet.usergroupsadmin.search.UserGroupSearchTerms" %><%@
+page import="com.liferay.portlet.usersadmin.UserUpdatePermissionException" %><%@
 page import="com.liferay.portlet.usersadmin.search.GroupDisplayTerms" %><%@
 page import="com.liferay.portlet.usersadmin.search.GroupSearch" %><%@
 page import="com.liferay.portlet.usersadmin.search.OrganizationDisplayTerms" %><%@
@@ -76,7 +77,6 @@ page import="com.liferay.portlet.usersadmin.search.UserDisplayTerms" %><%@
 page import="com.liferay.portlet.usersadmin.search.UserOrganizationChecker" %><%@
 page import="com.liferay.portlet.usersadmin.search.UserSearch" %><%@
 page import="com.liferay.portlet.usersadmin.search.UserSearchTerms" %><%@
-page import="com.liferay.portlet.usersadmin.util.UserUpdatePermissionException" %><%@
 page import="com.liferay.portlet.usersadmin.util.UsersAdminUtil" %>
 
 <%
