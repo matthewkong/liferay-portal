@@ -1891,6 +1891,7 @@ create table SocialActivity (
 	companyId LONG,
 	userId LONG,
 	createDate LONG,
+	activitySetId LONG,
 	mirrorActivityId LONG,
 	classNameId LONG,
 	classPK LONG,
@@ -1935,6 +1936,19 @@ create table SocialActivityLimit (
 	activityType INTEGER,
 	activityCounterName VARCHAR(75) null,
 	value VARCHAR(75) null
+);
+
+create table SocialActivitySet (
+	activitySetId LONG not null primary key,
+	groupId LONG,
+	companyId LONG,
+	userId LONG,
+	createDate LONG,
+	modifiedDate LONG,
+	classNameId LONG,
+	classPK LONG,
+	type_ INTEGER,
+	activityCount INTEGER
 );
 
 create table SocialActivitySetting (
