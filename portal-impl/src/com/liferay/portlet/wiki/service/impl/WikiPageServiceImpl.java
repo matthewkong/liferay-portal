@@ -317,7 +317,7 @@ public class WikiPageServiceImpl extends WikiPageServiceBaseImpl {
 		throws PortalException, SystemException {
 
 		WikiNodePermission.check(
-				getPermissionChecker(), nodeId, ActionKeys.VIEW);
+			getPermissionChecker(), nodeId, ActionKeys.VIEW);
 
 		WikiNode node = wikiNodePersistence.findByPrimaryKey(nodeId);
 
@@ -686,7 +686,8 @@ public class WikiPageServiceImpl extends WikiPageServiceBaseImpl {
 					}
 					else {
 						value = getPageDiff(
-							companyId, attachmentURLPrefix, latestPage, page, locale);
+							companyId, attachmentURLPrefix, latestPage, page,
+							locale);
 					}
 
 					syndContent.setValue(value);

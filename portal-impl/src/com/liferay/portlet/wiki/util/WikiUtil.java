@@ -24,6 +24,7 @@ import com.liferay.portal.kernel.portlet.LiferayPortletURL;
 import com.liferay.portal.kernel.search.Document;
 import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.kernel.search.Hits;
+import com.liferay.portal.kernel.util.CharPool;
 import com.liferay.portal.kernel.util.DiffHtmlUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HtmlUtil;
@@ -122,17 +123,17 @@ public class WikiUtil {
 	}
 
 	public static String escapeSpaces(String content) {
-		StringBuilder sb = new StringBuilder();
+		StringBundler sb = new StringBundler();
 
 		char[] chars = content.toCharArray();
 
 		boolean inTag = false;
 
 		for (int i = 0; i < chars.length; i++) {
-			if (Validator.equals(chars[i], '<')) {
+			if (Validator.equals(chars[i], CharPool.LESS_THAN)) {
 				inTag = true;
 			}
-			else if (Validator.equals(chars[i], '>')) {
+			else if (Validator.equals(chars[i], CharPool.GREATER_THAN)) {
 				inTag = false;
 			}
 
