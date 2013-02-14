@@ -680,8 +680,9 @@ public class WikiPageServiceImpl extends WikiPageServiceBaseImpl {
 					String value = null;
 
 					if (latestPage == null) {
-						value = WikiUtil.convert(page, null, null, null);
-						value = page.getContent();
+						value = WikiUtil.convert(
+							page, null, null, attachmentURLPrefix);
+						value = WikiUtil.escapeSpaces(value);
 					}
 					else {
 						value = getPageDiff(
