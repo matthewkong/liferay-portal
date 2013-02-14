@@ -121,6 +121,32 @@ public class WikiUtil {
 			new UnsyncStringReader(targetContent));
 	}
 
+	public static String escapeSpaces(String content) {
+		StringBuilder sb = new StringBuilder();
+
+		char[] chars = content.toCharArray();
+
+		boolean inTag = false;
+
+		for (int i = 0; i < chars.length; i++) {
+			if (Validator.equals(chars[i], '<')) {
+				inTag = true;
+			}
+			else if (Validator.equals(chars[i], '>')) {
+				inTag = false;
+			}
+
+			if (!inTag && Character.isWhitespace(chars[i])) {
+				sb.append(StringPool.NBSP);
+			}
+			else {
+				sb.append(chars[i]);
+			}
+		}
+
+		return sb.toString();
+	}
+
 	public static List<WikiPage> filterOrphans(List<WikiPage> pages)
 		throws PortalException {
 
@@ -426,6 +452,10 @@ public class WikiUtil {
 
 	public static String getHelpURL(String format) {
 		return _instance._getHelpURL(format);
+	}
+
+	public static WikiUtil getInstance() {
+		return _instance;
 	}
 
 	public static Map<String, Boolean> getLinks(WikiPage page)
