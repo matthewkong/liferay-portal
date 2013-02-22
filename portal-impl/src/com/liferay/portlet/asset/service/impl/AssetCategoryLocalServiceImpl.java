@@ -15,6 +15,11 @@
 package com.liferay.portlet.asset.service.impl;
 
 import com.liferay.portal.kernel.cache.ThreadLocalCachable;
+import com.liferay.portal.kernel.dao.orm.Criterion;
+import com.liferay.portal.kernel.dao.orm.DynamicQuery;
+import com.liferay.portal.kernel.dao.orm.DynamicQueryFactoryUtil;
+import com.liferay.portal.kernel.dao.orm.Junction;
+import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.transaction.TransactionCommitCallbackRegistryUtil;
@@ -27,11 +32,18 @@ import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
+import com.liferay.portal.model.Layout;
 import com.liferay.portal.model.ModelHintsUtil;
+import com.liferay.portal.model.PortletConstants;
+import com.liferay.portal.model.PortletPreferences;
 import com.liferay.portal.model.ResourceConstants;
 import com.liferay.portal.model.User;
+import com.liferay.portal.model.impl.PortletPreferencesImpl;
 import com.liferay.portal.service.ServiceContext;
+import com.liferay.portal.util.ClassLoaderUtil;
 import com.liferay.portal.util.PortalUtil;
+import com.liferay.portal.util.PortletKeys;
+import com.liferay.portlet.PortletPreferencesFactoryUtil;
 import com.liferay.portlet.asset.AssetCategoryNameException;
 import com.liferay.portlet.asset.DuplicateCategoryException;
 import com.liferay.portlet.asset.model.AssetCategory;
@@ -40,6 +52,8 @@ import com.liferay.portlet.asset.model.AssetCategoryProperty;
 import com.liferay.portlet.asset.model.AssetEntry;
 import com.liferay.portlet.asset.service.base.AssetCategoryLocalServiceBaseImpl;
 
+import java.io.IOException;
+
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -47,6 +61,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.Callable;
+
+import javax.portlet.ReadOnlyException;
+import javax.portlet.ValidatorException;
 
 /**
  * @author Brian Wing Shun Chan
@@ -572,6 +589,80 @@ public class AssetCategoryLocalServiceImpl
 		// Indexer
 
 		assetEntryLocalService.reindex(entries);
+
+		// Filters
+
+		DynamicQuery portletPreferencesDynamicQuery =
+				DynamicQueryFactoryUtil.forClass(
+					PortletPreferences.class,
+					PortletPreferencesImpl.TABLE_NAME,
+					ClassLoaderUtil.getPortalClassLoader());
+		String categoryfilter = String.valueOf(category.getCategoryId());
+
+		Junction junction = RestrictionsFactoryUtil.disjunction();
+
+		String AssetPublisher = PortletKeys.ASSET_PUBLISHER;
+
+		Criterion criterion = RestrictionsFactoryUtil.like(
+			"portletId", AssetPublisher +
+			PortletConstants.INSTANCE_SEPARATOR + StringPool.PERCENT);
+
+				junction.add(criterion);
+
+		portletPreferencesDynamicQuery.add(junction);
+
+		List<PortletPreferences> portletPreferencesList =
+			portletPreferencesLocalService.dynamicQuery(
+				portletPreferencesDynamicQuery);
+
+		for (PortletPreferences portletPreferences : portletPreferencesList) {
+			if (portletPreferences.getPortletId() == null) {
+				continue;
+			}
+
+		Layout curLayout = layoutPersistence.findByPrimaryKey(
+			portletPreferences.getPlid());
+
+		javax.portlet.PortletPreferences jxPreferences =
+			PortletPreferencesFactoryUtil.getLayoutPortletSetup(
+				curLayout, portletPreferences.getPortletId());
+			int n = 0;
+
+			try {
+				String[] values = jxPreferences.getValues(
+					"queryValues" + n, new String[0]);
+
+				while (values.length > 0) {
+
+					int i = 0;
+					String[] addpreferences = new String[((values.length)-1)];
+					jxPreferences.reset("queryValues" + n);
+
+					for (; i < values.length; i++) {
+
+						if (!values[i].equals(categoryfilter)) {
+							addpreferences[i] = values[i];
+
+						}
+
+					jxPreferences.setValues("queryValues" + n, addpreferences);
+					jxPreferences.store();
+
+					}
+
+					n++;
+					values = jxPreferences.getValues(
+						"queryValues" + n, new String[0]);
+				}
+			}
+			  catch (ReadOnlyException e) {
+				throw new SystemException(e);
+			} catch (ValidatorException pe) {
+				throw new SystemException(pe);
+			} catch (IOException ioe) {
+				throw new SystemException(ioe);
+			}
+	}
 	}
 
 	protected long[] getCategoryIds(List<AssetCategory> categories) {

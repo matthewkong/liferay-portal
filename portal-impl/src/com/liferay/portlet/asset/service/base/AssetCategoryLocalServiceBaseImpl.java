@@ -30,9 +30,12 @@ import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.model.PersistedModel;
 import com.liferay.portal.service.BaseLocalServiceImpl;
 import com.liferay.portal.service.PersistedModelLocalServiceRegistry;
+import com.liferay.portal.service.PortletLocalService;
+import com.liferay.portal.service.PortletPreferencesLocalService;
 import com.liferay.portal.service.ResourceLocalService;
 import com.liferay.portal.service.UserLocalService;
 import com.liferay.portal.service.UserService;
+import com.liferay.portal.service.persistence.LayoutPersistence;
 import com.liferay.portal.service.persistence.UserFinder;
 import com.liferay.portal.service.persistence.UserPersistence;
 
@@ -1086,6 +1089,12 @@ public abstract class AssetCategoryLocalServiceBaseImpl
 	protected AssetVocabularyFinder assetVocabularyFinder;
 	@BeanReference(type = CounterLocalService.class)
 	protected CounterLocalService counterLocalService;
+    @BeanReference(type = PortletPreferencesLocalService.class)
+    protected PortletPreferencesLocalService portletPreferencesLocalService;
+    @BeanReference(type = PortletLocalService.class)
+    protected PortletLocalService portletLocalService;
+    @BeanReference(type = LayoutPersistence.class)
+    protected LayoutPersistence layoutPersistence;
 	@BeanReference(type = ResourceLocalService.class)
 	protected ResourceLocalService resourceLocalService;
 	@BeanReference(type = UserLocalService.class)
