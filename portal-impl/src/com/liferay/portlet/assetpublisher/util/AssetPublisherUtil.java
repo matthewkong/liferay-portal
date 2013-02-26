@@ -295,6 +295,24 @@ public class AssetPublisherUtil {
 		AssetEntryQuery assetEntryQuery = getAssetEntryQuery(
 			preferences, new long[] {scopeGroupId});
 
+		long[] allcat = assetEntryQuery.getAllCategoryIds();
+		long[] anycat = assetEntryQuery.getAnyCategoryIds();
+		long[] categories = new long[allcat.length + anycat.length];
+	int i = 0;
+	for (long categoryId : anycat) { categories[i] = categoryId; i ++; }
+		for (long categoryId : allcat) { categories[i] = categoryId; i ++; }
+		i = 0;
+		for (long categoryId : categories) {
+			if (AssetCategoryLocalServiceUtil.fetchAssetCategory(categoryId)
+					!= null) {
+						i++;
+			}
+		}
+
+		if (i == 0) {
+			return(new ArrayList<AssetEntry>());
+		}
+
 		boolean anyAssetType = GetterUtil.getBoolean(
 			preferences.getValue("anyAssetType", null), true);
 
