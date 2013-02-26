@@ -106,6 +106,12 @@ public class AssetEntryFinderImpl
 	protected void buildAllCategoriesSQL(long[] categoryIds, StringBundler sb)
 		throws SystemException {
 
+		for (long categoryId : categoryIds) {
+			if (AssetCategoryUtil.fetchByPrimaryKey(categoryId) == null) {
+				return;
+			}
+		}
+
 		String findByAndCategoryIdsSQL = CustomSQLUtil.get(
 			FIND_BY_AND_CATEGORY_IDS);
 
@@ -167,6 +173,12 @@ public class AssetEntryFinderImpl
 
 	protected void buildAnyCategoriesSQL(long[] categoryIds, StringBundler sb)
 		throws SystemException {
+
+		for (long categoryId : categoryIds) {
+			if (AssetCategoryUtil.fetchByPrimaryKey(categoryId) == null) {
+				return;
+			}
+		}
 
 		sb.append(" AND (");
 
