@@ -295,6 +295,56 @@ public class AssetPublisherUtil {
 		AssetEntryQuery assetEntryQuery = getAssetEntryQuery(
 			preferences, new long[] {scopeGroupId});
 
+		long i = 0;
+
+		if (assetEntryQuery.getAllCategoryIds().length > 1) {
+			long[] checkallCategoryIds = assetEntryQuery.getAllCategoryIds();
+			for (long CategoryId :checkallCategoryIds) {
+				if (AssetCategoryLocalServiceUtil.fetchAssetCategory(
+						CategoryId) != null) {
+							i++;
+				}
+			}
+
+		}
+
+		if (assetEntryQuery.getAnyCategoryIds().length > 1) {
+			long[] checkanyCategoryIds = assetEntryQuery.getAnyCategoryIds();
+			for (long CategoryId :checkanyCategoryIds) {
+				if (AssetCategoryLocalServiceUtil.fetchAssetCategory(
+						CategoryId) != null) {
+							i++;
+				}
+			}
+
+		}
+
+		if (assetEntryQuery.getAllTagIds().length > 1) {
+			long[] checkallTagIds = assetEntryQuery.getAllTagIds();
+			for (long TagId :checkallTagIds) {
+				if (AssetCategoryLocalServiceUtil.fetchAssetCategory(
+						TagId) != null) {
+							i++;
+				}
+			}
+
+		}
+
+		if (assetEntryQuery.getAnyTagIds().length > 1) {
+			long[] checkanyTagIds = assetEntryQuery.getAllTagIds();
+			for (long TagId :checkanyTagIds) {
+				if (AssetCategoryLocalServiceUtil.fetchAssetCategory(
+						TagId) != null) {
+							i++;
+				}
+			}
+
+		}
+
+		if (i == 0) {
+			return(new ArrayList<AssetEntry>());
+		}
+
 		boolean anyAssetType = GetterUtil.getBoolean(
 			preferences.getValue("anyAssetType", null), true);
 
