@@ -1179,6 +1179,9 @@ public abstract class BaseIndexer implements Indexer {
 			if (end > length) {
 				end = length;
 			}
+            if (start > end) {
+                start = 0;
+            }
 
 			docs = docs.subList(start, end);
 		}
