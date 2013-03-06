@@ -18,7 +18,6 @@ import com.liferay.portal.LocaleException;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.portlet.LiferayPortletConfig;
-import com.liferay.portal.kernel.portlet.LiferayWindowState;
 import com.liferay.portal.kernel.servlet.SessionErrors;
 import com.liferay.portal.kernel.servlet.SessionMessages;
 import com.liferay.portal.kernel.upload.UploadException;
@@ -96,7 +95,6 @@ import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
 import javax.portlet.ResourceRequest;
 import javax.portlet.ResourceResponse;
-import javax.portlet.WindowState;
 
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
@@ -212,12 +210,8 @@ public class EditArticleAction extends PortletAction {
 				}
 			}
 
-			WindowState windowState = actionRequest.getWindowState();
-
 			ThemeDisplay themeDisplay =
 				(ThemeDisplay)actionRequest.getAttribute(WebKeys.THEME_DISPLAY);
-
-			Layout layout = themeDisplay.getLayout();
 
 			if (cmd.equals(Constants.DELETE) &&
 				!ActionUtil.hasArticle(actionRequest)) {
@@ -248,17 +242,8 @@ public class EditArticleAction extends PortletAction {
 					actionRequest,
 					"portlet.journal.update_translation_redirect");
 			}
-			else if (!windowState.equals(LiferayWindowState.POP_UP) &&
-					 layout.isTypeControlPanel()) {
-
-				sendRedirect(actionRequest, actionResponse, redirect);
-			}
 			else {
-				redirect = PortalUtil.escapeRedirect(redirect);
-
-				if (Validator.isNotNull(redirect)) {
-					actionResponse.sendRedirect(redirect);
-				}
+				sendRedirect(actionRequest, actionResponse, redirect);
 			}
 		}
 		catch (Exception e) {
