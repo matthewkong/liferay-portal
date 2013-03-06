@@ -12,15 +12,18 @@
  * details.
  */
 
-package com.liferay.portal.tools.seleniumbuilder;
+package com.liferay.portal.tools;
+
+import org.junit.Test;
 
 /**
- * @author Michael Hashimoto
+ * @author Hugo Huijser
  */
-public class TestPlanConverter extends BaseConverter {
+public class SourceFormatterTest {
 
-	public TestPlanConverter(SeleniumBuilderContext seleniumBuilderContext) {
-		super(seleniumBuilderContext);
+	@Test
+	public void testSourceFormatter() throws Exception {
+		new SourceFormatter(false, true);
 	}
 
 }
