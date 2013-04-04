@@ -14,6 +14,7 @@
 
 package com.liferay.portlet.calendar.util;
 
+import com.liferay.portal.kernel.cal.TZSRecurrence;
 import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.util.CalendarFactoryUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
@@ -40,6 +41,27 @@ import javax.portlet.PortletPreferences;
  * @author Brian Wing Shun Chan
  */
 public class CalUtil {
+
+	public static int getDaylightSavingTimeOffset(CalEvent event,
+		TimeZone userTimeZone, Calendar cal) {
+
+		TZSRecurrence recurrence = event.getRecurrenceObj();
+
+		TimeZone eventTimeZone = recurrence.getTimeZone();
+
+		if (eventTimeZone.inDaylightTime(cal.getTime()) &&
+			!userTimeZone.inDaylightTime(cal.getTime())) {
+
+			return -1;
+		}
+		else if (!eventTimeZone.inDaylightTime(cal.getTime()) &&
+			userTimeZone.inDaylightTime(cal.getTime())) {
+
+			return 1;
+		}
+
+		return 0;
+	}
 
 	public static String getEmailEventReminderBody(
 		PortletPreferences preferences) {
