@@ -219,6 +219,21 @@ Format timeFormat = FastDateFormatFactoryUtil.getSimpleDateFormat("h:mma", local
 					if (MathUtil.isEven(j)) {
 						className = "portlet-section-alternate results-row alt";
 					}
+
+					Date newStartDate = null;
+
+					if (event.isRepeating() && event.isTimeZoneSensitive()) {
+						Calendar calendar = Calendar.getInstance();
+
+						int daylightSavingTimeOffset = CalUtil.getDaylightSavingTimeOffset(event, timeZone, tempCal);
+
+						calendar.setTime(event.getStartDate());
+						calendar.add(Calendar.HOUR_OF_DAY, daylightSavingTimeOffset);
+						newStartDate = calendar.getTime();
+					}
+					else {
+						newStartDate = event.getStartDate();
+					}
 				%>
 
 					<tr class="<%= className %>">
@@ -226,7 +241,7 @@ Format timeFormat = FastDateFormatFactoryUtil.getSimpleDateFormat("h:mma", local
 							<c:if test="<%= !allDay %>">
 								<c:choose>
 									<c:when test="<%= event.isTimeZoneSensitive() %>">
-										<%= dateFormatTime.format(Time.getDate(event.getStartDate(), timeZone)) %>
+										<%= dateFormatTime.format(Time.getDate(newStartDate, timeZone)) %>
 									</c:when>
 									<c:otherwise>
 										<%= dateFormatTime.format(Time.getDate(event.getStartDate(), TimeZoneUtil.getDefault())) %>
