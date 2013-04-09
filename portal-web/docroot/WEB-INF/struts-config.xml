@@ -830,6 +830,8 @@
 			<forward name="portlet.journal.update_translation_redirect" path="portlet.journal.update_translation_redirect" />
 		</action>
 
+        <action path="/journal/edit_article_file" type="com.liferay.portlet.journal.action.EditArticleFileAction" />
+
 		<action path="/journal/edit_article_discussion" type="com.liferay.portlet.messageboards.action.EditDiscussionAction">
 			<forward name="portlet.message_boards.error" path="portlet.journal.error" />
 		</action>

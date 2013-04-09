@@ -1,3 +1,5 @@
+<%@ page
+        import="com.liferay.portlet.dynamicdatamapping.storage.StorageEngineUtil" %>
 <%--
 /**
  * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
@@ -548,8 +550,9 @@ if (Validator.isNotNull(content)) {
 					Fields ddmFields = null;
 
 					if ((article != null) && Validator.isNotNull(article.getStructureId()) && Validator.isNotNull(content)) {
-						ddmFields = JournalConverterUtil.getDDMFields(ddmStructure, content);
-					}
+                        ddmFields = StorageEngineUtil.getFields(article.getDDMStorageId());
+                        // ddmFields = JournalConverterUtil.getDDMFields(ddmStructure, content);
+                    }
 
 					String requestedLanguageId = defaultLanguageId;
 
