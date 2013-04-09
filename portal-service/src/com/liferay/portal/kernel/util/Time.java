@@ -14,10 +14,13 @@
 
 package com.liferay.portal.kernel.util;
 
+import com.liferay.portal.kernel.language.LanguageUtil;
+
 import java.text.Format;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Locale;
 import java.util.TimeZone;
 
 /**
@@ -163,6 +166,49 @@ public class Time {
 
 	public static String getDuration(long milliseconds) {
 		return getSimpleDate(new Date(milliseconds), DURATION_FORMAT);
+	}
+
+	public static String getRelativeTimeSpan(
+		long milliseconds, Locale locale, TimeZone timeZone) {
+
+		Format dateFormatDate = FastDateFormatFactoryUtil.getSimpleDateFormat(
+			"EEEE, MMMMM dd, yyyy", locale, timeZone);
+
+		Format timeFormatDate = FastDateFormatFactoryUtil.getTime(
+			locale, timeZone);
+
+		int curDaysBetween = DateUtil.getDaysBetween(
+			new Date(milliseconds), new Date(), timeZone);
+
+		long millisAgo = System.currentTimeMillis() - milliseconds;
+
+		String relativeTime = StringPool.BLANK;
+
+		if (millisAgo <= MINUTE) {
+			relativeTime = "about-a-minute-ago";
+		}
+		else if (millisAgo < HOUR) {
+			relativeTime = LanguageUtil.format(
+				locale, "x-minutes-ago", (millisAgo / MINUTE));
+		}
+		else if ((millisAgo / HOUR) == 1) {
+			relativeTime = "about-an-hour-ago";
+		}
+		else if ((millisAgo < DAY) || (curDaysBetween == 0)) {
+			relativeTime = LanguageUtil.format(
+				locale, "x-hours-ago", (millisAgo / HOUR));
+		}
+		else if (curDaysBetween == 1) {
+			relativeTime =
+				LanguageUtil.format(
+					locale, "yesterday-at-x",
+					timeFormatDate.format(milliseconds));
+		}
+		else {
+			relativeTime = dateFormatDate.format(milliseconds);
+		}
+
+		return relativeTime;
 	}
 
 	public static String getRFC822() {
