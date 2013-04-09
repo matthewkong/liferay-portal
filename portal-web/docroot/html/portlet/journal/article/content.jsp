@@ -551,7 +551,6 @@ if (Validator.isNotNull(content)) {
 
 					if ((article != null) && Validator.isNotNull(article.getStructureId()) && Validator.isNotNull(content)) {
                         ddmFields = StorageEngineUtil.getFields(article.getDDMStorageId());
-                        // ddmFields = JournalConverterUtil.getDDMFields(ddmStructure, content);
                     }
 
 					String requestedLanguageId = defaultLanguageId;
