@@ -400,7 +400,7 @@ public interface JournalArticleService extends BaseService {
 		double version,
 		java.util.Map<java.util.Locale, java.lang.String> titleMap,
 		java.util.Map<java.util.Locale, java.lang.String> descriptionMap,
-		java.lang.String content, java.lang.String type,
+		java.lang.String content, java.lang.String type, long ddmStorageId,
 		java.lang.String ddmStructureKey, java.lang.String ddmTemplateKey,
 		java.lang.String layoutUuid, int displayDateMonth, int displayDateDay,
 		int displayDateYear, int displayDateHour, int displayDateMinute,

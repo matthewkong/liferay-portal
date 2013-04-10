@@ -89,7 +89,11 @@ import com.liferay.portlet.dynamicdatamapping.NoSuchStructureException;
 import com.liferay.portlet.dynamicdatamapping.NoSuchTemplateException;
 import com.liferay.portlet.dynamicdatamapping.model.DDMStructure;
 import com.liferay.portlet.dynamicdatamapping.model.DDMTemplate;
+import com.liferay.portlet.dynamicdatamapping.service.DDMStructureLocalServiceUtil;
 import com.liferay.portlet.dynamicdatamapping.storage.FieldConstants;
+import com.liferay.portlet.dynamicdatamapping.storage.Fields;
+import com.liferay.portlet.dynamicdatamapping.storage.StorageEngineUtil;
+import com.liferay.portlet.dynamicdatamapping.util.DDMUtil;
 import com.liferay.portlet.dynamicdatamapping.util.DDMXMLUtil;
 import com.liferay.portlet.journal.ArticleContentException;
 import com.liferay.portlet.journal.ArticleDisplayDateException;
@@ -244,6 +248,20 @@ public class JournalArticleLocalServiceImpl
 			user, groupId, articleId, version, false, content, ddmStructureKey,
 			images);
 
+		// DDM Storage
+		DDMStructure ddmStructure =
+			DDMStructureLocalServiceUtil.getStructure(
+				groupId,
+				PortalUtil.getClassNameId(JournalArticle.class),
+				ddmStructureKey);
+
+		Fields fields = DDMUtil.getFields(
+			ddmStructure.getStructureId(), serviceContext);
+
+		long ddmStorageId = StorageEngineUtil.create(
+			user.getCompanyId(), ddmStructure.getStructureId(), fields,
+			serviceContext);
+
 		article.setResourcePrimKey(resourcePrimKey);
 		article.setGroupId(groupId);
 		article.setCompanyId(user.getCompanyId());
@@ -262,6 +280,7 @@ public class JournalArticleLocalServiceImpl
 		article.setDescriptionMap(descriptionMap, locale);
 		article.setContent(content);
 		article.setType(type);
+		article.setDDMStorageId(ddmStorageId);
 		article.setStructureId(ddmStructureKey);
 		article.setTemplateId(ddmTemplateKey);
 		article.setLayoutUuid(layoutUuid);
@@ -2269,29 +2288,30 @@ public class JournalArticleLocalServiceImpl
 		return updateArticle(
 			userId, groupId, folderId, articleId, version, titleMap,
 			descriptionMap, content, article.getType(),
-			article.getStructureId(), article.getTemplateId(), layoutUuid,
-			displayDateMonth, displayDateDay, displayDateYear, displayDateHour,
-			displayDateMinute, expirationDateMonth, expirationDateDay,
-			expirationDateYear, expirationDateHour, expirationDateMinute,
-			neverExpire, reviewDateMonth, reviewDateDay, reviewDateYear,
-			reviewDateHour, reviewDateMinute, neverReview,
-			article.getIndexable(), article.isSmallImage(),
-			article.getSmallImageURL(), null, null, null, serviceContext);
+			article.getDDMStorageId(), article.getStructureId(),
+			article.getTemplateId(), layoutUuid, displayDateMonth,
+			displayDateDay, displayDateYear, displayDateHour, displayDateMinute,
+			expirationDateMonth, expirationDateDay, expirationDateYear,
+			expirationDateHour, expirationDateMinute, neverExpire,
+			reviewDateMonth, reviewDateDay, reviewDateYear, reviewDateHour,
+			reviewDateMinute, neverReview, article.getIndexable(),
+			article.isSmallImage(), article.getSmallImageURL(), null, null,
+			null, serviceContext);
 	}
 
 	public JournalArticle updateArticle(
 			long userId, long groupId, long folderId, String articleId,
 			double version, Map<Locale, String> titleMap,
 			Map<Locale, String> descriptionMap, String content, String type,
-			String ddmStructureKey, String ddmTemplateKey, String layoutUuid,
-			int displayDateMonth, int displayDateDay, int displayDateYear,
-			int displayDateHour, int displayDateMinute, int expirationDateMonth,
-			int expirationDateDay, int expirationDateYear,
-			int expirationDateHour, int expirationDateMinute,
-			boolean neverExpire, int reviewDateMonth, int reviewDateDay,
-			int reviewDateYear, int reviewDateHour, int reviewDateMinute,
-			boolean neverReview, boolean indexable, boolean smallImage,
-			String smallImageURL, File smallImageFile,
+			long ddmStorageId, String ddmStructureKey, String ddmTemplateKey,
+			String layoutUuid, int displayDateMonth, int displayDateDay,
+			int displayDateYear, int displayDateHour, int displayDateMinute,
+			int expirationDateMonth, int expirationDateDay,
+			int expirationDateYear, int expirationDateHour,
+			int expirationDateMinute, boolean neverExpire, int reviewDateMonth,
+			int reviewDateDay, int reviewDateYear, int reviewDateHour,
+			int reviewDateMinute, boolean neverReview, boolean indexable,
+			boolean smallImage, String smallImageURL, File smallImageFile,
 			Map<String, byte[]> images, String articleURL,
 			ServiceContext serviceContext)
 		throws PortalException, SystemException {
@@ -2430,6 +2450,18 @@ public class JournalArticleLocalServiceImpl
 			user, groupId, articleId, article.getVersion(), addNewVersion,
 			content, ddmStructureKey, images);
 
+		// Update DDM Storage
+		DDMStructure ddmStructure =
+			DDMStructureLocalServiceUtil.getStructure(
+				groupId, PortalUtil.getClassNameId(JournalArticle.class),
+				ddmStructureKey);
+
+		Fields fields = DDMUtil.getFields(
+			ddmStructure.getStructureId(), serviceContext);
+
+		StorageEngineUtil.update(
+			ddmStorageId, fields, true, serviceContext);
+
 		article.setModifiedDate(serviceContext.getModifiedDate(now));
 		article.setFolderId(folderId);
 		article.setTitleMap(titleMap, locale);
@@ -2440,6 +2472,7 @@ public class JournalArticleLocalServiceImpl
 		article.setDescriptionMap(descriptionMap, locale);
 		article.setContent(content);
 		article.setType(type);
+		article.setDDMStorageId(ddmStorageId);
 		article.setStructureId(ddmStructureKey);
 		article.setTemplateId(ddmTemplateKey);
 		article.setLayoutUuid(layoutUuid);

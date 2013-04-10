@@ -16,6 +16,7 @@ package com.liferay.portlet.journal.action;
 
 import com.liferay.portal.LocaleException;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.portlet.LiferayPortletConfig;
 import com.liferay.portal.kernel.portlet.LiferayWindowState;
@@ -50,13 +51,16 @@ import com.liferay.portlet.PortletURLImpl;
 import com.liferay.portlet.asset.AssetCategoryException;
 import com.liferay.portlet.asset.AssetTagException;
 import com.liferay.portlet.assetpublisher.util.AssetPublisherUtil;
+import com.liferay.portlet.documentlibrary.store.DLStoreUtil;
 import com.liferay.portlet.dynamicdatamapping.NoSuchStructureException;
 import com.liferay.portlet.dynamicdatamapping.NoSuchTemplateException;
 import com.liferay.portlet.dynamicdatamapping.model.DDMStructure;
+import com.liferay.portlet.dynamicdatamapping.service.DDMStorageLinkLocalServiceUtil;
 import com.liferay.portlet.dynamicdatamapping.service.DDMStructureLocalServiceUtil;
 import com.liferay.portlet.dynamicdatamapping.storage.Field;
 import com.liferay.portlet.dynamicdatamapping.storage.FieldConstants;
 import com.liferay.portlet.dynamicdatamapping.storage.Fields;
+import com.liferay.portlet.dynamicdatamapping.storage.StorageEngineUtil;
 import com.liferay.portlet.dynamicdatamapping.util.DDMUtil;
 import com.liferay.portlet.journal.ArticleContentException;
 import com.liferay.portlet.journal.ArticleContentSizeException;
@@ -71,6 +75,7 @@ import com.liferay.portlet.journal.ArticleVersionException;
 import com.liferay.portlet.journal.DuplicateArticleIdException;
 import com.liferay.portlet.journal.NoSuchArticleException;
 import com.liferay.portlet.journal.model.JournalArticle;
+import com.liferay.portlet.journal.service.JournalArticleLocalServiceUtil;
 import com.liferay.portlet.journal.service.JournalArticleServiceUtil;
 import com.liferay.portlet.journal.service.JournalContentSearchLocalServiceUtil;
 import com.liferay.portlet.journal.util.JournalConverterUtil;
@@ -83,6 +88,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
@@ -845,6 +851,7 @@ public class EditArticleAction extends PortletAction {
 
 			Map<Locale, String> titleMap = article.getTitleMap();
 			Map<Locale, String> descriptionMap = article.getDescriptionMap();
+			long storageId = article.getDDMStorageId();
 
 			String tempOldUrlTitle = article.getUrlTitle();
 
@@ -854,7 +861,7 @@ public class EditArticleAction extends PortletAction {
 
 				article = JournalArticleServiceUtil.updateArticle(
 					groupId, folderId, articleId, version, titleMap,
-					descriptionMap, content, type, structureId, templateId,
+					descriptionMap, content, type, storageId, structureId, templateId,
 					layoutUuid, displayDateMonth, displayDateDay,
 					displayDateYear, displayDateHour, displayDateMinute,
 					expirationDateMonth, expirationDateDay, expirationDateYear,
@@ -899,6 +906,9 @@ public class EditArticleAction extends PortletAction {
 				actionRequest, portletResource, article.getArticleId());
 		}
 
+		// Upload files
+		uploadJournalArticleFieldFile(article, uploadPortletRequest);
+
 		return new Object[] {article, oldUrlTitle};
 	}
 
@@ -915,6 +925,38 @@ public class EditArticleAction extends PortletAction {
 		JournalContentSearchLocalServiceUtil.updateContentSearch(
 			layout.getGroupId(), layout.isPrivateLayout(), layout.getLayoutId(),
 			portletResource, articleId, true);
+	}
+
+	protected void uploadJournalArticleFieldFile(
+			JournalArticle article, UploadPortletRequest uploadPortletRequest)
+		throws Exception {
+
+		String structureId = article.getStructureId();
+
+		ServiceContext serviceContext =
+			ServiceContextFactory.getInstance(uploadPortletRequest);
+
+		long groupId = serviceContext.getScopeGroupId();
+
+		if (article.isTemplateDriven()) {
+			DDMStructure ddmStructure =
+				DDMStructureLocalServiceUtil.getStructure(
+					groupId, PortalUtil.getClassNameId(JournalArticle.class),
+					structureId);
+
+			Set<String> fieldNames = ddmStructure.getFieldNames();
+
+			for (String fieldName : fieldNames) {
+				String fieldDataType =
+					ddmStructure.getFieldDataType(fieldName);
+
+				if (fieldDataType.equals(FieldConstants.FILE_UPLOAD)) {
+					DDMUtil.uploadFieldFile(ddmStructure.getStructureId(),
+						article.getDDMStorageId(), article, fieldName,
+						serviceContext);
+				}
+			}
+		}
 	}
 
 }

@@ -489,6 +489,12 @@ public class JournalPortletDataHandler extends BasePortletDataHandler {
 			}
 		}
 
+		long ddmStorageId = 0;
+
+		if (Validator.isNotNull(article.getDDMStorageId())) {
+			ddmStorageId = article.getDDMStorageId();
+		}
+
 		long ddmStructureId = 0;
 
 		if (Validator.isNotNull(article.getStructureId())) {
@@ -731,7 +737,7 @@ public class JournalPortletDataHandler extends BasePortletDataHandler {
 					userId, existingArticle.getGroupId(), folderId,
 					existingArticle.getArticleId(), article.getVersion(),
 					article.getTitleMap(), article.getDescriptionMap(),
-					article.getContent(), article.getType(),
+					article.getContent(), article.getType(), ddmStorageId,
 					parentDDMStructureKey, parentDDMTemplateKey,
 					article.getLayoutUuid(), displayDateMonth, displayDateDay,
 					displayDateYear, displayDateHour, displayDateMinute,

@@ -1082,7 +1082,7 @@ public class JournalArticleLocalServiceWrapper
 		double version,
 		java.util.Map<java.util.Locale, java.lang.String> titleMap,
 		java.util.Map<java.util.Locale, java.lang.String> descriptionMap,
-		java.lang.String content, java.lang.String type,
+		java.lang.String content, java.lang.String type, long ddmStorageId,
 		java.lang.String ddmStructureKey, java.lang.String ddmTemplateKey,
 		java.lang.String layoutUuid, int displayDateMonth, int displayDateDay,
 		int displayDateYear, int displayDateHour, int displayDateMinute,
@@ -1099,7 +1099,7 @@ public class JournalArticleLocalServiceWrapper
 			com.liferay.portal.kernel.exception.SystemException {
 		return _journalArticleLocalService.updateArticle(userId, groupId,
 			folderId, articleId, version, titleMap, descriptionMap, content,
-			type, ddmStructureKey, ddmTemplateKey, layoutUuid,
+			type, ddmStorageId, ddmStructureKey, ddmTemplateKey, layoutUuid,
 			displayDateMonth, displayDateDay, displayDateYear, displayDateHour,
 			displayDateMinute, expirationDateMonth, expirationDateDay,
 			expirationDateYear, expirationDateHour, expirationDateMinute,
