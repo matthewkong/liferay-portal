@@ -426,6 +426,17 @@ public class SearchPermissionCheckerImpl implements SearchPermissionChecker {
 
 		for (Group group : groups) {
 			addRequiredMemberRole(group, rolesQuery);
+
+			for (Role role : roles) {
+				if (role.getType() == RoleConstants.TYPE_SITE &&
+					role.getName() != RoleConstants.SITE_MEMBER &&
+					group.isSite()) {
+
+					rolesQuery.addTerm(Field.GROUP_ROLE_ID,
+						group.getGroupId() + StringPool.DASH +
+							role.getRoleId());
+				}
+			}
 		}
 
 		for (UserGroupRole userGroupRole : userGroupRoles) {
