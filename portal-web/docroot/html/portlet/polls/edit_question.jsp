@@ -86,7 +86,13 @@ if (choiceName > 0) {
 	<aui:fieldset>
 		<aui:input name="title" />
 
-		<aui:input label="polls-question" name="description" />
+		<aui:input label="polls-question" name="description">
+		<c:if test='<%= PrefsPropsUtil.getString(PropsKeys
+								.JDBC_DEFAULT_DRIVER_CLASS_NAME).equals(
+									"oracle.jdbc.driver.OracleDriver") %>'>
+			<aui:validator name="maxLength">'4000'</aui:validator>
+		</c:if>
+		</aui:input>
 
 		<aui:input disabled="<%= neverExpire %>" name="expirationDate" />
 

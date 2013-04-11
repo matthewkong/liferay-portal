@@ -60,7 +60,14 @@ ColorScheme selWapColorScheme = layoutSet.getWapColorScheme();
 
 			<h3><liferay-ui:message key="css" /></h3>
 
-			<aui:input label="insert-custom-css-that-will-be-loaded-after-the-theme" name="regularCss" type="textarea" value="<%= layoutSet.getCss() %>" />
+			<aui:input label="insert-custom-css-that-will-be-loaded-after-the-theme" name="regularCss" type="textarea" value="<%= layoutSet.getCss() %>">
+			<c:if test='<%= PrefsPropsUtil.getString(PropsKeys
+								.JDBC_DEFAULT_DRIVER_CLASS_NAME).equals(
+									"oracle.jdbc.driver.OracleDriver") %>'>
+				<aui:validator name="maxLength">'4000'</aui:validator>
+			</c:if>
+			</aui:input>
+
 		</liferay-ui:section>
 
 		<liferay-ui:section>

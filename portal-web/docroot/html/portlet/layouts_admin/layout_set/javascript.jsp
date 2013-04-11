@@ -27,5 +27,11 @@ UnicodeProperties layoutSetTypeSettings = selLayoutSet.getSettingsProperties();
 <h3><liferay-ui:message key="javascript" /></h3>
 
 <aui:fieldset>
-	<aui:input cssClass="lfr-textarea-container" label="paste-javascript-code-that-will-be-executed-at-the-bottom-of-every-page" name="TypeSettingsProperties--javascript--" style="width: 300px; height: 300px" type="textarea" value='<%= layoutSetTypeSettings.getProperty("javascript") %>' wrap="soft" />
+	<aui:input cssClass="lfr-textarea-container" label="paste-javascript-code-that-will-be-executed-at-the-bottom-of-every-page" name="TypeSettingsProperties--javascript--" style="width: 300px; height: 300px" type="textarea" value='<%= layoutSetTypeSettings.getProperty("javascript") %>' wrap="soft">
+	<c:if test='<%= PrefsPropsUtil.getString(PropsKeys
+								.JDBC_DEFAULT_DRIVER_CLASS_NAME).equals(
+									"oracle.jdbc.driver.OracleDriver") %>'>
+		<aui:validator name="maxLength">'4000'</aui:validator>
+	</c:if>
+	</aui:input>
 </aui:fieldset>
