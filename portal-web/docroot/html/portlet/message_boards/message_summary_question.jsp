@@ -34,7 +34,20 @@ MBMessage message = (MBMessage)objArray[0];
 </div>
 
 <div class="summary">
-	<%= StringUtil.shorten(message.getBody(), 250) %>
+
+	<%
+	String msgBody = StringPool.BLANK;
+
+	if (message.isFormatBBCode()) {
+		msgBody = BBCodeTranslatorUtil.getHTML(message.getBody());
+		msgBody = StringUtil.replace(msgBody, "@theme_images_path@/emoticons", themeDisplay.getPathThemeImages() + "/emoticons");
+	}
+	else {
+		msgBody = message.getBody();
+	}
+	%>
+
+	<%= StringUtil.shorten(msgBody, 250) %>
 </div>
 
 <div class="tags">
