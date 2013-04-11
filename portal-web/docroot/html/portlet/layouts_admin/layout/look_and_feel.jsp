@@ -117,7 +117,14 @@ else {
 
 				<h3><liferay-ui:message key="css" /></h3>
 
-				<aui:input cssClass="lfr-textarea-container" label="insert-custom-css-that-will-be-loaded-after-the-theme" name="regularCss" type="textarea" value="<%= cssText %>" />
+				<aui:input cssClass="lfr-textarea-container"
+						   label="insert-custom-css-that-will-be-loaded-after-the-theme" name="regularCss" type="textarea" value="<%= cssText %>">
+				<c:if test='<%= PrefsPropsUtil.getString(PropsKeys
+								.JDBC_DEFAULT_DRIVER_CLASS_NAME).equals(
+									"oracle.jdbc.driver.OracleDriver") %>'>
+					<aui:validator name="maxLength">'4000'</aui:validator>
+				</c:if>
+				</aui:input>
 			</div>
 		</liferay-ui:section>
 
