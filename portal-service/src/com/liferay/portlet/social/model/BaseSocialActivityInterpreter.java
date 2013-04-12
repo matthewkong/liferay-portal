@@ -52,19 +52,6 @@ import javax.portlet.PortletURL;
 public abstract class BaseSocialActivityInterpreter
 	implements SocialActivityInterpreter {
 
-	public void updateActivitySet(long activityId)
-		throws PortalException, SystemException {
-
-		SocialActivity activity = SocialActivityUtil.fetchByPrimaryKey(
-			activityId);
-
-		if (activity.getActivitySetId() > 0) {
-			return;
-		}
-
-		SocialActivitySetLocalServiceUtil.addActivitySet(activityId);
-	}
-
 	public String getSelector() {
 		return StringPool.BLANK;
 	}
@@ -101,6 +88,19 @@ public abstract class BaseSocialActivityInterpreter
 		}
 
 		return null;
+	}
+
+	public void updateActivitySet(long activityId)
+		throws PortalException, SystemException {
+
+		SocialActivity activity = SocialActivityUtil.fetchByPrimaryKey(
+			activityId);
+
+		if (activity.getActivitySetId() > 0) {
+			return;
+		}
+
+		SocialActivitySetLocalServiceUtil.addActivitySet(activityId);
 	}
 
 	protected String buildLink(String link, String text) {
