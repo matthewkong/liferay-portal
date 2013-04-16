@@ -24,7 +24,6 @@ import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.CalendarFactoryUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
-import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.kernel.workflow.WorkflowThreadLocal;
 import com.liferay.portal.model.Address;
@@ -2557,7 +2556,7 @@ public class UserServiceImpl extends UserServiceBaseImpl {
 
 		List<String> changedFieldsList = new ArrayList<String>();
 
-		if (!emailAddress.equalsIgnoreCase(user.getScreenName())) {
+		if (!screenName.equalsIgnoreCase(user.getScreenName())) {
 			changedFieldsList.add("screenName");
 		}
 
@@ -2600,11 +2599,9 @@ public class UserServiceImpl extends UserServiceBaseImpl {
 			changedFieldsList.add("jobTitle");
 		}
 
-		if (Validator.isNotNull(changedFieldsList)) {
-			for (String field : changedFieldsList) {
-				if (!UsersAdminUtil.hasUpdatePermission(user, field)) {
-					throw new UserUpdatePermissionException();
-				}
+		for (String field : changedFieldsList) {
+			if (!UsersAdminUtil.hasUpdatePermission(user, field)) {
+				throw new UserUpdatePermissionException();
 			}
 		}
 	}
