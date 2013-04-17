@@ -95,8 +95,6 @@ public interface PropsKeys {
 
 	public static final String ASSET_CATEGORIES_NAVIGATION_DISPLAY_TEMPLATES_CONFIG = "asset.categories.navigation.display.templates.config";
 
-	public static final String ASSET_CATEGORIES_NAVIGATION_DISPLAY_TEMPLATES_HELP = "asset.categories.navigation.display.templates.help";
-
 	public static final String ASSET_CATEGORIES_PROPERTIES_DEFAULT = "asset.categories.properties.default";
 
 	public static final String ASSET_CATEGORIES_SEARCH_HIERARCHICAL = "asset.categories.search.hierarchical";
@@ -112,8 +110,6 @@ public interface PropsKeys {
 	public static final String ASSET_PUBLISHER_DISPLAY_STYLES = "asset.publisher.display.styles";
 
 	public static final String ASSET_PUBLISHER_DISPLAY_TEMPLATES_CONFIG = "asset.publisher.display.templates.config";
-
-	public static final String ASSET_PUBLISHER_DISPLAY_TEMPLATES_HELP = "asset.publisher.display.templates.help";
 
 	public static final String ASSET_PUBLISHER_DYNAMIC_SUBSCRIPTION_LIMIT = "asset.publisher.dynamic.subscription.limit";
 
@@ -136,8 +132,6 @@ public interface PropsKeys {
 	public static final String ASSET_TAG_SUGGESTIONS_ENABLED = "asset.tag.suggestions.enabled";
 
 	public static final String ASSET_TAGS_NAVIGATION_DISPLAY_TEMPLATES_CONFIG = "asset.tags.navigation.display.templates.config";
-
-	public static final String ASSET_TAGS_NAVIGATION_DISPLAY_TEMPLATES_HELP = "asset.tags.navigation.display.templates.help";
 
 	public static final String ASSET_VOCABULARY_DEFAULT = "asset.vocabulary.default";
 
@@ -236,8 +230,6 @@ public interface PropsKeys {
 	public static final String BASIC_AUTH_PASSWORD_REQUIRED = "basic.auth.password.required";
 
 	public static final String BLOGS_DISPLAY_TEMPLATES_CONFIG = "blogs.display.templates.config";
-
-	public static final String BLOGS_DISPLAY_TEMPLATES_HELP = "blogs.display.templates.help";
 
 	public static final String BLOGS_EMAIL_ENTRY_ADDED_BODY = "blogs.email.entry.added.body";
 
@@ -601,8 +593,6 @@ public interface PropsKeys {
 
 	public static final String DL_DISPLAY_TEMPLATES_CONFIG = "dl.display.templates.config";
 
-	public static final String DL_DISPLAY_TEMPLATES_HELP = "dl.display.templates.help";
-
 	public static final String DL_DISPLAY_VIEWS = "dl.display.views";
 
 	public static final String DL_EMAIL_FILE_ENTRY_ADDED_BODY = "dl.email.file.entry.added.body";
@@ -825,15 +815,17 @@ public interface PropsKeys {
 
 	public static final String FACEBOOK_CONNECT_VERIFIED_ACCOUNT_REQUIRED = "facebook.connect.verified.account.required";
 
-	public static final String FIELD_EDITABLE_COM_LIFERAY_PORTAL_MODEL_USER_EMAILADDRESS = "field.editable.com.liferay.portal.model.User.emailAddress";
-
-	public static final String FIELD_EDITABLE_COM_LIFERAY_PORTAL_MODEL_USER_SCREENNAME = "field.editable.com.liferay.portal.model.User.screenName";
-
 	public static final String FIELD_ENABLE_COM_LIFERAY_PORTAL_MODEL_CONTACT_BIRTHDAY = "field.enable.com.liferay.portal.model.Contact.birthday";
 
 	public static final String FIELD_ENABLE_COM_LIFERAY_PORTAL_MODEL_CONTACT_MALE = "field.enable.com.liferay.portal.model.Contact.male";
 
 	public static final String FIELD_ENABLE_COM_LIFERAY_PORTAL_MODEL_ORGANIZATION_STATUS = "field.enable.com.liferay.portal.model.Organization.status";
+
+	public static final String FIELDS_EDITABLE_DEFAULT_COM_LIFERAY_PORTAL_MODEL_USER = "fields.editable.default.com.liferay.portal.model.User";
+
+	public static final String FIELDS_EDITABLE_EXCEPTIONS_COM_LIFERAY_PORTAL_MODEL_USER = "fields.editable.exceptions.com.liferay.portal.model.User";
+
+	public static final String FIELDS_EDITABLE_WHITELIST_COM_LIFERAY_PORTAL_MODEL_USER = "fields.editable.whitelist.com.liferay.portal.model.User";
 
 	public static final String FINALIZE_MANAGER_THREAD_ENABLED = "finalize.manager.thread.enabled";
 
@@ -2171,8 +2163,6 @@ public interface PropsKeys {
 
 	public static final String SITEMAP_DISPLAY_TEMPLATES_CONFIG = "sitemap.display.templates.config";
 
-	public static final String SITEMAP_DISPLAY_TEMPLATES_HELP = "sitemap.display.templates.help";
-
 	public static final String SITEMINDER_AUTH_ENABLED = "siteminder.auth.enabled";
 
 	public static final String SITEMINDER_IMPORT_FROM_LDAP = "siteminder.import.from.ldap";
@@ -2512,8 +2502,6 @@ public interface PropsKeys {
 	public static final String WIDGET_SERVLET_MAPPING = "widget.servlet.mapping";
 
 	public static final String WIKI_DISPLAY_TEMPLATES_CONFIG = "wiki.display.templates.config";
-
-	public static final String WIKI_DISPLAY_TEMPLATES_HELP = "wiki.display.templates.help";
 
 	public static final String WIKI_EMAIL_FROM_ADDRESS = "wiki.email.from.address";
 
