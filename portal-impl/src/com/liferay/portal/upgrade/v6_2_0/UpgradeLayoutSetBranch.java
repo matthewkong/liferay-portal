@@ -17,33 +17,33 @@ package com.liferay.portal.upgrade.v6_2_0;
 import com.liferay.portal.kernel.dao.db.DB;
 import com.liferay.portal.kernel.dao.db.DBFactoryUtil;
 import com.liferay.portal.kernel.upgrade.UpgradeProcess;
-import com.liferay.portal.upgrade.v6_2_0.util.GroupTable;
+import com.liferay.portal.upgrade.v6_2_0.util.LayoutSetBranchTable;
 
 import java.sql.SQLException;
 
 /**
- * @author Hugo Huijser
+ * @author Harrison Schueler
  */
-public class UpgradeGroup extends UpgradeProcess {
+public class UpgradeLayoutSetBranch extends UpgradeProcess {
 
 	@Override
 	protected void doUpgrade() throws Exception {
-		try {
-			runSQL("alter_column_type Group_ friendlyURL VARCHAR(255) null");
+		DB db = DBFactoryUtil.getDB();
 
-			DB db = DBFactoryUtil.getDB();
+		String dbType = db.getType();
 
-			String dbType = db.getType();
-
-			if (dbType.equals(DB.TYPE_DB2) || dbType.equals(DB.TYPE_DERBY) ||
-				dbType.equals(DB.TYPE_ORACLE)) {
-					runSQL("alter_column_type Group_ typeSettings CLOB null");
+		if (dbType.equals(DB.TYPE_DB2) || dbType.equals(DB.TYPE_DERBY) ||
+			dbType.equals(DB.TYPE_ORACLE)) {
+				try {
+					runSQL("alter_column_type LayoutSetBranch css CLOB null");
+				}
+			catch (SQLException sqle) {
+				upgradeTable(
+					LayoutSetBranchTable.TABLE_NAME,
+					LayoutSetBranchTable.TABLE_COLUMNS,
+					LayoutSetBranchTable.TABLE_SQL_CREATE,
+					LayoutSetBranchTable.TABLE_SQL_ADD_INDEXES);
 			}
-		}
-		catch (SQLException sqle) {
-			upgradeTable(
-				GroupTable.TABLE_NAME, GroupTable.TABLE_COLUMNS,
-				GroupTable.TABLE_SQL_CREATE, GroupTable.TABLE_SQL_ADD_INDEXES);
 		}
 	}
 
