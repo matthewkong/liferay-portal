@@ -918,6 +918,25 @@ AUI.add(
 
 							instance._showCateroryMessage();
 						}
+
+						var vocabularyList = A.one(instance._vocabularyListSelector);
+
+						var listLinks = vocabularyList.all('li');
+
+						listLinks.unplug(A.Plugin.Drop);
+
+						var bubbleTargets = [instance];
+
+						if (instance._categoriesTreeView) {
+							bubbleTargets.push(instance._categoriesTreeView);
+						}
+
+						listLinks.plug(
+							A.Plugin.Drop,
+							{
+								bubbleTargets: bubbleTargets
+							}
+						);
 					},
 
 					_displayList: function(callback) {
@@ -1018,25 +1037,6 @@ AUI.add(
 
 						instance._createCategoryFlatView(categories);
 
-						var vocabularyList = A.one(instance._vocabularyListSelector);
-
-						var listLinks = vocabularyList.all('li');
-
-						listLinks.unplug(A.Plugin.Drop);
-
-						var bubbleTargets = [instance];
-
-						if (instance._categoriesTreeView) {
-							bubbleTargets.push(instance._categoriesTreeView);
-						}
-
-						listLinks.plug(
-							A.Plugin.Drop,
-							{
-								bubbleTargets: bubbleTargets
-							}
-						);
-
 						if (callback) {
 							callback();
 						}
@@ -1107,9 +1107,9 @@ AUI.add(
 								var checked = false;
 
 								return {
+									alwaysShowHitArea: item.hasChildren,
 									id: STR_CATEGORY_NODE + item.categoryId,
 									label: Liferay.Util.escapeHTML(item.titleCurrentValue),
-									leaf: !item.hasChildren,
 									type: 'check',
 									on: {
 										checkedChange: function(event) {
