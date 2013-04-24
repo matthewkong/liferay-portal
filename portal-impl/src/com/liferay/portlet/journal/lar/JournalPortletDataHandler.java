@@ -256,8 +256,18 @@ public class JournalPortletDataHandler extends BasePortletDataHandler {
 			FileEntry fileEntry = null;
 
 			try {
-				fileEntry = DLAppLocalServiceUtil.getFileEntryByUuidAndGroupId(
-					fileEntryUUID, portletDataContext.getScopeGroupId());
+				long importGroupId = portletDataContext.getScopeGroupId();
+
+				if( portletDataContext.getScopeGroupId() !=
+					portletDataContext.getSourceCompanyGroupId()) {
+
+					importGroupId =
+						portletDataContext.getSourceCompanyGroupId();
+				}
+
+				fileEntry =
+					DLAppLocalServiceUtil.getFileEntryByUuidAndGroupId(
+						fileEntryUUID, importGroupId);
 			}
 			catch (NoSuchFileEntryException nsfee) {
 				continue;
