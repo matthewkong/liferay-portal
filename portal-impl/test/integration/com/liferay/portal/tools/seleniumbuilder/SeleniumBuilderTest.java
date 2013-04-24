@@ -771,7 +771,7 @@ public class SeleniumBuilderTest {
 	public void testMacroConditionElement1002_1() throws Exception {
 		test(
 			"MacroConditionElement1002_1.macro",
-			"Error 1002: Invalid fail element in " + _DIR_NAME +
+			"Error 1002: Invalid var element in " + _DIR_NAME +
 				"/MacroConditionElement1002_1.macro:5");
 	}
 
@@ -779,7 +779,7 @@ public class SeleniumBuilderTest {
 	public void testMacroConditionElement1002_2() throws Exception {
 		test(
 			"MacroConditionElement1002_2.macro",
-			"Error 1002: Invalid fail element in " + _DIR_NAME +
+			"Error 1002: Invalid var element in " + _DIR_NAME +
 				"/MacroConditionElement1002_2.macro:5");
 	}
 

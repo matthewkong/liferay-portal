@@ -26,6 +26,7 @@ import com.liferay.portal.GroupFriendlyURLException;
 import com.liferay.portal.ModelListenerException;
 import com.liferay.portal.NoSuchContactException;
 import com.liferay.portal.NoSuchGroupException;
+import com.liferay.portal.NoSuchImageException;
 import com.liferay.portal.NoSuchOrganizationException;
 import com.liferay.portal.NoSuchRoleException;
 import com.liferay.portal.NoSuchTicketException;
@@ -155,7 +156,8 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * The implementation of the user local service.
+ * Provides the local service for accessing, adding, authenticating, deleting,
+ * and updating users.
  *
  * @author Brian Wing Shun Chan
  * @author Scott Lee
@@ -952,9 +954,8 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 		workflowServiceContext.setAttribute("autoPassword", autoPassword);
 		workflowServiceContext.setAttribute("sendEmail", sendEmail);
 
-		WorkflowHandlerRegistryUtil.startWorkflowInstance(
-			companyId, workflowUserId, User.class.getName(), userId, user,
-			workflowServiceContext);
+		startWorkflowInstance(
+			companyId, workflowUserId, userId, user, workflowServiceContext);
 
 		if (serviceContext != null) {
 			String passwordUnencrypted = (String)serviceContext.getAttribute(
@@ -1794,7 +1795,14 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 
 		// Portrait
 
-		imageLocalService.deleteImage(user.getPortraitId());
+		try {
+			imageLocalService.deleteImage(user.getPortraitId());
+		}
+		catch (NoSuchImageException e) {
+			if (_log.isWarnEnabled()) {
+				_log.warn("Unable to delete image " + user.getPortraitId());
+			}
+		}
 
 		// Password policy relation
 
@@ -4809,6 +4817,13 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 
 		// Groups and organizations
 
+		// See LPS-33205. Cache the user's list of user group roles because
+		// adding or removing groups may add or remove user group roles
+		// depending on the site default user associations.
+
+		List<UserGroupRole> previousUserGroupRoles =
+			userGroupRolePersistence.findByUserId(userId);
+
 		updateGroups(userId, groupIds, serviceContext, false);
 		updateOrganizations(userId, organizationIds, false);
 
@@ -4822,7 +4837,9 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 
 		// User group roles
 
-		updateUserGroupRoles(user, groupIds, organizationIds, userGroupRoles);
+		updateUserGroupRoles(
+			user, groupIds, organizationIds, userGroupRoles,
+			previousUserGroupRoles);
 
 		// User groups
 
@@ -5162,8 +5179,15 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 
 		// Authenticate against the User_ table
 
-		if ((authResult == Authenticator.SUCCESS) &&
-			PropsValues.AUTH_PIPELINE_ENABLE_LIFERAY_CHECK) {
+		boolean skipLiferayCheck = false;
+
+		if (authResult == Authenticator.SKIP_LIFERAY_CHECK) {
+			authResult = Authenticator.SUCCESS;
+
+			skipLiferayCheck = true;
+		}
+		else if ((authResult == Authenticator.SUCCESS) &&
+				 PropsValues.AUTH_PIPELINE_ENABLE_LIFERAY_CHECK) {
 
 			boolean authenticated = PwdAuthenticator.authenticate(
 				login, password, user.getPassword());
@@ -5203,15 +5227,10 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 
 			// Update digest
 
-			boolean updateDigest = true;
+			if (skipLiferayCheck ||
+				!PropsValues.AUTH_PIPELINE_ENABLE_LIFERAY_CHECK ||
+				Validator.isNull(user.getDigest())) {
 
-			if (PropsValues.AUTH_PIPELINE_ENABLE_LIFERAY_CHECK) {
-				if (Validator.isNotNull(user.getDigest())) {
-					updateDigest = false;
-				}
-			}
-
-			if (updateDigest) {
 				String digest = user.getDigest(password);
 
 				user.setDigest(digest);
@@ -5504,6 +5523,26 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 		user.setDigest(StringPool.BLANK);
 	}
 
+	protected void startWorkflowInstance(
+		final long companyId, final long workflowUserId, final long userId,
+		final User user, final ServiceContext workflowServiceContext) {
+
+		Callable<Void> callable = new PortalCallable<Void>(companyId) {
+
+			@Override
+			protected Void doCall() throws Exception {
+				WorkflowHandlerRegistryUtil.startWorkflowInstance(
+					companyId, workflowUserId, User.class.getName(), userId,
+					user, workflowServiceContext);
+
+				return null;
+			}
+
+		};
+
+		TransactionCommitCallbackRegistryUtil.registerCallback(callable);
+	}
+
 	protected void updateGroups(
 			long userId, long[] newGroupIds, ServiceContext serviceContext,
 			boolean indexingEnabled)
@@ -5586,15 +5625,13 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 
 	protected void updateUserGroupRoles(
 			User user, long[] groupIds, long[] organizationIds,
-			List<UserGroupRole> userGroupRoles)
+			List<UserGroupRole> userGroupRoles,
+			List<UserGroupRole> previousUserGroupRoles)
 		throws PortalException, SystemException {
 
 		if (userGroupRoles == null) {
 			return;
 		}
-
-		List<UserGroupRole> previousUserGroupRoles =
-			userGroupRolePersistence.findByUserId(user.getUserId());
 
 		for (UserGroupRole userGroupRole : previousUserGroupRoles) {
 			if (userGroupRoles.contains(userGroupRole)) {

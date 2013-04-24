@@ -72,9 +72,12 @@ import java.util.Queue;
 import java.util.concurrent.Callable;
 
 /**
- * The document library remote service. All portlets should interact with the
- * document library through this class or through {@link DLAppLocalServiceImpl},
- * rather than through the individual document library service classes.
+ * Provides the remote service for accessing, adding, checking in/out, deleting,
+ * locking/unlocking, moving, subscription handling of, trash handling of,
+ * updating, and verifying document library file entries and folders. Its
+ * methods include permission checks. All portlets should interact with the
+ * document library through this class or through DLAppLocalService, rather than
+ * through the individual document library service classes.
  *
  * <p>
  * This class provides a unified interface to all Liferay and third party
