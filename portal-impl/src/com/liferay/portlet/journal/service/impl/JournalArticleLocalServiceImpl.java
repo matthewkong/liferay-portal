@@ -140,9 +140,8 @@ import java.util.Set;
 import javax.portlet.PortletPreferences;
 
 /**
- * The implementation of the web content local service is responsible for
- * accessing, creating, modifying, searching, and deleting web content articles
- * locally.
+ * Provides the local service for accessing, adding, deleting, and updating web
+ * content articles.
  *
  * <p>
  * The web content articles hold HTML content wrapped in XML. The XML lets you
@@ -1601,6 +1600,17 @@ public class JournalArticleLocalServiceImpl
 
 		Map<String, String> tokens = JournalUtil.getTokens(
 			article.getGroupId(), themeDisplay, xmlRequest);
+
+		if ((themeDisplay == null) && xmlRequest.equals("<request />")) {
+			tokens.put("company_id", String.valueOf(article.getCompanyId()));
+
+			Group companyGroup = groupLocalService.getCompanyGroup(
+				article.getCompanyId());
+
+			tokens.put(
+				"company_group_id", String.valueOf(companyGroup.getGroupId()));
+			tokens.put("group_id", String.valueOf(article.getGroupId()));
+		}
 
 		tokens.put(
 			"article_resource_pk",
@@ -5373,28 +5383,16 @@ public class JournalArticleLocalServiceImpl
 			long imageId = journalArticleImageLocalService.getArticleImageId(
 				groupId, articleId, version, elInstanceId, elName, elLanguage);
 
-			double oldVersion = MathUtil.format(version - 0.1, 1, 1);
+			if (dynamicContent.getText().equals("delete") ||
+				Validator.isNull(dynamicContent.getText())) {
 
-			long oldImageId = 0;
-
-			if ((oldVersion >= 1) && incrementVersion) {
-				oldImageId = journalArticleImageLocalService.getArticleImageId(
-					groupId, articleId, oldVersion, elInstanceId, elName,
-					elLanguage);
-			}
-
-			String elContent =
-				"/image/journal/article?img_id=" + imageId + "&t=" +
-					WebServerServletTokenUtil.getToken(imageId);
-
-			if (dynamicContent.getText().equals("delete")) {
 				dynamicContent.setText(StringPool.BLANK);
 
 				imageLocalService.deleteImage(imageId);
 
 				String defaultElLanguage = "";
 
-				if (!Validator.isNotNull(elLanguage)) {
+				if (Validator.isNull(elLanguage)) {
 					defaultElLanguage =
 						"_" + LocaleUtil.toLanguageId(LocaleUtil.getDefault());
 				}
@@ -5409,6 +5407,10 @@ public class JournalArticleLocalServiceImpl
 				continue;
 			}
 
+			String elContent =
+				"/image/journal/article?img_id=" + imageId + "&t=" +
+					WebServerServletTokenUtil.getToken(imageId);
+
 			byte[] bytes = images.get(elInstanceId + "_" + elName + elLanguage);
 
 			if ((bytes != null) && (bytes.length > 0)) {
@@ -5422,6 +5424,17 @@ public class JournalArticleLocalServiceImpl
 
 			if ((version > JournalArticleConstants.VERSION_DEFAULT) &&
 				incrementVersion) {
+
+				double oldVersion = MathUtil.format(version - 0.1, 1, 1);
+
+				long oldImageId = 0;
+
+				if ((oldVersion >= 1) && incrementVersion) {
+					oldImageId =
+						journalArticleImageLocalService.getArticleImageId(
+							groupId, articleId, oldVersion, elInstanceId,
+							elName, elLanguage);
+				}
 
 				Image oldImage = null;
 
@@ -5472,7 +5485,7 @@ public class JournalArticleLocalServiceImpl
 
 			String defaultElLanguage = "";
 
-			if (!Validator.isNotNull(elLanguage)) {
+			if (Validator.isNull(elLanguage)) {
 				defaultElLanguage =
 					"_" + LocaleUtil.toLanguageId(LocaleUtil.getDefault());
 			}
