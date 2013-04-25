@@ -36,7 +36,7 @@ public class AlertsEntryPermission extends AnnouncementsEntryPermission {
 			return true;
 		}
 
-		if(entry.getAlert()){
+		if (entry.getAlert()) {
 			return permissionChecker.hasPermission(
 				entry.getGroupId(), AnnouncementsEntry.class.getName(),
 				entry.getEntryId(), actionId);
