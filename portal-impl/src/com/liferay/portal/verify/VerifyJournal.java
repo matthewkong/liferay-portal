@@ -328,23 +328,21 @@ public class VerifyJournal extends VerifyProcess {
 		try {
 			con = DataAccess.getUpgradeOptimizedConnection();
 
-			ps = con.prepareStatement("select urlTitle from journalarticle " +
-				"where urlTitle like '%\u2018%' or urlTitle like " +
-					"'%\u2019%' or urlTitle like '%\u201c%' or urlTitle " +
-						"like '%\u201d%'");
+			ps = con.prepareStatement(
+				"select urlTitle from JournalArticle where urlTitle " +
+					"like '%\u2018%' or urlTitle like '%\u2019%' or urlTitle " +
+						"like '%\u201c%' or urlTitle like '%\u201d%'");
 
 			rs = ps.executeQuery();
 
 			while (rs.next()) {
 				String urlTitle = rs.getString("urlTitle");
-				String normalizedUrlTitle = null;
-
-				normalizedUrlTitle = FriendlyURLNormalizerUtil.normalize(
+				String normalizedUrlTitle = FriendlyURLNormalizerUtil.normalize(
 					urlTitle);
 
 				StringBundler sb = new StringBundler(5);
 
-				sb.append("update journalarticle set urlTitle = \'");
+				sb.append("update JournalArticle set urlTitle = \'");
 				sb.append(normalizedUrlTitle);
 				sb.append("\' where urlTitle = \'");
 				sb.append(urlTitle);
