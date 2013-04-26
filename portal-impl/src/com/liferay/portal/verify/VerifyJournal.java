@@ -329,7 +329,7 @@ public class VerifyJournal extends VerifyProcess {
 			con = DataAccess.getUpgradeOptimizedConnection();
 
 			ps = con.prepareStatement(
-				"select urlTitle from JournalArticle where urlTitle " +
+				"select distinct urlTitle from JournalArticle where urlTitle " +
 					"like '%\u2018%' or urlTitle like '%\u2019%' or urlTitle " +
 						"like '%\u201c%' or urlTitle like '%\u201d%'");
 
