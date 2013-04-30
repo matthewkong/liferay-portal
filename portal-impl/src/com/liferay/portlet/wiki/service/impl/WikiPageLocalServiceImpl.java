@@ -1228,6 +1228,7 @@ public class WikiPageLocalServiceImpl extends WikiPageLocalServiceBaseImpl {
 		// Page
 
 		int oldStatus = page.getStatus();
+		String oldTitle = page.getTitle();
 
 		page = updateStatus(
 			userId, page, WorkflowConstants.STATUS_IN_TRASH,
@@ -1267,6 +1268,17 @@ public class WikiPageLocalServiceImpl extends WikiPageLocalServiceBaseImpl {
 		page.setTitle(trashTitle);
 
 		wikiPagePersistence.update(page);
+
+		// Children
+
+		List<WikiPage> childPages = wikiPagePersistence.findByN_P(
+			page.getNodeId(), oldTitle);
+
+		for (WikiPage childPage : childPages) {
+			childPage.setParentTitle(StringPool.BLANK);
+
+			wikiPagePersistence.update(childPage);
+		}
 
 		// Social
 
