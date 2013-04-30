@@ -73,6 +73,7 @@ import com.liferay.portlet.wiki.model.WikiPageDisplay;
 import com.liferay.portlet.wiki.model.WikiPageResource;
 import com.liferay.portlet.wiki.model.impl.WikiPageDisplayImpl;
 import com.liferay.portlet.wiki.model.impl.WikiPageImpl;
+import com.liferay.portlet.wiki.service.WikiPageLocalServiceUtil;
 import com.liferay.portlet.wiki.service.base.WikiPageLocalServiceBaseImpl;
 import com.liferay.portlet.wiki.social.WikiActivityKeys;
 import com.liferay.portlet.wiki.util.WikiCacheThreadLocal;
@@ -452,6 +453,12 @@ public class WikiPageLocalServiceImpl extends WikiPageLocalServiceBaseImpl {
 			page.getNodeId(), true, page.getTitle());
 
 		for (WikiPage curPage : children) {
+			if(!curPage.isInTrash() && page.isInTrash()) {
+				curPage.setParentTitle(StringPool.BLANK);
+				wikiPagePersistence.update(curPage);
+				continue;
+			}
+
 			deletePage(curPage);
 		}
 
@@ -1228,6 +1235,7 @@ public class WikiPageLocalServiceImpl extends WikiPageLocalServiceBaseImpl {
 		// Page
 
 		int oldStatus = page.getStatus();
+		String oldTitle = page.getTitle();
 
 		page = updateStatus(
 			userId, page, WorkflowConstants.STATUS_IN_TRASH,
@@ -1267,6 +1275,21 @@ public class WikiPageLocalServiceImpl extends WikiPageLocalServiceBaseImpl {
 		page.setTitle(trashTitle);
 
 		wikiPagePersistence.update(page);
+
+		// Children
+
+		List<WikiPage> childPages = wikiPagePersistence.findByN_P(
+			page.getNodeId(), oldTitle);
+
+		for (WikiPage childPage : childPages) {
+			childPage.setParentTitle(trashTitle);
+
+			wikiPagePersistence.update(childPage);
+
+			if (!childPage.isInTrash()) {
+				WikiPageLocalServiceUtil.movePageToTrash(userId, childPage);
+			}
+		}
 
 		// Social
 
@@ -1317,6 +1340,8 @@ public class WikiPageLocalServiceImpl extends WikiPageLocalServiceBaseImpl {
 	public void restorePageFromTrash(long userId, WikiPage page)
 		throws PortalException, SystemException {
 
+		String oldTitle = page.getTitle();
+
 		String title = TrashUtil.getOriginalTitle(page.getTitle());
 
 		List<WikiPage> redirectPages = wikiPagePersistence.findByN_R(
@@ -1354,6 +1379,22 @@ public class WikiPageLocalServiceImpl extends WikiPageLocalServiceBaseImpl {
 
 		updateStatus(
 			userId, page, trashEntry.getStatus(), new ServiceContext());
+
+		// Children
+
+		List<WikiPage> childPages = wikiPagePersistence.findByN_P(
+				page.getNodeId(), oldTitle);
+
+		for (WikiPage childPage : childPages) {
+			childPage.setParentTitle(title);
+
+			wikiPagePersistence.update(childPage);
+
+			if (childPage.isInTrash()) {
+				WikiPageLocalServiceUtil.restorePageFromTrash(
+					userId, childPage);
+			}
+		}
 
 		// Social
 
