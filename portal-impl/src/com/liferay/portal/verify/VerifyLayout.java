@@ -14,10 +14,15 @@
 
 package com.liferay.portal.verify;
 
+import com.liferay.portal.kernel.dao.jdbc.DataAccess;
 import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.model.Layout;
 import com.liferay.portal.service.LayoutLocalServiceUtil;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 
 import java.util.List;
 
@@ -33,6 +38,22 @@ public class VerifyLayout extends VerifyProcess {
 		verifyUuid();
 	}
 
+	protected void updateLayoutUuid(
+		String tableName, String primaryKeyColumn, long primaryKey, String uuid)
+		throws Exception {
+
+		StringBundler sb = new StringBundler();
+		sb.append("update ");
+		sb.append(tableName);
+		sb.append(" set ");
+		sb.append(tableName);
+		sb.append(".layoutUuid = " + uuid + " where ");
+		sb.append(tableName + "." + primaryKeyColumn);
+		sb.append("=" + primaryKey);
+
+		runSQL(sb.toString());
+	}
+
 	protected void verifyFriendlyURL() throws Exception {
 		List<Layout> layouts =
 			LayoutLocalServiceUtil.getNullFriendlyURLLayouts();
@@ -46,8 +67,8 @@ public class VerifyLayout extends VerifyProcess {
 	}
 
 	protected void verifyUuid() throws Exception {
-		verifyUuid("AssetEntry");
-		verifyUuid("JournalArticle");
+		verifyUuid("AssetEntry", "entryId");
+		verifyUuid("JournalArticle", "id_");
 
 		StringBundler sb = new StringBundler(3);
 
@@ -58,20 +79,46 @@ public class VerifyLayout extends VerifyProcess {
 		runSQL(sb.toString());
 	}
 
-	protected void verifyUuid(String tableName) throws Exception {
+	protected void verifyUuid(String tableName, String primaryKeyColumn)
+		throws Exception {
+
+		Connection con = null;
+		PreparedStatement ps = null;
+		ResultSet rs = null;
 		StringBundler sb = new StringBundler(9);
 
-		sb.append("update ");
-		sb.append(tableName);
-		sb.append(" inner join Layout on ");
-		sb.append(tableName);
-		sb.append(".layoutUuid = Layout.uuid_ set ");
-		sb.append(tableName);
-		sb.append(".layoutUuid = Layout.sourcePrototypeLayoutUuid where ");
-		sb.append("Layout.sourcePrototypeLayoutUuid != '' and ");
-		sb.append("Layout.uuid_ != Layout.sourcePrototypeLayoutUuid");
+		try {
+			con = DataAccess.getUpgradeOptimizedConnection();
 
-		runSQL(sb.toString());
+			sb.append("select ");
+			sb.append(tableName + "." + primaryKeyColumn + ", ");
+			sb.append("Layout.sourcePrototypeLayoutUuid");
+			sb.append(" from ");
+			sb.append(tableName);
+			sb.append(" inner join Layout on ");
+			sb.append(tableName);
+			sb.append(".layoutUuid = Layout.uuid_ ");
+			sb.append("where ");
+			sb.append("Layout.sourcePrototypeLayoutUuid != '' and ");
+			sb.append("Layout.uuid_ != Layout.sourcePrototypeLayoutUuid");
+
+			ps = con.prepareStatement(sb.toString());
+
+			rs = ps.executeQuery();
+
+			while (rs.next()) {
+				String sourcePrototypeLayoutUuid = rs.getString(
+					"sourcePrototypeLayoutUuid");
+				long primaryKey = rs.getLong(primaryKeyColumn);
+				updateLayoutUuid(
+					tableName, primaryKeyColumn, primaryKey,
+					sourcePrototypeLayoutUuid);
+			}
+
+		}
+		finally {
+			DataAccess.cleanUp(con, ps, rs);
+		}
 	}
 
 }
