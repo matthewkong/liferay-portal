@@ -803,6 +803,10 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 
 		user.setPasswordReset(passwordReset);
 
+		if (autoPassword == Boolean.TRUE) {
+			setInitialPassword(serviceContext, user);
+		}
+
 		user.setDigest(StringPool.BLANK);
 		user.setScreenName(screenName);
 		user.setEmailAddress(emailAddress);
@@ -1584,52 +1588,12 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 			User user, ServiceContext serviceContext)
 		throws PortalException, SystemException {
 
-		boolean autoPassword = ParamUtil.getBoolean(
-			serviceContext, "autoPassword");
-
-		String password = null;
-
-		if (autoPassword) {
-			if (LDAPSettingsUtil.isPasswordPolicyEnabled(user.getCompanyId())) {
-				if (_log.isWarnEnabled()) {
-					StringBundler sb = new StringBundler(4);
-
-					sb.append("When LDAP password policy is enabled, it is ");
-					sb.append("possible that portal generated passwords will ");
-					sb.append("not match the LDAP policy. Using ");
-					sb.append("RegExpToolkit to generate new password.");
-
-					_log.warn(sb.toString());
-				}
-
-				RegExpToolkit regExpToolkit = new RegExpToolkit();
-
-				password = regExpToolkit.generate(null);
-			}
-			else {
-				PasswordPolicy passwordPolicy =
-					passwordPolicyLocalService.getPasswordPolicy(
-						user.getCompanyId(), user.getOrganizationIds());
-
-				password = PwdToolkitUtil.generate(passwordPolicy);
-			}
-
-			user.setPassword(PasswordEncryptorUtil.encrypt(password));
-			user.setPasswordEncrypted(true);
-			user.setPasswordUnencrypted(password);
-
-			userPersistence.update(user);
-		}
+		String passwordUnencrypted = (String)serviceContext.getAttribute(
+			"passwordUnencrypted");
 
 		if (user.hasCompanyMx()) {
-			String mailPassword = password;
-
-			if (Validator.isNull(mailPassword)) {
-				mailPassword = user.getPasswordUnencrypted();
-			}
-
 			mailService.addUser(
-				user.getCompanyId(), user.getUserId(), mailPassword,
+				user.getCompanyId(), user.getUserId(), passwordUnencrypted,
 				user.getFirstName(), user.getMiddleName(), user.getLastName(),
 				user.getEmailAddress());
 		}
@@ -1637,7 +1601,7 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 		boolean sendEmail = ParamUtil.getBoolean(serviceContext, "sendEmail");
 
 		if (sendEmail) {
-			sendEmail(user, password, serviceContext);
+			sendEmail(user, passwordUnencrypted, serviceContext);
 		}
 
 		Company company = companyPersistence.findByPrimaryKey(
@@ -5521,6 +5485,42 @@ public class UserLocalServiceImpl extends UserLocalServiceBaseImpl {
 
 		user.setEmailAddress(emailAddress);
 		user.setDigest(StringPool.BLANK);
+	}
+
+	protected void setInitialPassword(ServiceContext serviceContext, User user)
+		throws PortalException, SystemException {
+
+		String password = null;
+
+		if (LDAPSettingsUtil.isPasswordPolicyEnabled(user.getCompanyId())) {
+			if (_log.isWarnEnabled()) {
+				StringBundler sb = new StringBundler(4);
+
+				sb.append("When LDAP password policy is enabled, it is ");
+				sb.append("possible that portal generated passwords will ");
+				sb.append("not match the LDAP policy. Using ");
+				sb.append("RegExpToolkit to generate new password.");
+
+				_log.warn(sb.toString());
+			}
+
+			RegExpToolkit regExpToolkit = new RegExpToolkit();
+
+			password = regExpToolkit.generate(null);
+		}
+		else {
+			PasswordPolicy userPasswordPolicy =
+				passwordPolicyLocalService.getPasswordPolicy(
+					user.getCompanyId(), user.getOrganizationIds());
+
+			password = PwdToolkitUtil.generate(userPasswordPolicy);
+		}
+
+		serviceContext.setAttribute("passwordUnencrypted", password);
+
+		user.setPassword(PasswordEncryptorUtil.encrypt(password));
+		user.setPasswordEncrypted(true);
+		user.setPasswordUnencrypted(password);
 	}
 
 	protected void startWorkflowInstance(
