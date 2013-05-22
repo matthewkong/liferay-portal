@@ -143,41 +143,42 @@ public class AdvancedPermissionChecker extends BasePermissionChecker {
 		PermissionCheckerBag bag = PermissionCacheUtil.getBag(
 			defaultUserId, guestGroup.getGroupId());
 
-		if (bag == null) {
-			try {
-				List<Group> groups = new ArrayList<Group>();
+		if (bag != null) {
+			return bag;
+		}
 
-				groups.add(guestGroup);
+		try {
+			List<Group> groups = new ArrayList<Group>();
 
-				List<Role> roles = RoleLocalServiceUtil.getUserRelatedRoles(
-					defaultUserId, groups);
+			groups.add(guestGroup);
 
-				// Only use the guest group for deriving the roles for
-				// unauthenticated users. Do not add the group to the permission
-				// bag as this implies group membership which is incorrect in
-				// the case of unauthenticated users.
+			List<Role> roles = RoleLocalServiceUtil.getUserRelatedRoles(
+				defaultUserId, groups);
 
+			// Only use the guest group for deriving the roles for
+			// unauthenticated users. Do not add the group to the permission bag
+			// as this implies group membership which is incorrect in the case
+			// of unauthenticated users.
+
+			bag = new PermissionCheckerBagImpl(
+				defaultUserId, Collections.<Group>emptyList(),
+				Collections.<Organization>emptyList(),
+				Collections.<Group>emptyList(), Collections.<Group>emptyList(),
+				Collections.<Group>emptyList(), roles);
+		}
+		finally {
+			if (bag == null) {
 				bag = new PermissionCheckerBagImpl(
 					defaultUserId, Collections.<Group>emptyList(),
 					Collections.<Organization>emptyList(),
 					Collections.<Group>emptyList(),
 					Collections.<Group>emptyList(),
-					Collections.<Group>emptyList(), roles);
+					Collections.<Group>emptyList(),
+					Collections.<Role>emptyList());
 			}
-			finally {
-				if (bag == null) {
-					bag = new PermissionCheckerBagImpl(
-						defaultUserId, Collections.<Group>emptyList(),
-						Collections.<Organization>emptyList(),
-						Collections.<Group>emptyList(),
-						Collections.<Group>emptyList(),
-						Collections.<Group>emptyList(),
-						Collections.<Role>emptyList());
-				}
 
-				PermissionCacheUtil.putBag(
-					defaultUserId, guestGroup.getGroupId(), bag);
-			}
+			PermissionCacheUtil.putBag(
+				defaultUserId, guestGroup.getGroupId(), bag);
 		}
 
 		return bag;
@@ -303,31 +304,30 @@ public class AdvancedPermissionChecker extends BasePermissionChecker {
 		catch (Exception e) {
 		}
 
-		if (bag != null) {
-			if (checkGuest) {
-				Set<Long> roleIds = SetUtil.fromArray(bag.getRoleIds());
-
-				try {
-					PermissionCheckerBag guestBag = getGuestUserBag();
-
-					if (guestBag != null) {
-						for (long roleId : guestBag.getRoleIds()) {
-							roleIds.add(roleId);
-						}
-					}
-				}
-				catch (Exception e) {
-				}
-
-				return ArrayUtil.toArray(
-					roleIds.toArray(new Long[roleIds.size()]));
-			}
-			else {
-				return bag.getRoleIds();
-			}
+		if (bag == null) {
+			return PermissionChecker.DEFAULT_ROLE_IDS;
 		}
 
-		return PermissionChecker.DEFAULT_ROLE_IDS;
+		if (checkGuest) {
+			Set<Long> roleIds = SetUtil.fromArray(bag.getRoleIds());
+
+			try {
+				PermissionCheckerBag guestBag = getGuestUserBag();
+
+				if (guestBag != null) {
+					for (long roleId : guestBag.getRoleIds()) {
+						roleIds.add(roleId);
+					}
+				}
+			}
+			catch (Exception e) {
+			}
+
+			return ArrayUtil.toArray(roleIds.toArray(new Long[roleIds.size()]));
+		}
+		else {
+			return bag.getRoleIds();
+		}
 	}
 
 	/**
@@ -564,27 +564,29 @@ public class AdvancedPermissionChecker extends BasePermissionChecker {
 			user.getUserId(), signedIn, checkGuest, groupId, name, primKey,
 			actionId);
 
-		if (value == null) {
-			try {
-				value = Boolean.valueOf(
-					hasPermissionImpl(groupId, name, primKey, actionId));
+		if (value != null) {
+			return value.booleanValue();
+		}
 
-				if (_log.isDebugEnabled()) {
-					_log.debug(
-						"Checking permission for " + groupId + " " + name +
-							" " + primKey + " " + actionId + " takes " +
-								stopWatch.getTime() + " ms");
-				}
-			}
-			finally {
-				if (value == null) {
-					value = Boolean.FALSE;
-				}
+		try {
+			value = Boolean.valueOf(
+				hasPermissionImpl(groupId, name, primKey, actionId));
 
-				PermissionCacheUtil.putPermission(
-					user.getUserId(), signedIn, checkGuest, groupId, name,
-					primKey, actionId, value);
+			if (_log.isDebugEnabled()) {
+				_log.debug(
+					"Checking permission for " + groupId + " " + name +
+						" " + primKey + " " + actionId + " takes " +
+							stopWatch.getTime() + " ms");
 			}
+		}
+		finally {
+			if (value == null) {
+				value = Boolean.FALSE;
+			}
+
+			PermissionCacheUtil.putPermission(
+				user.getUserId(), signedIn, checkGuest, groupId, name, primKey,
+				actionId, value);
 		}
 
 		return value.booleanValue();

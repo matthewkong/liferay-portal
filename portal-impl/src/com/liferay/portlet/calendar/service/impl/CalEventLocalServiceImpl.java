@@ -523,44 +523,45 @@ public class CalEventLocalServiceImpl extends CalEventLocalServiceBaseImpl {
 
 		List<CalEvent> events = eventsPool.get(key);
 
-		if (events == null) {
-
-			// Time zone sensitive
-
-			List<CalEvent> timeZoneSensitiveEvents =
-				calEventFinder.findByG_SD_T(
-					groupId, CalendarUtil.getGTDate(cal),
-					CalendarUtil.getLTDate(cal), true, types);
-
-			// Time zone insensitive
-
-			Calendar tzICal = CalendarFactoryUtil.getCalendar(
-				TimeZoneUtil.getTimeZone(StringPool.UTC));
-
-			tzICal.set(
-				cal.get(Calendar.YEAR), cal.get(Calendar.MONTH),
-				cal.get(Calendar.DATE));
-
-			List<CalEvent> timeZoneInsensitiveEvents =
-				calEventFinder.findByG_SD_T(
-					groupId, CalendarUtil.getGTDate(tzICal),
-					CalendarUtil.getLTDate(tzICal), false, types);
-
-			// Create new list
-
-			events = new ArrayList<CalEvent>();
-
-			events.addAll(timeZoneSensitiveEvents);
-			events.addAll(timeZoneInsensitiveEvents);
-
-			// Add repeating events
-
-			events.addAll(getRepeatingEvents(groupId, cal, types));
-
-			events = new UnmodifiableList<CalEvent>(events);
-
-			eventsPool.put(key, events);
+		if (events != null) {
+			return events;
 		}
+
+		// Time zone sensitive
+
+		List<CalEvent> timeZoneSensitiveEvents =
+			calEventFinder.findByG_SD_T(
+				groupId, CalendarUtil.getGTDate(cal),
+				CalendarUtil.getLTDate(cal), true, types);
+
+		// Time zone insensitive
+
+		Calendar tzICal = CalendarFactoryUtil.getCalendar(
+			TimeZoneUtil.getTimeZone(StringPool.UTC));
+
+		tzICal.set(
+			cal.get(Calendar.YEAR), cal.get(Calendar.MONTH),
+			cal.get(Calendar.DATE));
+
+		List<CalEvent> timeZoneInsensitiveEvents =
+			calEventFinder.findByG_SD_T(
+				groupId, CalendarUtil.getGTDate(tzICal),
+				CalendarUtil.getLTDate(tzICal), false, types);
+
+		// Create new list
+
+		events = new ArrayList<CalEvent>();
+
+		events.addAll(timeZoneSensitiveEvents);
+		events.addAll(timeZoneInsensitiveEvents);
+
+		// Add repeating events
+
+		events.addAll(getRepeatingEvents(groupId, cal, types));
+
+		events = new UnmodifiableList<CalEvent>(events);
+
+		eventsPool.put(key, events);
 
 		return events;
 	}
@@ -956,29 +957,31 @@ public class CalEventLocalServiceImpl extends CalEventLocalServiceBaseImpl {
 		recurrenceCal.set(Calendar.SECOND, 0);
 		recurrenceCal.set(Calendar.MILLISECOND, 0);
 
-		if (event.isTimeZoneSensitive()) {
-			int gmtDate = eventCal.get(Calendar.DATE);
-			long gmtMills = eventCal.getTimeInMillis();
+		if (!event.isTimeZoneSensitive()) {
+			return recurrenceCal;
+		}
 
-			eventCal.setTimeZone(cal.getTimeZone());
+		int gmtDate = eventCal.get(Calendar.DATE);
+		long gmtMills = eventCal.getTimeInMillis();
 
-			int tziDate = eventCal.get(Calendar.DATE);
-			long tziMills = Time.getDate(eventCal).getTime();
+		eventCal.setTimeZone(cal.getTimeZone());
 
-			if (gmtDate != tziDate) {
-				int diffDate = 0;
+		int tziDate = eventCal.get(Calendar.DATE);
+		long tziMills = Time.getDate(eventCal).getTime();
 
-				if (gmtMills > tziMills) {
-					diffDate = (int)Math.ceil(
-						(double)(gmtMills - tziMills) / Time.DAY);
-				}
-				else {
-					diffDate = (int)Math.floor(
-						(double)(gmtMills - tziMills) / Time.DAY);
-				}
+		if (gmtDate != tziDate) {
+			int diffDate = 0;
 
-				recurrenceCal.add(Calendar.DATE, diffDate);
+			if (gmtMills > tziMills) {
+				diffDate = (int)Math.ceil(
+					(double)(gmtMills - tziMills) / Time.DAY);
 			}
+			else {
+				diffDate = (int)Math.floor(
+					(double)(gmtMills - tziMills) / Time.DAY);
+			}
+
+			recurrenceCal.add(Calendar.DATE, diffDate);
 		}
 
 		return recurrenceCal;
