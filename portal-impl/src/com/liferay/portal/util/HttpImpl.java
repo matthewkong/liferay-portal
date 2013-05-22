@@ -145,32 +145,34 @@ public class HttpImpl implements Http {
 		_httpClient.setHttpConnectionManager(httpConnectionManager);
 		_proxyHttpClient.setHttpConnectionManager(httpConnectionManager);
 
-		if (hasProxyConfig() && Validator.isNotNull(_PROXY_USERNAME)) {
-			List<String> authPrefs = new ArrayList<String>();
-
-			if (_PROXY_AUTH_TYPE.equals("username-password")) {
-				_proxyCredentials = new UsernamePasswordCredentials(
-					_PROXY_USERNAME, _PROXY_PASSWORD);
-
-				authPrefs.add(AuthPolicy.BASIC);
-				authPrefs.add(AuthPolicy.DIGEST);
-				authPrefs.add(AuthPolicy.NTLM);
-			}
-			else if (_PROXY_AUTH_TYPE.equals("ntlm")) {
-				_proxyCredentials = new NTCredentials(
-					_PROXY_USERNAME, _PROXY_PASSWORD, _PROXY_NTLM_HOST,
-					_PROXY_NTLM_DOMAIN);
-
-				authPrefs.add(AuthPolicy.NTLM);
-				authPrefs.add(AuthPolicy.BASIC);
-				authPrefs.add(AuthPolicy.DIGEST);
-			}
-
-			HttpClientParams httpClientParams = _proxyHttpClient.getParams();
-
-			httpClientParams.setParameter(
-				AuthPolicy.AUTH_SCHEME_PRIORITY, authPrefs);
+		if (!hasProxyConfig() || Validator.isNull(_PROXY_USERNAME)) {
+			return;
 		}
+
+		List<String> authPrefs = new ArrayList<String>();
+
+		if (_PROXY_AUTH_TYPE.equals("username-password")) {
+			_proxyCredentials = new UsernamePasswordCredentials(
+				_PROXY_USERNAME, _PROXY_PASSWORD);
+
+			authPrefs.add(AuthPolicy.BASIC);
+			authPrefs.add(AuthPolicy.DIGEST);
+			authPrefs.add(AuthPolicy.NTLM);
+		}
+		else if (_PROXY_AUTH_TYPE.equals("ntlm")) {
+			_proxyCredentials = new NTCredentials(
+				_PROXY_USERNAME, _PROXY_PASSWORD, _PROXY_NTLM_HOST,
+				_PROXY_NTLM_DOMAIN);
+
+			authPrefs.add(AuthPolicy.NTLM);
+			authPrefs.add(AuthPolicy.BASIC);
+			authPrefs.add(AuthPolicy.DIGEST);
+		}
+
+		HttpClientParams httpClientParams = _proxyHttpClient.getParams();
+
+		httpClientParams.setParameter(
+			AuthPolicy.AUTH_SCHEME_PRIORITY, authPrefs);
 	}
 
 	public String addParameter(String url, String name, boolean value) {
@@ -915,38 +917,38 @@ public class HttpImpl implements Http {
 	public String URLtoString(URL url) throws IOException {
 		String xml = null;
 
-		if (url != null) {
-			String protocol = url.getProtocol().toLowerCase();
-
-			if (protocol.startsWith(Http.HTTP) ||
-				protocol.startsWith(Http.HTTPS)) {
-
-				return URLtoString(url.toString());
-			}
-
-			URLConnection urlConnection = url.openConnection();
-
-			InputStream inputStream = urlConnection.getInputStream();
-
-			UnsyncByteArrayOutputStream unsyncByteArrayOutputStream =
-				new UnsyncByteArrayOutputStream();
-
-			byte[] bytes = new byte[512];
-
-			for (int i = inputStream.read(bytes, 0, 512); i != -1;
-					i = inputStream.read(bytes, 0, 512)) {
-
-				unsyncByteArrayOutputStream.write(bytes, 0, i);
-			}
-
-			xml = new String(
-				unsyncByteArrayOutputStream.unsafeGetByteArray(), 0,
-				unsyncByteArrayOutputStream.size());
-
-			inputStream.close();
-
-			unsyncByteArrayOutputStream.close();
+		if (url == null) {
+			return null;
 		}
+
+		String protocol = url.getProtocol().toLowerCase();
+
+		if (protocol.startsWith(Http.HTTP) || protocol.startsWith(Http.HTTPS)) {
+			return URLtoString(url.toString());
+		}
+
+		URLConnection urlConnection = url.openConnection();
+
+		InputStream inputStream = urlConnection.getInputStream();
+
+		UnsyncByteArrayOutputStream unsyncByteArrayOutputStream =
+			new UnsyncByteArrayOutputStream();
+
+		byte[] bytes = new byte[512];
+
+		for (int i = inputStream.read(bytes, 0, 512); i != -1;
+				i = inputStream.read(bytes, 0, 512)) {
+
+			unsyncByteArrayOutputStream.write(bytes, 0, i);
+		}
+
+		xml = new String(
+			unsyncByteArrayOutputStream.unsafeGetByteArray(), 0,
+			unsyncByteArrayOutputStream.size());
+
+		inputStream.close();
+
+		unsyncByteArrayOutputStream.close();
 
 		return xml;
 	}
