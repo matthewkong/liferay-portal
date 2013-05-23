@@ -49,7 +49,7 @@ import javax.servlet.http.HttpSession;
 /**
  * @author Shuyang Zhou
  */
-public class AgentSerializable implements Serializable {
+public class SPIAgentSerializable implements Serializable {
 
 	public static Map<String, Serializable> extractDistributedRequestAttributes(
 		HttpServletRequest request, Direction direction) {
@@ -157,7 +157,7 @@ public class AgentSerializable implements Serializable {
 		return sessionAttributes;
 	}
 
-	public static <T extends AgentSerializable> T readFrom(
+	public static <T extends SPIAgentSerializable> T readFrom(
 			InputStream inputStream)
 		throws IOException {
 
@@ -222,11 +222,11 @@ public class AgentSerializable implements Serializable {
 	}
 
 	protected void captureThreadLocals() {
-		_threadLocalDistributors =
+		threadLocalDistributors =
 			ThreadLocalDistributorRegistry.getThreadLocalDistributors();
 
 		for (ThreadLocalDistributor threadLocalDistributor :
-				_threadLocalDistributors) {
+				threadLocalDistributors) {
 
 			threadLocalDistributor.capture();
 		}
@@ -234,14 +234,14 @@ public class AgentSerializable implements Serializable {
 
 	protected void restoreThreadLocals() {
 		for (ThreadLocalDistributor threadLocalDistributor :
-				_threadLocalDistributors) {
+				threadLocalDistributors) {
 
 			threadLocalDistributor.restore();
 		}
 	}
 
-	private static Log _log = LogFactoryUtil.getLog(AgentSerializable.class);
+	protected ThreadLocalDistributor[] threadLocalDistributors;
 
-	private ThreadLocalDistributor[] _threadLocalDistributors;
+	private static Log _log = LogFactoryUtil.getLog(SPIAgentSerializable.class);
 
 }

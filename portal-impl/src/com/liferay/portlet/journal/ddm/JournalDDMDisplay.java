@@ -23,6 +23,7 @@ import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.util.PortletKeys;
 import com.liferay.portlet.dynamicdatamapping.util.BaseDDMDisplay;
+import com.liferay.portlet.journal.service.permission.JournalPermission;
 
 import java.util.Set;
 
@@ -49,9 +50,12 @@ public class JournalDDMDisplay extends BaseDDMDisplay {
 		return backURL;
 	}
 
-	@Override
 	public String getPortletId() {
 		return PortletKeys.JOURNAL;
+	}
+
+	public String getResourceName() {
+		return JournalPermission.RESOURCE_NAME;
 	}
 
 	@Override

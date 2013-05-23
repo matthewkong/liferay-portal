@@ -370,11 +370,17 @@ public abstract class BaseWebDriverImpl
 		typeKeys(locator, value);
 	}
 
+	public void sendLogger(String id, String status) {
+	}
+
 	public void setDefaultTimeout() {
 	}
 
 	public void setPrimaryTestSuiteName(String primaryTestSuiteName) {
 		_primaryTestSuiteName = primaryTestSuiteName;
+	}
+
+	public void startLogger() {
 	}
 
 	public void stopLogger() {
