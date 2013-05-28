@@ -14,10 +14,12 @@
 
 package com.liferay.portal.service;
 
+import com.liferay.portal.ReservedUserEmailAddressException;
 import com.liferay.portal.kernel.dao.orm.FinderCacheUtil;
 import com.liferay.portal.kernel.test.ExecutionTestListeners;
 import com.liferay.portal.kernel.transaction.Transactional;
 import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.kernel.util.ReflectionUtil;
 import com.liferay.portal.kernel.util.StringPool;
 import com.liferay.portal.model.Group;
 import com.liferay.portal.model.Organization;
@@ -30,8 +32,12 @@ import com.liferay.portal.test.LiferayIntegrationJUnitTestRunner;
 import com.liferay.portal.test.TransactionalCallbackAwareExecutionTestListener;
 import com.liferay.portal.util.GroupTestUtil;
 import com.liferay.portal.util.OrganizationTestUtil;
+import com.liferay.portal.util.PropsValues;
 import com.liferay.portal.util.TestPropsValues;
 import com.liferay.portal.util.UserTestUtil;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 
 import java.util.Calendar;
 import java.util.Locale;
@@ -68,6 +74,34 @@ public class UserServiceTest {
 		User user = addUser();
 
 		UserServiceUtil.deleteUser(user.getUserId());
+	}
+
+	@Test
+	public void testEmailMXSecurity() throws Exception {
+
+		Field field = getField("COMPANY_SECURITY_STRANGERS_WITH_MX");
+
+		Object value = field.get(null);
+		try {
+			field.set(null, Boolean.FALSE);
+
+			User user = addUser();
+			user.setEmailAddress("testcompanymx@test.com");
+			UserLocalServiceUtil.updateUser(user);
+
+			long userId = user.getUserId();
+
+			String emailAddress = "testcompanymx@liferay.com";
+
+			UserServiceUtil.updateEmailAddress(
+					userId, user.getPassword(), emailAddress, emailAddress,
+					new ServiceContext());
+
+			Assert.fail();
+		}
+		catch (ReservedUserEmailAddressException rueae) {}
+
+		field.set(null, Boolean.TRUE);
 	}
 
 	@Test
@@ -357,6 +391,22 @@ public class UserServiceTest {
 			locale, firstName, middleName, lastName, prefixId, suffixId, male,
 			birthdayMonth, birthdayDay, birthdayYear, jobTitle, groupIds,
 			organizationIds, roleIds, userGroupIds, sendMail, serviceContext);
+	}
+
+	protected Field getField(String fieldName) throws Exception {
+		Field field = ReflectionUtil.getDeclaredField(
+				PropsValues.class, fieldName);
+
+		int modifiers = field.getModifiers();
+
+		if ((modifiers & Modifier.FINAL) == Modifier.FINAL) {
+			Field modifiersField = ReflectionUtil.getDeclaredField(
+					Field.class, "modifiers");
+
+			modifiersField.setInt(field, modifiers & ~Modifier.FINAL);
+		}
+
+		return field;
 	}
 
 	protected void unsetGroupUsers(
