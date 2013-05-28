@@ -772,6 +772,31 @@ public class JavadocFormatter {
 			fileName, originalContent, javadocLessContent, document);
 	}
 
+	private String _formatCDATA(String cdata, String exclude) {
+		StringBundler sb = new StringBundler();
+
+		String startTag = "<" + exclude + ">";
+		String endTag = "</" + exclude + ">";
+
+		String[] cdataParts = cdata.split(startTag);
+
+		for (int i = 0; i < cdataParts.length; i++) {
+			if (!cdataParts[i].contains(endTag)) {
+				cdataParts[i] = _getCDATA(cdataParts[i]);
+			}
+
+			String cdataPart = cdataParts[i];
+
+			if (cdataPart.contains("</" + exclude + ">")) {
+				sb.append(startTag);
+			}
+
+			sb.append(cdataPart);
+		}
+
+		return sb.toString();
+	}
+
 	private String _formatInlines(String text) {
 
 		// Capitalize ID
@@ -794,38 +819,45 @@ public class JavadocFormatter {
 		if (cdata == null) {
 			return StringPool.BLANK;
 		}
-
-		cdata = cdata.replaceAll(
-			"(?s)\\s*<(p|pre|[ou]l)>\\s*(.*?)\\s*</\\1>\\s*",
-			"\n\n<$1>\n$2\n</$1>\n\n");
-		cdata = cdata.replaceAll(
-			"(?s)\\s*<li>\\s*(.*?)\\s*</li>\\s*", "\n<li>\n$1\n</li>\n");
-		cdata = StringUtil.replace(cdata, "</li>\n\n<li>", "</li>\n<li>");
-		cdata = cdata.replaceAll("\n\\s+\n", "\n\n");
-		cdata = cdata.replaceAll(" +", " ");
-
-		// Trim whitespace inside paragraph tags or in the first paragraph
-
-		Pattern pattern = Pattern.compile(
-			"(^.*?(?=\n\n|$)+|(?<=<p>\n).*?(?=\n</p>))", Pattern.DOTALL);
-
-		Matcher matcher = pattern.matcher(cdata);
-
-		StringBuffer sb = new StringBuffer();
-
-		while (matcher.find()) {
-			String trimmed = _trimMultilineText(matcher.group());
-
-			// Escape dollar signs so they are not treated as replacement groups
-
-			trimmed = trimmed.replaceAll("\\$", "\\\\\\$");
-
-			matcher.appendReplacement(sb, trimmed);
+		else if (cdata.contains("<pre>")) {
+			cdata = _formatCDATA(cdata, "pre");
 		}
+		else if (cdata.contains("<table>")) {
+			cdata = _formatCDATA(cdata, "table");
+		}
+		else {
+			cdata = cdata.replaceAll(
+				"(?s)\\s*<(p|[ou]l)>\\s*(.*?)\\s*</\\1>\\s*",
+				"\n\n<$1>\n$2\n</$1>\n\n");
+			cdata = cdata.replaceAll(
+				"(?s)\\s*<li>\\s*(.*?)\\s*</li>\\s*", "\n<li>\n$1\n</li>\n");
+			cdata = StringUtil.replace(cdata, "</li>\n\n<li>", "</li>\n<li>");
+			cdata = cdata.replaceAll("\n\\s+\n", "\n\n");
+			cdata.replaceAll(" +", " ");
 
-		matcher.appendTail(sb);
+			// Trim whitespace inside paragraph tags or in the first paragraph
 
-		cdata = sb.toString();
+			Pattern pattern = Pattern.compile(
+				"(^.*?(?=\n\n|$)+|(?<=<p>\n).*?(?=\n</p>))", Pattern.DOTALL);
+
+			Matcher matcher = pattern.matcher(cdata);
+
+			StringBuffer sb = new StringBuffer();
+
+			while (matcher.find()) {
+				String trimmed = _trimMultilineText(matcher.group());
+
+				// Escape dollar signs
+
+				trimmed = trimmed.replaceAll("\\$", "\\\\\\$");
+
+				matcher.appendReplacement(sb, trimmed);
+			}
+
+			matcher.appendTail(sb);
+
+			cdata = sb.toString();
+		}
 
 		return cdata.trim();
 	}
@@ -1781,36 +1813,44 @@ public class JavadocFormatter {
 			"Updating " + _languagePropertiesFile + " key " + key);
 	}
 
+	private String _wrapText(String text, int indentLength, String exclude) {
+		StringBuffer sb = new StringBuffer();
+
+		StringBundler regexSB = new StringBundler("(?<=^|</");
+
+		regexSB.append(exclude);
+		regexSB.append(">).+?(?=$|<");
+		regexSB.append(exclude);
+		regexSB.append(">)");
+
+		Pattern pattern = Pattern.compile(regexSB.toString(), Pattern.DOTALL);
+
+		Matcher matcher = pattern.matcher(text);
+
+		while (matcher.find()) {
+			String wrapped = _formatInlines(matcher.group());
+
+			wrapped = StringUtil.wrap(wrapped, 80 - indentLength, "\n");
+
+			matcher.appendReplacement(sb, wrapped);
+		}
+
+		matcher.appendTail(sb);
+
+		return sb.toString();
+	}
+
 	private String _wrapText(String text, String indent) {
 		int indentLength = _getIndentLength(indent);
 
-		// Do not wrap text inside <pre>
-
 		if (text.contains("<pre>")) {
-			Pattern pattern = Pattern.compile(
-				"(?<=^|</pre>).+?(?=$|<pre>)", Pattern.DOTALL);
-
-			Matcher matcher = pattern.matcher(text);
-
-			StringBuffer sb = new StringBuffer();
-
-			while (matcher.find()) {
-				String wrapped = _formatInlines(matcher.group());
-
-				wrapped = StringUtil.wrap(wrapped, 80 - indentLength, "\n");
-
-				matcher.appendReplacement(sb, wrapped);
-			}
-
-			matcher.appendTail(sb);
-
-			sb.append("\n");
-
-			text = sb.toString();
+			text = _wrapText(text, indentLength, "pre");
+		}
+		else if (text.contains("<table>")) {
+			text = _wrapText(text, indentLength, "table");
 		}
 		else {
 			text = _formatInlines(text);
-
 			text = StringUtil.wrap(text, 80 - indentLength, "\n");
 		}
 
