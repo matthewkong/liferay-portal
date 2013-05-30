@@ -759,8 +759,6 @@ public interface PropsKeys {
 
 	public static final String DYNAMIC_DATA_LISTS_STORAGE_TYPE = "dynamic.data.lists.storage.type";
 
-	public static final String DYNAMIC_DATA_LISTS_TRANSFORMER_LISTENER = "dynamic.data.lists.transformer.listener";
-
 	public static final String DYNAMIC_DATA_MAPPING_IMAGE_EXTENSIONS = "dynamic.data.mapping.image.extensions";
 
 	public static final String DYNAMIC_DATA_MAPPING_IMAGE_SMALL_MAX_SIZE = "dynamic.data.mapping.image.small.max.size";
@@ -2180,6 +2178,8 @@ public interface PropsKeys {
 	public static final String SITEMINDER_IMPORT_FROM_LDAP = "siteminder.import.from.ldap";
 
 	public static final String SITEMINDER_USER_HEADER = "siteminder.user.header";
+
+	public static final String SITES_CONTENT_SHARING_THROUGH_ADMINISTRATORS_ENABLED = "sites.content.sharing.through.administrators.enabled";
 
 	public static final String SITES_CONTENT_SHARING_WITH_CHILDREN_ENABLED = "sites.content.sharing.with.children.enabled";
 

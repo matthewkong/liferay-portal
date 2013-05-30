@@ -858,7 +858,7 @@ public class PortalUtil {
 	}
 
 	/**
-	 * @deprecated As of 6.2 renamed to {@link #getSiteGroupId(long)}
+	 * @deprecated As of 6.2.0 renamed to {@link #getSiteGroupId(long)}
 	 */
 	public static long getParentGroupId(long scopeGroupId)
 		throws PortalException, SystemException {
@@ -985,10 +985,18 @@ public class PortalUtil {
 		return getPortal().getPortalWebDir();
 	}
 
+	/**
+	 * @deprecated As of 6.2.0 replaced by {@link
+	 * PortletContainerSecurityUtil#getWhitelist()}
+	 */
 	public static Set<String> getPortletAddDefaultResourceCheckWhitelist() {
 		return getPortal().getPortletAddDefaultResourceCheckWhitelist();
 	}
 
+	/**
+	 * @deprecated As of 6.2.0 replaced by {@link
+	 * PortletContainerSecurityUtil#getWhitelistActions()}
+	 */
 	public static Set<String>
 		getPortletAddDefaultResourceCheckWhitelistActions() {
 
@@ -1455,6 +1463,9 @@ public class PortalUtil {
 			portletConfig, actionRequest, actionResponse);
 	}
 
+	/**
+	 * @deprecated As of 6.2.0 with no direct replacement
+	 */
 	public static boolean isAllowAddPortletDefaultResource(
 			HttpServletRequest request, Portlet portlet)
 		throws PortalException, SystemException {
@@ -1474,7 +1485,7 @@ public class PortalUtil {
 	}
 
 	/**
-	 * @deprecated As of 6.1, renamed to {@link #isGroupAdmin(User, long)}
+	 * @deprecated As of 6.1.0, renamed to {@link #isGroupAdmin(User, long)}
 	 */
 	public static boolean isCommunityAdmin(User user, long groupId)
 		throws Exception {
@@ -1483,7 +1494,7 @@ public class PortalUtil {
 	}
 
 	/**
-	 * @deprecated As of 6.1, renamed to {@link #isGroupOwner(User, long)}
+	 * @deprecated As of 6.1.0, renamed to {@link #isGroupOwner(User, long)}
 	 */
 	public static boolean isCommunityOwner(User user, long groupId)
 		throws Exception {
@@ -1634,10 +1645,18 @@ public class PortalUtil {
 		getPortal().resetCDNHosts();
 	}
 
+	/**
+	 * @deprecated As of 6.2.0 replaced by {@link
+	 * PortletContainerSecurityUtil#resetWhitelist()}
+	 */
 	public static Set<String> resetPortletAddDefaultResourceCheckWhitelist() {
 		return getPortal().resetPortletAddDefaultResourceCheckWhitelist();
 	}
 
+	/**
+	 * @deprecated As of 6.2.0 replaced by {@link
+	 * PortletContainerSecurityUtil#resetWhitelistActions()}
+	 */
 	public static Set<String>
 		resetPortletAddDefaultResourceCheckWhitelistActions() {
 

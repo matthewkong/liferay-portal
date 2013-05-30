@@ -128,7 +128,7 @@ public class PanelContainerTag extends BaseBodyTagSupport implements BodyTag {
 		_endPage = endPage;
 	}
 
-	public void setExtended(Boolean extended) {
+	public void setExtended(boolean extended) {
 		_extended = extended;
 	}
 
@@ -181,7 +181,7 @@ public class PanelContainerTag extends BaseBodyTagSupport implements BodyTag {
 	private boolean _accordion;
 	private String _cssClass;
 	private String _endPage;
-	private Boolean _extended;
+	private boolean _extended;
 	private String _id;
 	private boolean _persistState;
 	private String _startPage;

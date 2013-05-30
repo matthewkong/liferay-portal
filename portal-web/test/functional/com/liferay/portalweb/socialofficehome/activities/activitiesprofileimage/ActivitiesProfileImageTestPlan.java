@@ -12,24 +12,25 @@
  * details.
  */
 
-package com.liferay.portal.deploy.auto;
+package com.liferay.portalweb.socialofficehome.activities.activitiesprofileimage;
 
-import com.liferay.portal.kernel.deploy.auto.AutoDeployException;
-import com.liferay.portal.kernel.deploy.auto.context.AutoDeploymentContext;
+import com.liferay.portalweb.portal.BaseTestSuite;
+import com.liferay.portalweb.socialofficehome.activities.activitiesprofileimage.viewactivitiesprofileimageme.ViewActivitiesProfileImageMeTests;
+
+import junit.framework.Test;
+import junit.framework.TestSuite;
 
 /**
- * @author Ivica Cardic
  * @author Brian Wing Shun Chan
  */
-public interface AutoDeployer {
+public class ActivitiesProfileImageTestPlan extends BaseTestSuite {
 
-	public static final int CODE_DEFAULT = 1;
+	public static Test suite() {
+		TestSuite testSuite = new TestSuite();
 
-	public static final int CODE_SKIP_NEWER_VERSION = 2;
+		testSuite.addTest(ViewActivitiesProfileImageMeTests.suite());
 
-	public int autoDeploy(AutoDeploymentContext autoDeploymentContext)
-		throws AutoDeployException;
-
-	public AutoDeployer cloneAutoDeployer() throws AutoDeployException;
+		return testSuite;
+	}
 
 }
