@@ -407,6 +407,18 @@ public class UserServiceImpl extends UserServiceBaseImpl {
 
 		boolean workflowEnabled = WorkflowThreadLocal.isEnabled();
 
+		long creatorUserId = 0;
+
+		try {
+			creatorUserId = getGuestOrUserId();
+		}
+		catch (PrincipalException pe) {
+		}
+
+		checkAddUserPermission(
+			creatorUserId, companyId, emailAddress, groupIds, organizationIds,
+			roleIds, userGroupIds, serviceContext);
+
 		try {
 			WorkflowThreadLocal.setEnabled(false);
 
