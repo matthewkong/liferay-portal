@@ -117,17 +117,38 @@ portletURL.setParameter("target", target);
 
 			if (searchTerms.isAdvancedSearch()) {
 				sites = GroupLocalServiceUtil.search(company.getCompanyId(), null, searchTerms.getName(), searchTerms.getDescription(), groupParams, searchTerms.isAndOperator(), start, end, searchContainer.getOrderByComparator());
+
+				if (sites.remove(GroupLocalServiceUtil.fetchFriendlyURLGroup(company.getCompanyId(), "/global"))) {
+					sites = GroupLocalServiceUtil.search(company.getCompanyId(), null, searchTerms.getName(), searchTerms.getDescription(), groupParams, searchTerms.isAndOperator(), start, end + 1, searchContainer.getOrderByComparator());
+					sites.remove(GroupLocalServiceUtil.fetchFriendlyURLGroup(company.getCompanyId(), "/global"));
+				}
+				else {
+					if ((searchTerms.getKeywords() == StringPool.BLANK) && (searchTerms.getDescription() == StringPool.BLANK)) {
+						sites = GroupLocalServiceUtil.search(company.getCompanyId(), null, searchTerms.getName(), searchTerms.getDescription(), groupParams, searchTerms.isAndOperator(), start + 1, end + 1, searchContainer.getOrderByComparator());
+					}
+				}
+
 				total = GroupLocalServiceUtil.searchCount(company.getCompanyId(), null, searchTerms.getName(), searchTerms.getDescription(), groupParams, searchTerms.isAndOperator());
 			}
 			else {
 				sites = GroupLocalServiceUtil.search(company.getCompanyId(), null, searchTerms.getKeywords(), groupParams, start, end, searchContainer.getOrderByComparator());
+
+				if (sites.remove(GroupLocalServiceUtil.fetchFriendlyURLGroup(company.getCompanyId(), "/global"))) {
+					sites = GroupLocalServiceUtil.search(company.getCompanyId(), null, searchTerms.getKeywords(), groupParams, start, end + 1, searchContainer.getOrderByComparator());
+					sites.remove(GroupLocalServiceUtil.fetchFriendlyURLGroup(company.getCompanyId(), "/global"));
+				}
+				else {
+					if (searchTerms.getKeywords() == StringPool.BLANK) {
+						sites = GroupLocalServiceUtil.search(company.getCompanyId(), null, searchTerms.getKeywords(), groupParams, start + 1, end + 1, searchContainer.getOrderByComparator());
+					}
+				}
+
 				total = GroupLocalServiceUtil.searchCount(company.getCompanyId(), null, searchTerms.getKeywords(), groupParams, searchTerms.isAndOperator());
 			}
 
 			total += additionalSites;
 
 			results.addAll(sites);
-
 
 			pageContext.setAttribute("results", results);
 			pageContext.setAttribute("total", total);
