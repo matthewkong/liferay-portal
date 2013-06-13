@@ -119,19 +119,29 @@ portletURL.setParameter("target", target);
 
 			List<Group> sites = null;
 
+			String accountSiteName = account.getName().toLowerCase();
+			String keywords = searchTerms.getKeywords().toLowerCase();
+			String searchName = request.getParameter("name");
+
+			if (searchTerms.isAdvancedSearch() && accountSiteName.contains(searchName)&& Validator.isNotNull(searchName)) {
+				searchName = GroupConstants.GUEST;
+			}
+			else if (accountSiteName.contains(keywords) && Validator.isNotNull(keywords)) {
+				keywords = GroupConstants.GUEST;
+			}
+
 			if (searchTerms.isAdvancedSearch()) {
-				sites = GroupLocalServiceUtil.search(company.getCompanyId(), null, searchTerms.getName(), searchTerms.getDescription(), groupParams, searchTerms.isAndOperator(), start, end, searchContainer.getOrderByComparator());
-				total = GroupLocalServiceUtil.searchCount(company.getCompanyId(), null, searchTerms.getName(), searchTerms.getDescription(), groupParams, searchTerms.isAndOperator());
+				sites = GroupLocalServiceUtil.search(company.getCompanyId(), null, searchName, searchTerms.getDescription(), groupParams, searchTerms.isAndOperator(), start, end, searchContainer.getOrderByComparator());
+				total = GroupLocalServiceUtil.searchCount(company.getCompanyId(), null, searchName, searchTerms.getDescription(), groupParams, searchTerms.isAndOperator());
 			}
 			else {
-				sites = GroupLocalServiceUtil.search(company.getCompanyId(), null, searchTerms.getKeywords(), groupParams, start, end, searchContainer.getOrderByComparator());
-				total = GroupLocalServiceUtil.searchCount(company.getCompanyId(), null, searchTerms.getKeywords(), groupParams, searchTerms.isAndOperator());
+				sites = GroupLocalServiceUtil.search(company.getCompanyId(), null, keywords, groupParams, start, end, searchContainer.getOrderByComparator());
+				total = GroupLocalServiceUtil.searchCount(company.getCompanyId(), null, keywords, groupParams, searchTerms.isAndOperator());
 			}
 
 			total += additionalSites;
 
 			results.addAll(sites);
-
 
 			pageContext.setAttribute("results", results);
 			pageContext.setAttribute("total", total);
