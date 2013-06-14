@@ -110,6 +110,36 @@ public class CustomSQL {
 		return sql.concat(criteria);
 	}
 
+	public String escapeWildCards(String keywords, String sql) {
+		if (Validator.isNotNull(keywords)) {
+			if (isVendorMySQL() || isVendorOracle()) {
+				keywords = StringUtil.replace(keywords,"%","\\%");
+				keywords = StringUtil.replace(keywords,"_","\\_");
+
+				return keywords;
+			}
+		}
+
+		if (Validator.isNotNull(sql)) {
+			if (isVendorOracle()) {
+				sql = StringUtil.replace(sql,"(User_.firstName) LIKE ?"
+					,"(User_.firstName) LIKE ? ESCAPE '\\'");
+				sql = StringUtil.replace(sql,"(User_.middleName) LIKE ?"
+					,"(User_.middleName) LIKE ? ESCAPE '\\'");
+				sql = StringUtil.replace(sql,"(User_.lastName) LIKE ?"
+					,"(User_.lastName) LIKE ? ESCAPE '\\'");
+				sql = StringUtil.replace(sql,"(User_.screenName) LIKE ?"
+					,"(User_.screenName) LIKE ? ESCAPE '\\'");
+				sql = StringUtil.replace(sql,"(User_.emailAddress) LIKE ?"
+					,"(User_.emailAddress) LIKE ? ESCAPE '\\'");
+
+				return sql;
+			}
+		}
+
+		return null;
+	}
+
 	public String get(String id) {
 		return _sqlPool.get(id);
 	}

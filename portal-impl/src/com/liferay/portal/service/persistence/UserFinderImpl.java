@@ -378,6 +378,7 @@ public class UserFinderImpl
 		boolean andOperator = false;
 
 		if (Validator.isNotNull(keywords)) {
+			keywords = CustomSQLUtil.escapeWildCards(keywords, null);
 			firstNames = CustomSQLUtil.keywords(keywords);
 			middleNames = CustomSQLUtil.keywords(keywords);
 			lastNames = CustomSQLUtil.keywords(keywords);
@@ -612,6 +613,7 @@ public class UserFinderImpl
 
 			String sql = CustomSQLUtil.get(FIND_BY_C_FN_MN_LN_SN_EA_S);
 
+			sql = CustomSQLUtil.escapeWildCards(null, sql);
 			sql = CustomSQLUtil.replaceKeywords(
 				sql, "lower(User_.firstName)", StringPool.LIKE, false,
 				firstNames);
