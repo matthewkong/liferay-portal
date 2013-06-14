@@ -119,19 +119,43 @@ portletURL.setParameter("target", target);
 
 			List<Group> sites = null;
 
+			String accountSiteName = account.getName().toLowerCase();
+			String advancedNameKeywords = request.getParameter("name");
+			String keywords = searchTerms.getKeywords().toLowerCase();
+
 			if (searchTerms.isAdvancedSearch()) {
-				sites = GroupLocalServiceUtil.search(company.getCompanyId(), null, searchTerms.getName(), searchTerms.getDescription(), groupParams, searchTerms.isAndOperator(), start, end, searchContainer.getOrderByComparator());
-				total = GroupLocalServiceUtil.searchCount(company.getCompanyId(), null, searchTerms.getName(), searchTerms.getDescription(), groupParams, searchTerms.isAndOperator());
+				String[] advancedNameKeywordsArray = advancedNameKeywords.split(" ");
+
+				for (String advancedNameKeyword : advancedNameKeywordsArray) {
+					if (accountSiteName.contains(advancedNameKeyword.toLowerCase()) && Validator.isNotNull(advancedNameKeywords) && !advancedNameKeyword.toLowerCase().equals(GroupConstants.GUEST.toLowerCase())) {
+						advancedNameKeywords = advancedNameKeywords + " " + GroupConstants.GUEST;
+						break;
+					}
+				}
 			}
 			else {
-				sites = GroupLocalServiceUtil.search(company.getCompanyId(), null, searchTerms.getKeywords(), groupParams, start, end, searchContainer.getOrderByComparator());
-				total = GroupLocalServiceUtil.searchCount(company.getCompanyId(), null, searchTerms.getKeywords(), groupParams, searchTerms.isAndOperator());
+				String[] keywordsArray = keywords.split(" ");
+
+				for (String keyword : keywordsArray) {
+					if (accountSiteName.contains(keyword) && Validator.isNotNull(keywords) && !keyword.equals(GroupConstants.GUEST.toLowerCase())) {
+						keywords = keywords + " " + GroupConstants.GUEST;
+						break;
+					}
+				}
+			}
+
+			if (searchTerms.isAdvancedSearch()) {
+				sites = GroupLocalServiceUtil.search(company.getCompanyId(), null, advancedNameKeywords, searchTerms.getDescription(), groupParams, searchTerms.isAndOperator(), start, end, searchContainer.getOrderByComparator());
+				total = GroupLocalServiceUtil.searchCount(company.getCompanyId(), null, advancedNameKeywords, searchTerms.getDescription(), groupParams, searchTerms.isAndOperator());
+			}
+			else {
+				sites = GroupLocalServiceUtil.search(company.getCompanyId(), null, keywords, groupParams, start, end, searchContainer.getOrderByComparator());
+				total = GroupLocalServiceUtil.searchCount(company.getCompanyId(), null, keywords, groupParams, searchTerms.isAndOperator());
 			}
 
 			total += additionalSites;
 
 			results.addAll(sites);
-
 
 			pageContext.setAttribute("results", results);
 			pageContext.setAttribute("total", total);
