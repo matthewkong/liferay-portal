@@ -32,6 +32,10 @@ public class CustomSQLUtil {
 		return _instance._customSQL.appendCriteria(sql, criteria);
 	}
 
+	public static String escapeWildCards(String keywords) {
+		return _instance._customSQL.escapeWildCards(keywords);
+	}
+
 	public static String get(String id) {
 		return _instance._customSQL.get(id);
 	}

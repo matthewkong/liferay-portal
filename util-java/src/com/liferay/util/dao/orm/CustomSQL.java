@@ -110,6 +110,21 @@ public class CustomSQL {
 		return sql.concat(criteria);
 	}
 
+	public String escapeWildCards(String keywords) {
+		if (Validator.isNull(keywords)) {
+			return keywords;
+		}
+
+		if (isVendorMySQL() || isVendorOracle()) {
+			keywords = StringUtil.replace(keywords,"%","\\%");
+			keywords = StringUtil.replace(keywords,"_","\\_");
+
+			return keywords;
+		}
+
+		return keywords;
+	}
+
 	public String get(String id) {
 		return _sqlPool.get(id);
 	}
