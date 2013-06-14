@@ -14,6 +14,8 @@
 
 package com.liferay.portal.service.persistence;
 
+import com.liferay.portal.kernel.dao.db.DB;
+import com.liferay.portal.kernel.dao.db.DBFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.CustomSQLParam;
 import com.liferay.portal.kernel.dao.orm.QueryPos;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
@@ -71,6 +73,9 @@ public class UserFinderImpl
 
 	public static final String FIND_BY_C_FN_MN_LN_SN_EA_S =
 		UserFinder.class.getName() + ".findByC_FN_MN_LN_SN_EA_S";
+
+	public static final String FIND_BY_C_FN_MN_LN_SN_EA_S_Oracle =
+			UserFinder.class.getName() + ".findByC_FN_MN_LN_SN_EA_S_Oracle";
 
 	public static final String JOIN_BY_CONTACT_TWITTER_SN =
 		UserFinder.class.getName() + ".joinByContactTwitterSN";
@@ -378,6 +383,7 @@ public class UserFinderImpl
 		boolean andOperator = false;
 
 		if (Validator.isNotNull(keywords)) {
+			keywords = CustomSQLUtil.escapeWildCards(keywords);
 			firstNames = CustomSQLUtil.keywords(keywords);
 			middleNames = CustomSQLUtil.keywords(keywords);
 			lastNames = CustomSQLUtil.keywords(keywords);
@@ -610,7 +616,18 @@ public class UserFinderImpl
 		try {
 			session = openSession();
 
-			String sql = CustomSQLUtil.get(FIND_BY_C_FN_MN_LN_SN_EA_S);
+			DB db = DBFactoryUtil.getDB();
+
+			String dbType = db.getType();
+
+			String sql = null;
+
+			if (dbType.equals(DB.TYPE_ORACLE)) {
+				sql = CustomSQLUtil.get(FIND_BY_C_FN_MN_LN_SN_EA_S_Oracle);
+			}
+			else {
+				sql = CustomSQLUtil.get(FIND_BY_C_FN_MN_LN_SN_EA_S);
+			}
 
 			sql = CustomSQLUtil.replaceKeywords(
 				sql, "lower(User_.firstName)", StringPool.LIKE, false,
