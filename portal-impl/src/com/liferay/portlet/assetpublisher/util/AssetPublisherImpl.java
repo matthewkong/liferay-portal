@@ -372,13 +372,9 @@ public class AssetPublisherImpl implements AssetPublisher {
 			PermissionChecker permissionChecker)
 		throws Exception {
 
-		List results = ListUtil.fromArray(assetEntryXmls);
+		List<AssetEntry> assetEntries = new ArrayList<AssetEntry>();
 
-		List<AssetEntry> viewableResults = new ArrayList<AssetEntry>();
-
-		for (int i = 0; i < results.size(); i++) {
-			String assetEntryXml = (String)results.get(i);
-
+		for (String assetEntryXml : assetEntryXmls) {
 			Document document = SAXReaderUtil.read(assetEntryXml);
 
 			Element rootElement = document.getRootElement();
@@ -411,10 +407,10 @@ public class AssetPublisherImpl implements AssetPublisher {
 				continue;
 			}
 
-			viewableResults.add(assetEntry);
+			assetEntries.add(assetEntry);
 		}
 
-		return viewableResults;
+		return assetEntries;
 	}
 
 	@Override

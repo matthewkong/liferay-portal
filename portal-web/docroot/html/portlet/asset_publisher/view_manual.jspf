@@ -15,28 +15,28 @@
 --%>
 
 <%
-List<AssetEntry> viewableResults = AssetPublisherUtil.getSelectedAssetEntries(assetEntryXmls, groupIds, enablePermissions, permissionChecker);
+List<AssetEntry> results = AssetPublisherUtil.getSelectedAssetEntries(assetEntryXmls, groupIds, enablePermissions, permissionChecker);
 
-searchContainer.setTotal(viewableResults.size());
+searchContainer.setTotal(results.size());
 
-int end = (viewableResults.size() < searchContainer.getEnd()) ? viewableResults.size() : searchContainer.getEnd();
+int end = (results.size() < searchContainer.getEnd()) ? results.size() : searchContainer.getEnd();
 
-viewableResults = viewableResults.subList(searchContainer.getStart(), end);
+results = results.subList(searchContainer.getStart(), end);
 
-searchContainer.setResults(viewableResults);
+searchContainer.setResults(results);
 
-request.setAttribute("view.jsp-results", viewableResults);
+request.setAttribute("view.jsp-results", results);
 %>
 
 <c:choose>
 	<c:when test="<%= portletDisplayDDMTemplateId > 0 %>">
-		<%= PortletDisplayTemplateUtil.renderDDMTemplate(pageContext, portletDisplayDDMTemplateId, viewableResults, contextObjects) %>
+		<%= PortletDisplayTemplateUtil.renderDDMTemplate(pageContext, portletDisplayDDMTemplateId, results, contextObjects) %>
 	</c:when>
 	<c:otherwise>
 
 		<%
-		for (int viewableAssetEntryIndex = 0; viewableAssetEntryIndex < viewableResults.size(); viewableAssetEntryIndex++) {
-			AssetEntry assetEntry = viewableResults.get(viewableAssetEntryIndex);
+		for (int viewableAssetEntryIndex = 0; viewableAssetEntryIndex < results.size(); viewableAssetEntryIndex++) {
+			AssetEntry assetEntry = results.get(viewableAssetEntryIndex);
 
 			AssetRendererFactory assetRendererFactory = AssetRendererFactoryRegistryUtil.getAssetRendererFactoryByClassName(assetEntry.getClassName());
 
