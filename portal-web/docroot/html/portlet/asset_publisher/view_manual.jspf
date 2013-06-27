@@ -15,43 +15,7 @@
 --%>
 
 <%
-List results = ListUtil.fromArray(assetEntryXmls);
-
-List<AssetEntry> viewableResults = new ArrayList<AssetEntry>();
-
-for (int assetEntryIndex = 0; assetEntryIndex < results.size(); assetEntryIndex++) {
-	String assetEntryXml = (String)results.get(assetEntryIndex);
-
-	Document document = SAXReaderUtil.read(assetEntryXml);
-
-	Element rootElement = document.getRootElement();
-
-	String assetEntryUuid = rootElement.elementText("asset-entry-uuid");
-
-	AssetEntry assetEntry = null;
-
-	for (long groupId : groupIds) {
-		try {
-			assetEntry = AssetEntryLocalServiceUtil.getEntry(groupId, assetEntryUuid);
-
-			break;
-		}
-		catch (NoSuchEntryException nsee) {
-		}
-	}
-
-	if ((assetEntry == null) || !assetEntry.isVisible()) {
-		continue;
-	}
-
-	AssetRenderer assetRenderer = assetEntry.getAssetRenderer();
-
-	if (!assetRenderer.isDisplayable() || (enablePermissions && !assetRenderer.hasViewPermission(permissionChecker))) {
-		continue;
-	}
-
-	viewableResults.add(assetEntry);
-}
+List<AssetEntry> viewableResults = AssetPublisherUtil.getSelectedAssetEntries(assetEntryXmls, groupIds, enablePermissions, permissionChecker);
 
 searchContainer.setTotal(viewableResults.size());
 
