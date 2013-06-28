@@ -117,6 +117,10 @@ public class BookmarksFolderPermission {
 					return true;
 				}
 
+				if (!PropsValues.PERMISSIONS_PARENT_INHERITANCE_ENABLED) {
+					return false;
+				}
+
 				folderId = folder.getParentFolderId();
 			}
 		}

@@ -129,6 +129,10 @@ public class DLFolderPermission {
 					return true;
 				}
 
+				if (!PropsValues.PERMISSIONS_PARENT_INHERITANCE_ENABLED) {
+					return false;
+				}
+
 				folderId = dlFolder.getParentFolderId();
 			}
 		}

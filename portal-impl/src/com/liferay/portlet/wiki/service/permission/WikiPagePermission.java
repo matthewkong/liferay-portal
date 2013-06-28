@@ -165,7 +165,9 @@ public class WikiPagePermission {
 			page = originalPage;
 		}
 
-		if (WikiNodePermission.contains(permissionChecker, node, actionId)) {
+		if (PropsValues.PERMISSIONS_PARENT_INHERITANCE_ENABLED &&
+			WikiNodePermission.contains(permissionChecker, node, actionId)) {
+
 			return true;
 		}
 
@@ -195,6 +197,10 @@ public class WikiPagePermission {
 					page.getResourcePrimKey(), actionId)) {
 
 				return true;
+			}
+
+			if (!PropsValues.PERMISSIONS_PARENT_INHERITANCE_ENABLED) {
+				return false;
 			}
 
 			page = page.getParentPage();

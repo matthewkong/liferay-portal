@@ -161,6 +161,10 @@ public class MBCategoryPermission {
 					return true;
 				}
 
+				if (!PropsValues.PERMISSIONS_PARENT_INHERITANCE_ENABLED) {
+					return false;
+				}
+
 				categoryId = category.getParentCategoryId();
 			}
 		}
