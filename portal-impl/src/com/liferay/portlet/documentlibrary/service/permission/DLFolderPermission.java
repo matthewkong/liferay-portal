@@ -129,7 +129,7 @@ public class DLFolderPermission {
 					return true;
 				}
 
-				if (!PropsValues.PERMISSIONS_PARENT_INHERITANCE_ENABLED) {
+				if (!PropsValues.PERMISSIONS_PARENT_INHERITANCE_DL_ENABLED) {
 					return false;
 				}
 

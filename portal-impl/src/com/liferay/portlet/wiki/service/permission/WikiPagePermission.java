@@ -165,7 +165,7 @@ public class WikiPagePermission {
 			page = originalPage;
 		}
 
-		if (PropsValues.PERMISSIONS_PARENT_INHERITANCE_ENABLED &&
+		if (PropsValues.PERMISSIONS_PARENT_INHERITANCE_WIKI_ENABLED &&
 			WikiNodePermission.contains(permissionChecker, node, actionId)) {
 
 			return true;
@@ -199,7 +199,7 @@ public class WikiPagePermission {
 				return true;
 			}
 
-			if (!PropsValues.PERMISSIONS_PARENT_INHERITANCE_ENABLED) {
+			if (!PropsValues.PERMISSIONS_PARENT_INHERITANCE_WIKI_ENABLED) {
 				return false;
 			}
 
