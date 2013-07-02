@@ -112,24 +112,52 @@ public class MBCategoryPermission {
 			long originalCategoryId = categoryId;
 
 			try {
-				while (categoryId !=
-							MBCategoryConstants.DEFAULT_PARENT_CATEGORY_ID) {
+				if (PropsValues.PERMISSIONS_PARENT_INHERITANCE_DL_ENABLED) {
+					while ((category.getCategoryId() !=
+								MBCategoryConstants.
+									DEFAULT_PARENT_CATEGORY_ID) &&
+						   (category.getParentCategoryId() !=
+								MBCategoryConstants.
+									DEFAULT_PARENT_CATEGORY_ID)) {
 
-					category = MBCategoryLocalServiceUtil.getCategory(
-						categoryId);
-
-					if (!permissionChecker.hasOwnerPermission(
-							category.getCompanyId(), MBCategory.class.getName(),
-							categoryId, category.getUserId(),
-							ActionKeys.VIEW) &&
-						!permissionChecker.hasPermission(
-							category.getGroupId(), MBCategory.class.getName(),
-							categoryId, ActionKeys.VIEW)) {
-
-						return false;
+						category = category.getParentCategory();
 					}
 
-					categoryId = category.getParentCategoryId();
+					if (permissionChecker.hasOwnerPermission(
+							category.getCompanyId(), MBCategory.class.getName(),
+							category.getCategoryId(), category.getUserId(),
+							ActionKeys.VIEW) ||
+						permissionChecker.hasPermission(
+							category.getGroupId(), MBCategory.class.getName(),
+							category.getCategoryId(), ActionKeys.VIEW)) {
+
+						return true;
+					}
+
+					return false;
+				}
+				else {
+					while (categoryId !=
+								MBCategoryConstants.
+									DEFAULT_PARENT_CATEGORY_ID) {
+
+						category = MBCategoryLocalServiceUtil.getCategory(
+							categoryId);
+
+						if (!permissionChecker.hasOwnerPermission(
+								category.getCompanyId(),
+								MBCategory.class.getName(), categoryId,
+								category.getUserId(), ActionKeys.VIEW) &&
+							!permissionChecker.hasPermission(
+								category.getGroupId(),
+								MBCategory.class.getName(), categoryId,
+								ActionKeys.VIEW)) {
+
+							return false;
+						}
+
+						categoryId = category.getParentCategoryId();
+					}
 				}
 			}
 			catch (NoSuchCategoryException nsce) {

@@ -137,6 +137,16 @@ public class WikiPagePermission {
 		if (PropsValues.PERMISSIONS_VIEW_DYNAMIC_INHERITANCE) {
 			WikiPage originalPage = page;
 
+			if (PropsValues.PERMISSIONS_PARENT_INHERITANCE_WIKI_ENABLED) {
+				if (WikiNodePermission.contains(
+						permissionChecker, node, ActionKeys.VIEW)) {
+
+					return true;
+				}
+
+				return false;
+			}
+
 			if (!WikiNodePermission.contains(
 					permissionChecker, node, ActionKeys.VIEW)) {
 
