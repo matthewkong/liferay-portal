@@ -151,18 +151,20 @@ public class MBCategoryPermission {
 		}
 
 		try {
-			while (!category.isRoot()) {
-				if (_hasPermission(permissionChecker, category, actionId)) {
-					return true;
+			if (_hasPermission(permissionChecker, category, actionId)) {
+				return true;
+			}
+
+			if (PropsValues.
+					PERMISSIONS_PARENT_INHERITANCE_MESSAGE_BOARDS_ENABLED) {
+
+				while (category.getParentCategory() != null) {
+					category = category.getParentCategory();
+
+					if (_hasPermission(permissionChecker, category, actionId)) {
+						return true;
+					}
 				}
-
-				if (!PropsValues.
-						PERMISSIONS_PARENT_INHERITANCE_MESSAGE_BOARDS_ENABLED) {
-
-					return false;
-				}
-
-				category = category.getParentCategory();
 			}
 		}
 		catch (NoSuchCategoryException nsce) {

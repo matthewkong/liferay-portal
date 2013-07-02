@@ -124,16 +124,18 @@ public class DLFolderPermission {
 		}
 
 		try {
-			while (!dlFolder.isRoot()) {
-				if (_hasPermission(permissionChecker, dlFolder, actionId)) {
-					return true;
-				}
+			if (_hasPermission(permissionChecker, dlFolder, actionId)) {
+				return true;
+			}
 
-				if (!PropsValues.PERMISSIONS_PARENT_INHERITANCE_DL_ENABLED) {
-					return false;
-				}
+			if (PropsValues.PERMISSIONS_PARENT_INHERITANCE_DL_ENABLED) {
+				while (dlFolder.getParentFolder() != null) {
+					dlFolder = dlFolder.getParentFolder();
 
-				dlFolder = dlFolder.getParentFolder();
+					if (_hasPermission(permissionChecker, dlFolder, actionId)) {
+						return true;
+					}
+				}
 			}
 		}
 		catch (NoSuchFolderException nsfe) {

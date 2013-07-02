@@ -168,39 +168,52 @@ public class WikiPagePermission {
 			page = originalPage;
 		}
 
-		if (PropsValues.PERMISSIONS_PARENT_INHERITANCE_WIKI_ENABLED &&
-			WikiNodePermission.contains(permissionChecker, node, actionId)) {
+		if (_checkStatus(page, permissionChecker, actionId) ||
+			_hasPermission(permissionChecker, page, actionId)) {
 
 			return true;
 		}
 
-		while (page != null) {
-			if (page.isPending()) {
-				Boolean hasPermission = WorkflowPermissionUtil.hasPermission(
-					permissionChecker, page.getGroupId(),
-					WikiPage.class.getName(), page.getResourcePrimKey(),
-					actionId);
+		if (PropsValues.PERMISSIONS_PARENT_INHERITANCE_WIKI_ENABLED) {
+			if (WikiNodePermission.contains(
+					permissionChecker, node, actionId)) {
 
-				if ((hasPermission != null) && hasPermission.booleanValue()) {
-					return true;
+				return true;
+			}
+			else {
+				while (page.getParentPage() != null) {
+					page = page.getParentPage();
+
+					if (_checkStatus(page, permissionChecker, actionId) ||
+						_hasPermission(permissionChecker, page, actionId)) {
+
+						return true;
+					}
 				}
 			}
+		}
 
-			if (page.isDraft() && actionId.equals(ActionKeys.DELETE) &&
-				(page.getStatusByUserId() == permissionChecker.getUserId())) {
+		return false;
+	}
 
+	private static boolean _checkStatus(
+			WikiPage page, PermissionChecker permissionChecker,
+			String actionId) {
+
+		if (page.isPending()) {
+			Boolean hasPermission = WorkflowPermissionUtil.hasPermission(
+				permissionChecker, page.getGroupId(), WikiPage.class.getName(),
+				page.getResourcePrimKey(), actionId);
+
+			if ((hasPermission != null) && hasPermission.booleanValue()) {
 				return true;
 			}
+		}
 
-			if (_hasPermission(permissionChecker, page, actionId)) {
-				return true;
-			}
+		if (page.isDraft() && actionId.equals(ActionKeys.DELETE) &&
+			(page.getStatusByUserId() == permissionChecker.getUserId())) {
 
-			if (!PropsValues.PERMISSIONS_PARENT_INHERITANCE_WIKI_ENABLED) {
-				return false;
-			}
-
-			page = page.getParentPage();
+			return true;
 		}
 
 		return false;
