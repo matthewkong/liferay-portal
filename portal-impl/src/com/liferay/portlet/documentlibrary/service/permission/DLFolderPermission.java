@@ -79,14 +79,14 @@ public class DLFolderPermission {
 			return hasPermission.booleanValue();
 		}
 
-		if (PropsValues.PERMISSIONS_VIEW_DYNAMIC_INHERITANCE) {
+		if (PropsValues.PERMISSIONS_VIEW_DYNAMIC_INHERITANCE &&
+			!dlFolder.isRoot()) {
+
 			DLFolder originalFolder = dlFolder;
 
 			try {
 				if (PropsValues.PERMISSIONS_PARENT_INHERITANCE_DL_ENABLED) {
-					while (!dlFolder.isRoot() &&
-							(dlFolder.getParentFolder() != null)) {
-
+					while (dlFolder.getParentFolder() != null) {
 						dlFolder = dlFolder.getParentFolder();
 					}
 

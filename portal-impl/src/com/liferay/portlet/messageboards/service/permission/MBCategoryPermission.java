@@ -106,14 +106,14 @@ public class MBCategoryPermission {
 			return false;
 		}
 
-		if (PropsValues.PERMISSIONS_VIEW_DYNAMIC_INHERITANCE) {
+		if (PropsValues.PERMISSIONS_VIEW_DYNAMIC_INHERITANCE &&
+			!category.isRoot()) {
+
 			MBCategory originalCategory = category;
 
 			try {
 				if (PropsValues.PERMISSIONS_PARENT_INHERITANCE_DL_ENABLED) {
-					while (!category.isRoot() &&
-							(category.getParentCategory() != null)) {
-
+					while (category.getParentCategory() != null) {
 						category = category.getParentCategory();
 					}
 

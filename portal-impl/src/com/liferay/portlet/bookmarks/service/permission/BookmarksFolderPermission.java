@@ -60,14 +60,14 @@ public class BookmarksFolderPermission {
 			actionId = ActionKeys.ADD_SUBFOLDER;
 		}
 
-		if (PropsValues.PERMISSIONS_VIEW_DYNAMIC_INHERITANCE) {
+		if (PropsValues.PERMISSIONS_VIEW_DYNAMIC_INHERITANCE &&
+			!folder.isRoot()) {
+
 			BookmarksFolder originalFolder = folder;
 
 			try {
 				if (PropsValues.PERMISSIONS_PARENT_INHERITANCE_DL_ENABLED) {
-					while (!folder.isRoot() &&
-							(folder.getParentFolder() != null)) {
-
+					while (folder.getParentFolder() != null) {
 						folder = folder.getParentFolder();
 					}
 
