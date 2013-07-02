@@ -82,7 +82,7 @@ public class BookmarksFolderPermission {
 				else {
 					while (!folder.isRoot()) {
 						if (!_hasPermission(
-								permissionChecker, folder, actionId)) {
+								permissionChecker, folder, ActionKeys.VIEW)) {
 
 							return false;
 						}
