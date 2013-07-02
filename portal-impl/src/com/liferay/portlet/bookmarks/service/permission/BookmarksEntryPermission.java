@@ -88,14 +88,10 @@ public class BookmarksEntryPermission {
 			}
 		}
 
-		if (permissionChecker.hasOwnerPermission(
-				entry.getCompanyId(), BookmarksEntry.class.getName(),
-				entry.getEntryId(), entry.getUserId(), actionId)) {
-
-			return true;
-		}
-
-		return permissionChecker.hasPermission(
+		return permissionChecker.hasOwnerPermission(
+			entry.getCompanyId(), BookmarksEntry.class.getName(),
+			entry.getEntryId(), entry.getUserId(), actionId) ||
+		permissionChecker.hasPermission(
 			entry.getGroupId(), BookmarksEntry.class.getName(),
 			entry.getEntryId(), actionId);
 	}

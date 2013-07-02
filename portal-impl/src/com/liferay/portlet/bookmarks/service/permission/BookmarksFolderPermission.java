@@ -77,15 +77,8 @@ public class BookmarksFolderPermission {
 						folder = folder.getParentFolder();
 					}
 
-					if (permissionChecker.hasOwnerPermission(
-							folder.getCompanyId(),
-							BookmarksFolder.class.getName(),
-							folder.getFolderId(), folder.getUserId(),
-							ActionKeys.VIEW) ||
-						permissionChecker.hasPermission(
-							folder.getGroupId(),
-							BookmarksFolder.class.getName(),
-							folder.getFolderId(), ActionKeys.VIEW)) {
+					if (_hasPermission(
+							permissionChecker, folder, ActionKeys.VIEW)) {
 
 						return true;
 					}
@@ -100,15 +93,8 @@ public class BookmarksFolderPermission {
 						folder = BookmarksFolderLocalServiceUtil.getFolder(
 							folderId);
 
-						if (!permissionChecker.hasOwnerPermission(
-								folder.getCompanyId(),
-								BookmarksFolder.class.getName(),
-								folder.getFolderId(), folder.getUserId(),
-								actionId) &&
-							!permissionChecker.hasPermission(
-								folder.getGroupId(),
-								BookmarksFolder.class.getName(),
-								folder.getFolderId(), actionId)) {
+						if (!_hasPermission(
+								permissionChecker, folder, actionId)) {
 
 							return false;
 						}
@@ -136,13 +122,7 @@ public class BookmarksFolderPermission {
 
 				folder = BookmarksFolderLocalServiceUtil.getFolder(folderId);
 
-				if (permissionChecker.hasOwnerPermission(
-						folder.getCompanyId(), BookmarksFolder.class.getName(),
-						folder.getFolderId(), folder.getUserId(), actionId) ||
-					permissionChecker.hasPermission(
-						folder.getGroupId(), BookmarksFolder.class.getName(),
-						folder.getFolderId(), actionId)) {
-
+				if (_hasPermission(permissionChecker, folder, actionId)) {
 					return true;
 				}
 
@@ -179,6 +159,18 @@ public class BookmarksFolderPermission {
 
 			return contains(permissionChecker, folder, actionId);
 		}
+	}
+
+	private static boolean _hasPermission(
+		PermissionChecker permissionChecker, BookmarksFolder folder,
+		String actionId) {
+
+		return permissionChecker.hasOwnerPermission(
+			folder.getCompanyId(), BookmarksFolder.class.getName(),
+			folder.getFolderId(), folder.getUserId(), actionId) ||
+		permissionChecker.hasPermission(
+			folder.getGroupId(), BookmarksFolder.class.getName(),
+			folder.getFolderId(), actionId);
 	}
 
 }

@@ -124,14 +124,10 @@ public class MBMessagePermission {
 			}
 		}
 
-		if (permissionChecker.hasOwnerPermission(
-				message.getCompanyId(), MBMessage.class.getName(),
-				message.getRootMessageId(), message.getUserId(), actionId)) {
-
-			return true;
-		}
-
-		return permissionChecker.hasPermission(
+		return permissionChecker.hasOwnerPermission(
+			message.getCompanyId(), MBMessage.class.getName(),
+			message.getRootMessageId(), message.getUserId(), actionId) ||
+		permissionChecker.hasPermission(
 			groupId, MBMessage.class.getName(), message.getMessageId(),
 			actionId);
 	}

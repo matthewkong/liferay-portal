@@ -95,13 +95,8 @@ public class DLFolderPermission {
 						dlFolder = dlFolder.getParentFolder();
 					}
 
-					if (permissionChecker.hasOwnerPermission(
-							dlFolder.getCompanyId(), DLFolder.class.getName(),
-							dlFolder.getFolderId(), dlFolder.getUserId(),
-							ActionKeys.VIEW) ||
-						permissionChecker.hasPermission(
-							dlFolder.getGroupId(), DLFolder.class.getName(),
-							dlFolder.getFolderId(), ActionKeys.VIEW)) {
+					if (_hasPermission(
+							permissionChecker, dlFolder, ActionKeys.VIEW)) {
 
 						return true;
 					}
@@ -114,14 +109,8 @@ public class DLFolderPermission {
 
 						dlFolder = DLFolderLocalServiceUtil.getFolder(folderId);
 
-						if (!permissionChecker.hasOwnerPermission(
-								dlFolder.getCompanyId(),
-								DLFolder.class.getName(),
-								dlFolder.getFolderId(), dlFolder.getUserId(),
-								ActionKeys.VIEW) &&
-							!permissionChecker.hasPermission(
-								dlFolder.getGroupId(), DLFolder.class.getName(),
-								dlFolder.getFolderId(), ActionKeys.VIEW)) {
+						if (!_hasPermission(
+								permissionChecker, dlFolder, ActionKeys.VIEW)) {
 
 							return false;
 						}
@@ -147,13 +136,7 @@ public class DLFolderPermission {
 			while (folderId != DLFolderConstants.DEFAULT_PARENT_FOLDER_ID) {
 				dlFolder = DLFolderLocalServiceUtil.getFolder(folderId);
 
-				if (permissionChecker.hasOwnerPermission(
-						dlFolder.getCompanyId(), DLFolder.class.getName(),
-						folderId, dlFolder.getUserId(), actionId) ||
-					permissionChecker.hasPermission(
-						dlFolder.getGroupId(), DLFolder.class.getName(),
-						folderId, actionId)) {
-
+				if (_hasPermission(permissionChecker, dlFolder, actionId)) {
 					return true;
 				}
 
@@ -204,6 +187,18 @@ public class DLFolderPermission {
 
 			return folder.containsPermission(permissionChecker, actionId);
 		}
+	}
+
+	private static boolean _hasPermission(
+		PermissionChecker permissionChecker, DLFolder dlFolder,
+		String actionId) {
+
+		return permissionChecker.hasOwnerPermission(
+			dlFolder.getCompanyId(), DLFolder.class.getName(),
+			dlFolder.getFolderId(), dlFolder.getUserId(), actionId) ||
+		permissionChecker.hasPermission(
+			dlFolder.getGroupId(), DLFolder.class.getName(),
+			dlFolder.getFolderId(), actionId);
 	}
 
 }

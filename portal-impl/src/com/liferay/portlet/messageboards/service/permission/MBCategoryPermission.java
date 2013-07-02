@@ -123,13 +123,8 @@ public class MBCategoryPermission {
 						category = category.getParentCategory();
 					}
 
-					if (permissionChecker.hasOwnerPermission(
-							category.getCompanyId(), MBCategory.class.getName(),
-							category.getCategoryId(), category.getUserId(),
-							ActionKeys.VIEW) ||
-						permissionChecker.hasPermission(
-							category.getGroupId(), MBCategory.class.getName(),
-							category.getCategoryId(), ActionKeys.VIEW)) {
+					if (_hasPermission(
+							permissionChecker, category, ActionKeys.VIEW)) {
 
 						return true;
 					}
@@ -144,14 +139,8 @@ public class MBCategoryPermission {
 						category = MBCategoryLocalServiceUtil.getCategory(
 							categoryId);
 
-						if (!permissionChecker.hasOwnerPermission(
-								category.getCompanyId(),
-								MBCategory.class.getName(), categoryId,
-								category.getUserId(), ActionKeys.VIEW) &&
-							!permissionChecker.hasPermission(
-								category.getGroupId(),
-								MBCategory.class.getName(), categoryId,
-								ActionKeys.VIEW)) {
+						if (!_hasPermission(
+								permissionChecker, category, ActionKeys.VIEW)) {
 
 							return false;
 						}
@@ -179,13 +168,7 @@ public class MBCategoryPermission {
 
 				category = MBCategoryLocalServiceUtil.getCategory(categoryId);
 
-				if (permissionChecker.hasOwnerPermission(
-						category.getCompanyId(), MBCategory.class.getName(),
-						categoryId, category.getUserId(), actionId) ||
-					permissionChecker.hasPermission(
-						category.getGroupId(), MBCategory.class.getName(),
-						categoryId, actionId)) {
-
+				if (_hasPermission(permissionChecker, category, actionId)) {
 					return true;
 				}
 
@@ -205,6 +188,18 @@ public class MBCategoryPermission {
 		}
 
 		return false;
+	}
+
+	private static boolean _hasPermission(
+		PermissionChecker permissionChecker, MBCategory category,
+		String actionId) {
+
+		return permissionChecker.hasOwnerPermission(
+			category.getCompanyId(), MBCategory.class.getName(),
+			category.getCategoryId(), category.getUserId(), actionId) ||
+		permissionChecker.hasPermission(
+			category.getGroupId(), MBCategory.class.getName(),
+			category.getCategoryId(), actionId);
 	}
 
 }

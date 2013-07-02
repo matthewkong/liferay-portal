@@ -127,15 +127,10 @@ public class DLFileEntryPermission {
 			}
 		}
 
-		if (permissionChecker.hasOwnerPermission(
-				dlFileEntry.getCompanyId(), DLFileEntry.class.getName(),
-				dlFileEntry.getFileEntryId(), dlFileEntry.getUserId(),
-				actionId)) {
-
-			return true;
-		}
-
-		return permissionChecker.hasPermission(
+		return permissionChecker.hasOwnerPermission(
+			dlFileEntry.getCompanyId(), DLFileEntry.class.getName(),
+			dlFileEntry.getFileEntryId(), dlFileEntry.getUserId(), actionId) ||
+		permissionChecker.hasPermission(
 			dlFileEntry.getGroupId(), DLFileEntry.class.getName(),
 			dlFileEntry.getFileEntryId(), actionId);
 	}
