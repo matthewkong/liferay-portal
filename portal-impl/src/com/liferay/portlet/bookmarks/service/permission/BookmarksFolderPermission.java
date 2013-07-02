@@ -60,19 +60,13 @@ public class BookmarksFolderPermission {
 			actionId = ActionKeys.ADD_SUBFOLDER;
 		}
 
-		long folderId = folder.getFolderId();
-
 		if (PropsValues.PERMISSIONS_VIEW_DYNAMIC_INHERITANCE) {
-			long originalFolderId = folderId;
+			BookmarksFolder originalFolder = folder;
 
 			try {
 				if (PropsValues.PERMISSIONS_PARENT_INHERITANCE_DL_ENABLED) {
-					while ((folder.getFolderId() !=
-								BookmarksFolderConstants.
-									DEFAULT_PARENT_FOLDER_ID) &&
-						   (folder.getParentFolderId() !=
-								BookmarksFolderConstants.
-									DEFAULT_PARENT_FOLDER_ID)) {
+					while (!folder.isRoot() &&
+							(folder.getParentFolder() != null)) {
 
 						folder = folder.getParentFolder();
 					}
@@ -86,20 +80,14 @@ public class BookmarksFolderPermission {
 					return false;
 				}
 				else {
-					while (folderId !=
-								BookmarksFolderConstants.
-									DEFAULT_PARENT_FOLDER_ID) {
-
-						folder = BookmarksFolderLocalServiceUtil.getFolder(
-							folderId);
-
+					while (!folder.isRoot()) {
 						if (!_hasPermission(
 								permissionChecker, folder, actionId)) {
 
 							return false;
 						}
 
-						folderId = folder.getParentFolderId();
+						folder = folder.getParentFolder();
 					}
 				}
 			}
@@ -113,15 +101,11 @@ public class BookmarksFolderPermission {
 				return true;
 			}
 
-			folderId = originalFolderId;
+			folder = originalFolder;
 		}
 
 		try {
-			while (folderId !=
-						BookmarksFolderConstants.DEFAULT_PARENT_FOLDER_ID) {
-
-				folder = BookmarksFolderLocalServiceUtil.getFolder(folderId);
-
+			while (!folder.isRoot()) {
 				if (_hasPermission(permissionChecker, folder, actionId)) {
 					return true;
 				}
@@ -132,7 +116,7 @@ public class BookmarksFolderPermission {
 					return false;
 				}
 
-				folderId = folder.getParentFolderId();
+				folder = folder.getParentFolder();
 			}
 		}
 		catch (NoSuchFolderException nsfe) {

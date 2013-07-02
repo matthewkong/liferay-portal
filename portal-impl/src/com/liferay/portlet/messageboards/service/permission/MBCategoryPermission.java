@@ -106,19 +106,13 @@ public class MBCategoryPermission {
 			return false;
 		}
 
-		long categoryId = category.getCategoryId();
-
 		if (PropsValues.PERMISSIONS_VIEW_DYNAMIC_INHERITANCE) {
-			long originalCategoryId = categoryId;
+			MBCategory originalCategory = category;
 
 			try {
 				if (PropsValues.PERMISSIONS_PARENT_INHERITANCE_DL_ENABLED) {
-					while ((category.getCategoryId() !=
-								MBCategoryConstants.
-									DEFAULT_PARENT_CATEGORY_ID) &&
-						   (category.getParentCategoryId() !=
-								MBCategoryConstants.
-									DEFAULT_PARENT_CATEGORY_ID)) {
+					while (!category.isRoot() &&
+							(category.getParentCategory() != null)) {
 
 						category = category.getParentCategory();
 					}
@@ -132,20 +126,14 @@ public class MBCategoryPermission {
 					return false;
 				}
 				else {
-					while (categoryId !=
-								MBCategoryConstants.
-									DEFAULT_PARENT_CATEGORY_ID) {
-
-						category = MBCategoryLocalServiceUtil.getCategory(
-							categoryId);
-
+					while (!category.isRoot()) {
 						if (!_hasPermission(
 								permissionChecker, category, ActionKeys.VIEW)) {
 
 							return false;
 						}
 
-						categoryId = category.getParentCategoryId();
+						category = category.getParentCategory();
 					}
 				}
 			}
@@ -159,15 +147,11 @@ public class MBCategoryPermission {
 				return true;
 			}
 
-			categoryId = originalCategoryId;
+			category = originalCategory;
 		}
 
 		try {
-			while (categoryId !=
-						MBCategoryConstants.DEFAULT_PARENT_CATEGORY_ID) {
-
-				category = MBCategoryLocalServiceUtil.getCategory(categoryId);
-
+			while (!category.isRoot()) {
 				if (_hasPermission(permissionChecker, category, actionId)) {
 					return true;
 				}
@@ -178,7 +162,7 @@ public class MBCategoryPermission {
 					return false;
 				}
 
-				categoryId = category.getParentCategoryId();
+				category = category.getParentCategory();
 			}
 		}
 		catch (NoSuchCategoryException nsce) {

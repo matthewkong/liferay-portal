@@ -27,7 +27,6 @@ import com.liferay.portlet.documentlibrary.NoSuchFolderException;
 import com.liferay.portlet.documentlibrary.model.DLFolder;
 import com.liferay.portlet.documentlibrary.model.DLFolderConstants;
 import com.liferay.portlet.documentlibrary.service.DLAppLocalServiceUtil;
-import com.liferay.portlet.documentlibrary.service.DLFolderLocalServiceUtil;
 
 /**
  * @author Brian Wing Shun Chan
@@ -80,17 +79,13 @@ public class DLFolderPermission {
 			return hasPermission.booleanValue();
 		}
 
-		long folderId = dlFolder.getFolderId();
-
 		if (PropsValues.PERMISSIONS_VIEW_DYNAMIC_INHERITANCE) {
-			long originalFolderId = folderId;
+			DLFolder originalFolder = dlFolder;
 
 			try {
 				if (PropsValues.PERMISSIONS_PARENT_INHERITANCE_DL_ENABLED) {
-					while ((dlFolder.getFolderId() !=
-								DLFolderConstants.DEFAULT_PARENT_FOLDER_ID) &&
-						   (dlFolder.getParentFolderId() !=
-								DLFolderConstants.DEFAULT_PARENT_FOLDER_ID)) {
+					while (!dlFolder.isRoot() &&
+							(dlFolder.getParentFolder() != null)) {
 
 						dlFolder = dlFolder.getParentFolder();
 					}
@@ -104,18 +99,14 @@ public class DLFolderPermission {
 					return false;
 				}
 				else {
-					while (folderId !=
-								DLFolderConstants.DEFAULT_PARENT_FOLDER_ID) {
-
-						dlFolder = DLFolderLocalServiceUtil.getFolder(folderId);
-
+					while (!dlFolder.isRoot()) {
 						if (!_hasPermission(
 								permissionChecker, dlFolder, ActionKeys.VIEW)) {
 
 							return false;
 						}
 
-						folderId = dlFolder.getParentFolderId();
+						dlFolder = dlFolder.getParentFolder();
 					}
 				}
 			}
@@ -129,13 +120,11 @@ public class DLFolderPermission {
 				return true;
 			}
 
-			folderId = originalFolderId;
+			dlFolder = originalFolder;
 		}
 
 		try {
-			while (folderId != DLFolderConstants.DEFAULT_PARENT_FOLDER_ID) {
-				dlFolder = DLFolderLocalServiceUtil.getFolder(folderId);
-
+			while (!dlFolder.isRoot()) {
 				if (_hasPermission(permissionChecker, dlFolder, actionId)) {
 					return true;
 				}
@@ -144,7 +133,7 @@ public class DLFolderPermission {
 					return false;
 				}
 
-				folderId = dlFolder.getParentFolderId();
+				dlFolder = dlFolder.getParentFolder();
 			}
 		}
 		catch (NoSuchFolderException nsfe) {
