@@ -86,7 +86,9 @@ public class DLFolderPermission {
 
 			try {
 				if (PropsValues.PERMISSIONS_PARENT_INHERITANCE_DL_ENABLED) {
-					while (dlFolder.getParentFolder() != null) {
+					dlFolder = dlFolder.getParentFolder();
+
+					while (dlFolder != null) {
 						dlFolder = dlFolder.getParentFolder();
 					}
 
@@ -129,12 +131,14 @@ public class DLFolderPermission {
 			}
 
 			if (PropsValues.PERMISSIONS_PARENT_INHERITANCE_DL_ENABLED) {
-				while (dlFolder.getParentFolder() != null) {
-					dlFolder = dlFolder.getParentFolder();
+				dlFolder = dlFolder.getParentFolder();
 
+				while (dlFolder != null) {
 					if (_hasPermission(permissionChecker, dlFolder, actionId)) {
 						return true;
 					}
+
+					dlFolder = dlFolder.getParentFolder();
 				}
 			}
 		}

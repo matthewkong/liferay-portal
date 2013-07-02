@@ -181,14 +181,16 @@ public class WikiPagePermission {
 				return true;
 			}
 			else {
-				while (page.getParentPage() != null) {
-					page = page.getParentPage();
+				page = page.getParentPage();
 
+				while (page != null) {
 					if (_checkStatus(page, permissionChecker, actionId) ||
 						_hasPermission(permissionChecker, page, actionId)) {
 
 						return true;
 					}
+
+					page = page.getParentPage();
 				}
 			}
 		}

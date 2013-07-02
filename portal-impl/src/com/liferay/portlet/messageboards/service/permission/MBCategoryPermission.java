@@ -113,7 +113,9 @@ public class MBCategoryPermission {
 
 			try {
 				if (PropsValues.PERMISSIONS_PARENT_INHERITANCE_DL_ENABLED) {
-					while (category.getParentCategory() != null) {
+					category = category.getParentCategory();
+
+					while (category != null) {
 						category = category.getParentCategory();
 					}
 
@@ -158,12 +160,14 @@ public class MBCategoryPermission {
 			if (PropsValues.
 					PERMISSIONS_PARENT_INHERITANCE_MESSAGE_BOARDS_ENABLED) {
 
-				while (category.getParentCategory() != null) {
-					category = category.getParentCategory();
+				category = category.getParentCategory();
 
+				while (category != null) {
 					if (_hasPermission(permissionChecker, category, actionId)) {
 						return true;
 					}
+
+					category = category.getParentCategory();
 				}
 			}
 		}

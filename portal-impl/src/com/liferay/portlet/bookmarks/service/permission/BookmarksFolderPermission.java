@@ -67,7 +67,9 @@ public class BookmarksFolderPermission {
 
 			try {
 				if (PropsValues.PERMISSIONS_PARENT_INHERITANCE_DL_ENABLED) {
-					while (folder.getParentFolder() != null) {
+					folder = folder.getParentFolder();
+
+					while (folder != null) {
 						folder = folder.getParentFolder();
 					}
 
@@ -110,12 +112,14 @@ public class BookmarksFolderPermission {
 			}
 
 			if (PropsValues.PERMISSIONS_PARENT_INHERITANCE_BOOKMARKS_ENABLED) {
-				while (folder.getParentFolder() != null) {
-					folder = folder.getParentFolder();
+				folder = folder.getParentFolder();
 
+				while (folder != null) {
 					if (_hasPermission(permissionChecker, folder, actionId)) {
 						return true;
 					}
+
+					folder = folder.getParentFolder();
 				}
 			}
 		}
