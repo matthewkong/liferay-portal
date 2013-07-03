@@ -427,6 +427,12 @@ public class ExpandoValueLocalServiceImpl
 
 		int type = column.getType();
 
+		if (type != ExpandoColumnConstants.STRING &&
+				data.getClass().equals(String.class)) {
+				data = ExpandoColumnConstants.getSerializable(
+					type, data.toString());
+			}
+
 		if (type == ExpandoColumnConstants.BOOLEAN) {
 			return expandoValueLocalService.addValue(
 				companyId, className, tableName, columnName, classPK,
