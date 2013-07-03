@@ -15,13 +15,11 @@
 --%>
 
 <%
-int total = assetEntryXmls.length;
+List<AssetEntry> results = AssetPublisherUtil.getSelectedAssetEntries(assetEntryXmls, groupIds, enablePermissions, permissionChecker);
 
-searchContainer.setTotal(total);
+searchContainer.setTotal(results.size());
 
-List results = ListUtil.fromArray(assetEntryXmls);
-
-int end = (assetEntryXmls.length < searchContainer.getEnd()) ? assetEntryXmls.length : searchContainer.getEnd();
+int end = (results.size() < searchContainer.getEnd()) ? results.size() : searchContainer.getEnd();
 
 results = results.subList(searchContainer.getStart(), end);
 
@@ -37,45 +35,19 @@ request.setAttribute("view.jsp-results", results);
 	<c:otherwise>
 
 		<%
-		for (int assetEntryIndex = 0; assetEntryIndex < results.size(); assetEntryIndex++) {
-			String assetEntryXml = (String)results.get(assetEntryIndex);
-
-			Document document = SAXReaderUtil.read(assetEntryXml);
-
-			Element rootElement = document.getRootElement();
-
-			String assetEntryUuid = rootElement.elementText("asset-entry-uuid");
-
-			AssetEntry assetEntry = null;
-
-			for (long groupId : groupIds) {
-				try {
-					assetEntry = AssetEntryLocalServiceUtil.getEntry(groupId, assetEntryUuid);
-
-					break;
-				}
-				catch (NoSuchEntryException nsee) {
-				}
-			}
-
-			if ((assetEntry == null) || !assetEntry.isVisible()) {
-				continue;
-			}
+		for (int viewableAssetEntryIndex = 0; viewableAssetEntryIndex < results.size(); viewableAssetEntryIndex++) {
+			AssetEntry assetEntry = results.get(viewableAssetEntryIndex);
 
 			AssetRendererFactory assetRendererFactory = AssetRendererFactoryRegistryUtil.getAssetRendererFactoryByClassName(assetEntry.getClassName());
 
 			AssetRenderer assetRenderer = assetRendererFactory.getAssetRenderer(assetEntry.getClassPK());
-
-			if (!assetRenderer.isDisplayable() || (enablePermissions && !assetRenderer.hasViewPermission(permissionChecker))) {
-				continue;
-			}
 
 			String title = assetRenderer.getTitle(locale);
 
 			boolean show = true;
 			boolean print = false;
 
-			request.setAttribute("view.jsp-assetEntryIndex", new Integer(assetEntryIndex));
+			request.setAttribute("view.jsp-assetEntryIndex", new Integer(viewableAssetEntryIndex));
 
 			request.setAttribute("view.jsp-assetEntry", assetEntry);
 			request.setAttribute("view.jsp-assetRendererFactory", assetRendererFactory);

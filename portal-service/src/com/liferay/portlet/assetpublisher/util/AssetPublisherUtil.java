@@ -110,6 +110,15 @@ public class AssetPublisherUtil {
 		return _assetPublisher;
 	}
 
+	public static List<AssetEntry> getSelectedAssetEntries(
+			String[] assetEntryXmls, long[] groupIds, boolean enablePermissions,
+			PermissionChecker permissionChecker)
+		throws Exception {
+
+		return getAssetPublisher().getSelectedAssetEntries(
+			assetEntryXmls, groupIds, enablePermissions, permissionChecker);
+	}
+
 	public static String[] getAssetTagNames(
 			PortletPreferences portletPreferences, long scopeGroupId)
 		throws Exception {

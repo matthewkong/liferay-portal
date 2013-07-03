@@ -116,6 +116,11 @@ public interface AssetPublisher {
 			String scopeId, long siteGroupId, boolean privateLayout)
 		throws PortalException, SystemException;
 
+	public List<AssetEntry> getSelectedAssetEntries(
+			String[] assetEntryXmls, long[] groupIds, boolean enablePermissions,
+			PermissionChecker permissionChecker)
+		throws Exception;
+
 	public long[] getGroupIds(
 		PortletPreferences portletPreferences, long scopeGroupId,
 		Layout layout);
