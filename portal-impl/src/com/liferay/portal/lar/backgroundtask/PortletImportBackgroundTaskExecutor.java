@@ -19,7 +19,7 @@ import com.liferay.portal.kernel.backgroundtask.BaseBackgroundTaskExecutor;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.model.BackgroundTask;
-import com.liferay.portal.service.LayoutServiceUtil;
+import com.liferay.portal.service.LayoutLocalServiceUtil;
 
 import java.io.Serializable;
 
@@ -43,6 +43,7 @@ public class PortletImportBackgroundTaskExecutor
 		Map<String, Serializable> taskContextMap =
 			backgroundTask.getTaskContextMap();
 
+		long userId = MapUtil.getLong(taskContextMap, "userId");
 		long plid = MapUtil.getLong(taskContextMap, "plid");
 		long groupId = MapUtil.getLong(taskContextMap, "groupId");
 		String portletId = MapUtil.getString(taskContextMap, "portletId");
@@ -53,8 +54,8 @@ public class PortletImportBackgroundTaskExecutor
 			backgroundTask.getAttachmentsFileEntries();
 
 		for (FileEntry attachmentsFileEntry : attachmentsFileEntries) {
-			LayoutServiceUtil.importPortletInfo(
-				plid, groupId, portletId, parameterMap,
+			LayoutLocalServiceUtil.importPortletInfo(
+				userId, plid, groupId, portletId, parameterMap,
 				attachmentsFileEntry.getContentStream());
 		}
 

@@ -431,11 +431,9 @@ AUI.add(
 
 				var structureIdInput = instance.getByName(form, 'structureId');
 				var templateIdInput = instance.getByName(form, 'templateId');
-				var contentInput = instance.getByName(form, 'content');
 
 				structureIdInput.val('');
 				templateIdInput.val('');
-				contentInput.val('');
 
 				submitForm(form, null, false, false);
 			},
@@ -1671,16 +1669,6 @@ AUI.add(
 						}
 
 						return instance.fieldContainer;
-					},
-
-					getFieldElementContainer: function() {
-						var instance = this;
-
-						if (!instance.fieldElementContainer) {
-							instance.fieldElementContainer = instance.getFieldContainer().one('div.journal-article-component-container');
-						}
-
-						return instance.fieldElementContainer;
 					},
 
 					getFieldInstance: function() {
