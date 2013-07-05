@@ -96,6 +96,17 @@ public class AssetPublisherUtil {
 			preferences, layout, scopeGroupId, max, checkPermission);
 	}
 
+	public static Object[] getAssetEntryObject(
+			long companyId, long[] groupIds, String[] assetEntryXmls,
+			boolean isConfiguration, boolean enablePermissions, 
+			PermissionChecker permissionChecker)
+		throws Exception {
+
+		return getAssetPublisher().getAssetEntryObject(
+				companyId, groupIds, assetEntryXmls, isConfiguration,
+				enablePermissions, permissionChecker);
+	}
+
 	public static AssetEntryQuery getAssetEntryQuery(
 			PortletPreferences portletPreferences, long[] scopeGroupIds)
 		throws PortalException, SystemException {

@@ -26,7 +26,6 @@ page import="com.liferay.portal.kernel.xml.Element" %><%@
 page import="com.liferay.portal.kernel.xml.SAXReaderUtil" %><%@
 page import="com.liferay.portlet.asset.AssetRendererFactoryRegistryUtil" %><%@
 page import="com.liferay.portlet.asset.DuplicateQueryRuleException" %><%@
-page import="com.liferay.portlet.asset.NoSuchEntryException" %><%@
 page import="com.liferay.portlet.asset.NoSuchTagException" %><%@
 page import="com.liferay.portlet.asset.NoSuchTagPropertyException" %><%@
 page import="com.liferay.portlet.asset.model.AssetCategory" %><%@
@@ -62,11 +61,7 @@ page import="com.liferay.util.xml.DocUtil" %>
 <%
 String portletResource = ParamUtil.getString(request, "portletResource");
 
-String selectionStyle = portletPreferences.getValue("selectionStyle", null);
-
-if (Validator.isNull(selectionStyle)) {
-	selectionStyle = "dynamic";
-}
+String selectionStyle = GetterUtil.getString(portletPreferences.getValue("selectionStyle", null), "dynamic");
 
 long[] groupIds = AssetPublisherUtil.getGroupIds(portletPreferences, scopeGroupId, layout);
 
@@ -185,7 +180,6 @@ if (Validator.isNotNull(assetTagName)) {
 	PortalUtil.setPageKeywords(assetTagName, request);
 }
 
-boolean showLinkedAssets = GetterUtil.getBoolean(portletPreferences.getValue("showLinkedAssets", null), false);
 boolean showOnlyLayoutAssets = GetterUtil.getBoolean(portletPreferences.getValue("showOnlyLayoutAssets", null));
 
 if (showOnlyLayoutAssets) {
@@ -276,7 +270,6 @@ boolean viewInContext = assetLinkBehavior.equals("viewInPortlet");
 
 boolean showPortletWithNoResults = false;
 boolean groupByClass = (assetVocabularyId == -1);
-boolean allowEmptyResults = false;
 
 Map<String, PortletURL> addPortletURLs = null;
 
