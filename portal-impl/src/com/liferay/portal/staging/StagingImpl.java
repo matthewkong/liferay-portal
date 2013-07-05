@@ -56,6 +56,9 @@ import com.liferay.portal.kernel.workflow.WorkflowTask;
 import com.liferay.portal.kernel.workflow.WorkflowTaskManagerUtil;
 import com.liferay.portal.kernel.xml.Element;
 import com.liferay.portal.lar.LayoutExporter;
+import com.liferay.portal.lar.backgroundtask.BackgroundTaskContextMapFactory;
+import com.liferay.portal.lar.backgroundtask.LayoutStagingBackgroundTaskExecutor;
+import com.liferay.portal.lar.backgroundtask.PortletStagingBackgroundTaskExecutor;
 import com.liferay.portal.messaging.LayoutsLocalPublisherRequest;
 import com.liferay.portal.messaging.LayoutsRemotePublisherRequest;
 import com.liferay.portal.model.Group;
@@ -74,6 +77,7 @@ import com.liferay.portal.security.auth.PrincipalException;
 import com.liferay.portal.security.permission.ActionKeys;
 import com.liferay.portal.security.permission.PermissionChecker;
 import com.liferay.portal.security.permission.PermissionThreadLocal;
+import com.liferay.portal.service.BackgroundTaskLocalServiceUtil;
 import com.liferay.portal.service.GroupLocalServiceUtil;
 import com.liferay.portal.service.LayoutBranchLocalServiceUtil;
 import com.liferay.portal.service.LayoutLocalServiceUtil;
@@ -95,7 +99,7 @@ import com.liferay.portal.util.WebKeys;
 import com.liferay.portlet.PortalPreferences;
 import com.liferay.portlet.PortletPreferencesFactoryUtil;
 
-import java.io.File;
+import java.io.Serializable;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -205,17 +209,25 @@ public class StagingImpl implements Staging {
 		Map<String, String[]> parameterMap = getStagingParameters(
 			portletRequest);
 
-		File file = LayoutLocalServiceUtil.exportPortletInfoAsFile(
-			sourcePlid, sourceGroupId, portletId, parameterMap, null, null);
+		DateRange dateRange = ExportImportHelperUtil.getDateRange(
+			portletRequest, sourceGroupId, false, sourcePlid, portletId);
 
-		try {
-			LayoutLocalServiceUtil.importPortletInfo(
-				userId, targetPlid, targetGroupId, portletId, parameterMap,
-				file);
-		}
-		finally {
-			file.delete();
-		}
+		Map<String, Serializable> taskContextMap =
+			BackgroundTaskContextMapFactory.buildTaskContextMap(
+				userId, sourceGroupId, false, null, parameterMap,
+				dateRange.getStartDate(), dateRange.getEndDate(),
+				StringPool.BLANK);
+
+		taskContextMap.put("sourceGroupId", sourceGroupId);
+		taskContextMap.put("sourcePlid", sourcePlid);
+		taskContextMap.put("portletId", portletId);
+		taskContextMap.put("targetGroupId", targetGroupId);
+		taskContextMap.put("targetPlid", targetPlid);
+
+		BackgroundTaskLocalServiceUtil.addBackgroundTask(
+			userId, sourceGroupId, portletId, null,
+			PortletStagingBackgroundTaskExecutor.class, taskContextMap,
+			new ServiceContext());
 	}
 
 	@Override
@@ -1070,25 +1082,22 @@ public class StagingImpl implements Staging {
 			Map<String, String[]> parameterMap, Date startDate, Date endDate)
 		throws Exception {
 
-		lockGroup(userId, targetGroupId);
-
 		parameterMap.put(
 			PortletDataHandlerKeys.PERFORM_DIRECT_BINARY_IMPORT,
 			new String[] {Boolean.TRUE.toString()});
 
-		File file = LayoutLocalServiceUtil.exportLayoutsAsFile(
-			sourceGroupId, privateLayout, layoutIds, parameterMap, startDate,
-			endDate);
+		Map<String, Serializable> taskContextMap =
+			BackgroundTaskContextMapFactory.buildTaskContextMap(
+				userId, sourceGroupId, privateLayout, layoutIds, parameterMap,
+				startDate, endDate, StringPool.BLANK);
 
-		try {
-			LayoutLocalServiceUtil.importLayouts(
-				userId, targetGroupId, privateLayout, parameterMap, file);
-		}
-		finally {
-			file.delete();
+		taskContextMap.put("sourceGroupId", sourceGroupId);
+		taskContextMap.put("targetGroupId", targetGroupId);
 
-			unlockGroup(targetGroupId);
-		}
+		BackgroundTaskLocalServiceUtil.addBackgroundTask(
+			userId, sourceGroupId, StringPool.BLANK, null,
+			LayoutStagingBackgroundTaskExecutor.class, taskContextMap,
+			new ServiceContext());
 	}
 
 	@Override
@@ -1959,11 +1968,11 @@ public class StagingImpl implements Staging {
 			int recurrenceType = ParamUtil.getInteger(
 				portletRequest, "recurrenceType");
 
-			Calendar startCal = ExportImportHelperUtil.getDate(
+			Calendar startCalendar = ExportImportHelperUtil.getCalendar(
 				portletRequest, "schedulerStartDate", true);
 
 			String cronText = SchedulerEngineHelperUtil.getCronText(
-				portletRequest, startCal, true, recurrenceType);
+				portletRequest, startCalendar, true, recurrenceType);
 
 			Date schedulerEndDate = null;
 
@@ -1971,10 +1980,10 @@ public class StagingImpl implements Staging {
 				portletRequest, "endDateType");
 
 			if (endDateType == 1) {
-				Calendar endCal = ExportImportHelperUtil.getDate(
+				Calendar endCalendar = ExportImportHelperUtil.getCalendar(
 					portletRequest, "schedulerEndDate", true);
 
-				schedulerEndDate = endCal.getTime();
+				schedulerEndDate = endCalendar.getTime();
 			}
 
 			String description = ParamUtil.getString(
@@ -1983,8 +1992,8 @@ public class StagingImpl implements Staging {
 			LayoutServiceUtil.schedulePublishToLive(
 				sourceGroupId, targetGroupId, privateLayout, layoutIdMap,
 				parameterMap, scope, dateRange.getStartDate(),
-				dateRange.getEndDate(), groupName, cronText, startCal.getTime(),
-				schedulerEndDate, description);
+				dateRange.getEndDate(), groupName, cronText,
+				startCalendar.getTime(), schedulerEndDate, description);
 		}
 		else {
 			MessageStatus messageStatus = new MessageStatus();
@@ -2133,11 +2142,11 @@ public class StagingImpl implements Staging {
 			int recurrenceType = ParamUtil.getInteger(
 				portletRequest, "recurrenceType");
 
-			Calendar startCal = ExportImportHelperUtil.getDate(
+			Calendar startCalendar = ExportImportHelperUtil.getCalendar(
 				portletRequest, "schedulerStartDate", true);
 
 			String cronText = SchedulerEngineHelperUtil.getCronText(
-				portletRequest, startCal, true, recurrenceType);
+				portletRequest, startCalendar, true, recurrenceType);
 
 			Date schedulerEndDate = null;
 
@@ -2145,10 +2154,10 @@ public class StagingImpl implements Staging {
 				portletRequest, "endDateType");
 
 			if (endDateType == 1) {
-				Calendar endCal = ExportImportHelperUtil.getDate(
+				Calendar endCalendar = ExportImportHelperUtil.getCalendar(
 					portletRequest, "schedulerEndDate", true);
 
-				schedulerEndDate = endCal.getTime();
+				schedulerEndDate = endCalendar.getTime();
 			}
 
 			String description = ParamUtil.getString(
@@ -2158,8 +2167,8 @@ public class StagingImpl implements Staging {
 				groupId, privateLayout, layoutIdMap, parameterMap,
 				remoteAddress, remotePort, remotePathContext, secureConnection,
 				remoteGroupId, remotePrivateLayout, dateRange.getStartDate(),
-				dateRange.getEndDate(), groupName, cronText, startCal.getTime(),
-				schedulerEndDate, description);
+				dateRange.getEndDate(), groupName, cronText,
+				startCalendar.getTime(), schedulerEndDate, description);
 		}
 		else {
 			MessageStatus messageStatus = new MessageStatus();

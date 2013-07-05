@@ -18,6 +18,7 @@ import com.liferay.portal.DuplicateLockException;
 import com.liferay.portal.kernel.backgroundtask.BackgroundTaskConstants;
 import com.liferay.portal.kernel.backgroundtask.BackgroundTaskExecutor;
 import com.liferay.portal.kernel.backgroundtask.BackgroundTaskResult;
+import com.liferay.portal.kernel.backgroundtask.BackgroundTaskStatusRegistryUtil;
 import com.liferay.portal.kernel.backgroundtask.ClassLoaderAwareBackgroundTaskExecutor;
 import com.liferay.portal.kernel.backgroundtask.SerialBackgroundTaskExecutor;
 import com.liferay.portal.kernel.log.Log;
@@ -74,6 +75,9 @@ public class BackgroundTaskMessageListener extends BaseMessageListener {
 			backgroundTaskExecutor = wrapBackgroundTaskExecutor(
 				backgroundTaskExecutor, classLoader);
 
+			BackgroundTaskStatusRegistryUtil.registerBackgroundTaskStatus(
+				backgroundTaskId);
+
 			BackgroundTaskResult backgroundTaskResult =
 				backgroundTaskExecutor.execute(backgroundTask);
 
@@ -97,6 +101,9 @@ public class BackgroundTaskMessageListener extends BaseMessageListener {
 		finally {
 			BackgroundTaskLocalServiceUtil.updateBackgroundTask(
 				backgroundTaskId, null, status, statusMessage, serviceContext);
+
+			BackgroundTaskStatusRegistryUtil.unregisterBackgroundTaskStatus(
+				backgroundTaskId);
 
 			Message responseMessage = new Message();
 

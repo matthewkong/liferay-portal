@@ -17,17 +17,17 @@ package com.liferay.portlet.dynamicdatamapping.lar;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.lar.BaseStagedModelDataHandler;
 import com.liferay.portal.kernel.lar.ExportImportPathUtil;
-import com.liferay.portal.kernel.lar.ManifestSummary;
 import com.liferay.portal.kernel.lar.PortletDataContext;
+import com.liferay.portal.kernel.lar.StagedModelDataHandlerUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.LocalizationUtil;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.xml.Element;
-import com.liferay.portal.model.StagedModel;
 import com.liferay.portal.service.ServiceContext;
 import com.liferay.portal.service.UserLocalServiceUtil;
 import com.liferay.portlet.dynamicdatamapping.model.DDMStructure;
+import com.liferay.portlet.dynamicdatamapping.model.DDMStructureConstants;
 import com.liferay.portlet.dynamicdatamapping.service.DDMStructureLocalServiceUtil;
 
 import java.util.Locale;
@@ -53,21 +53,20 @@ public class DDMStructureStagedModelDataHandler
 	}
 
 	@Override
-	public String getManifestSummaryKey(StagedModel stagedModel) {
-		if (stagedModel == null) {
-			return DDMStructure.class.getName();
-		}
-
-		DDMStructure structure = (DDMStructure)stagedModel;
-
-		return ManifestSummary.getManifestSummaryKey(
-			DDMStructure.class.getName(), structure.getClassName());
-	}
-
-	@Override
 	protected void doExportStagedModel(
 			PortletDataContext portletDataContext, DDMStructure structure)
 		throws Exception {
+
+		if (structure.getParentStructureId() !=
+				DDMStructureConstants.DEFAULT_PARENT_STRUCTURE_ID) {
+
+			DDMStructure parentStructure =
+				DDMStructureLocalServiceUtil.getStructure(
+					structure.getParentStructureId());
+
+			StagedModelDataHandlerUtil.exportStagedModel(
+				portletDataContext, parentStructure);
+		}
 
 		Element structureElement = portletDataContext.getExportDataElement(
 			structure);
@@ -92,6 +91,21 @@ public class DDMStructureStagedModelDataHandler
 		prepareLanguagesForImport(structure);
 
 		long userId = portletDataContext.getUserId(structure.getUserUuid());
+
+		if (structure.getParentStructureId() !=
+				DDMStructureConstants.DEFAULT_PARENT_STRUCTURE_ID) {
+
+			String parentStructurePath = ExportImportPathUtil.getModelPath(
+				portletDataContext, DDMStructure.class.getName(),
+				structure.getParentStructureId());
+
+			DDMStructure parentStructure =
+				(DDMStructure)portletDataContext.getZipEntryAsObject(
+					parentStructurePath);
+
+			StagedModelDataHandlerUtil.importStagedModel(
+				portletDataContext, parentStructure);
+		}
 
 		Map<Long, Long> structureIds =
 			(Map<Long, Long>)portletDataContext.getNewPrimaryKeysMap(

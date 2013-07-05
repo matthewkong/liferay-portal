@@ -221,12 +221,32 @@ public class ExportImportAction extends ImportLayoutsAction {
 			ResourceResponse resourceResponse)
 		throws Exception {
 
+		String cmd = ParamUtil.getString(resourceRequest, Constants.CMD);
+
 		PortletContext portletContext = portletConfig.getPortletContext();
 
-		PortletRequestDispatcher portletRequestDispatcher =
-			portletContext.getRequestDispatcher(
+		PortletRequestDispatcher portletRequestDispatcher = null;
+
+		if (cmd.equals(Constants.EXPORT)) {
+			portletRequestDispatcher = portletContext.getRequestDispatcher(
+				"/html/portlet/portlet_configuration/" +
+					"export_portlet_processes.jsp");
+		}
+		else if (cmd.equals(Constants.IMPORT)) {
+			portletRequestDispatcher = portletContext.getRequestDispatcher(
+				"/html/portlet/portlet_configuration/" +
+					"import_portlet_processes.jsp");
+		}
+		else if (cmd.equals(Constants.PUBLISH)) {
+			portletRequestDispatcher = portletContext.getRequestDispatcher(
+				"/html/portlet/portlet_configuration/" +
+					"publish_portlet_processes.jsp");
+		}
+		else {
+			portletRequestDispatcher = portletContext.getRequestDispatcher(
 				"/html/portlet/portlet_configuration/" +
 					"import_portlet_resources.jsp");
+		}
 
 		resourceRequest = ActionUtil.getWrappedResourceRequest(
 			resourceRequest, null);
