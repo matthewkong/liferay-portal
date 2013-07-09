@@ -367,7 +367,19 @@ request.setAttribute("edit_article.jsp-toLanguageId", toLanguageId);
 	}
 
 	function <portlet:namespace />saveArticle() {
-		document.<portlet:namespace />fm1.<portlet:namespace /><%= Constants.CMD %>.value = "<%= (article != null) ? Constants.UPDATE : Constants.ADD %>";
+		document.<portlet:namespace />fm1.<portlet:namespace />
+			<c:choose>
+				<c:when test="<%= Validator.isNotNull(article) %>">
+					<c:choose>
+						<c:when test="<%= article.isTemplateDriven() %>">
+							<%= Constants.CMD %>.value = "<%= (Validator.isNotNull(article.getTemplateId())) ? Constants.UPDATE : Constants.ADD %>";
+						</c:when>
+					</c:choose>
+				</c:when>
+				<c:otherwise>
+					<%= Constants.CMD %>.value = "<%= (Validator.isNotNull(article)) ? Constants.UPDATE : Constants.ADD %>";
+				</c:otherwise>
+			</c:choose>
 	}
 
 	function <portlet:namespace />selectDocumentLibrary(url) {
