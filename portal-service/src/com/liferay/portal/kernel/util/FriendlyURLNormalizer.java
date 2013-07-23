@@ -14,6 +14,8 @@
 
 package com.liferay.portal.kernel.util;
 
+import java.util.regex.Pattern;
+
 /**
  * @author Julio Camarero
  */
@@ -21,6 +23,6 @@ public interface FriendlyURLNormalizer {
 
 	public String normalize(String friendlyURL);
 
-	public String normalize(String friendlyURL, char[] replaceChars);
+	public String normalize(String friendlyURL, Pattern friendlyURLPattern);
 
 }
