@@ -25,7 +25,6 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.FriendlyURLNormalizerUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HtmlUtil;
-import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.service.ResourceLocalServiceUtil;
@@ -101,15 +100,21 @@ public class VerifyJournal extends VerifyProcess {
 		PreparedStatement ps = null;
 
 		try {
-			con = DataAccess.getUpgradeOptimizedConnection();
+			String normalizedURLTitle = FriendlyURLNormalizerUtil.normalize(
+				urlTitle);
 
-			ps = con.prepareStatement(
-				"update JournalArticle set urlTitle = ? where urlTitle = ?");
+			if (!urlTitle.equals(normalizedURLTitle)) {
+				con = DataAccess.getUpgradeOptimizedConnection();
 
-			ps.setString(1, FriendlyURLNormalizerUtil.normalize(urlTitle));
-			ps.setString(2, urlTitle);
+				ps = con.prepareStatement(
+					"update JournalArticle set urlTitle = ? where urlTitle = " +
+						"?");
 
-			ps.executeUpdate();
+				ps.setString(1, normalizedURLTitle);
+				ps.setString(2, urlTitle);
+
+				ps.executeUpdate();
+			}
 		}
 		finally {
 			DataAccess.cleanUp(con, ps);
@@ -345,15 +350,8 @@ public class VerifyJournal extends VerifyProcess {
 		try {
 			con = DataAccess.getUpgradeOptimizedConnection();
 
-			StringBundler sb = new StringBundler();
-
-			sb.append("select distinct urlTitle from JournalArticle where ");
-			sb.append("urlTitle like '%\u00a3%' or urlTitle like '%\u2013%' ");
-			sb.append("or urlTitle like '%\u2014%' or urlTitle like ");
-			sb.append("'%\u2018%' or urlTitle like '%\u2019%' or urlTitle ");
-			sb.append("like '%\u201c%' or urlTitle like '%\u201d%'");
-
-			ps = con.prepareStatement(sb.toString());
+			ps = con.prepareStatement(
+				"select distinct urlTitle from JournalArticle");
 
 			rs = ps.executeQuery();
 
