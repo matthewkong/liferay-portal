@@ -1881,6 +1881,11 @@ public interface JournalArticleLocalService extends BaseLocalService,
 		java.lang.String ddmTemplateKey)
 		throws com.liferay.portal.kernel.exception.SystemException;
 
+	public String getUniqueUrlTitle(long groupId, String articleId,
+		String urlTitle)
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException;
+
 	/**
 	* Returns <code>true</code> if the specified web content article exists.
 	*
