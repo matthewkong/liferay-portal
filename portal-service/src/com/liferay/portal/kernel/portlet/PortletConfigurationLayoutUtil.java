@@ -1,4 +1,3 @@
-<%--
 /**
  * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
@@ -12,21 +11,27 @@
  * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
  * details.
  */
---%>
 
-<aui:select cssClass="reminder-query-question" label="question" name="reminderQueryQuestion">
+package com.liferay.portal.kernel.portlet;
 
-	<%
-	for (String question : user.getReminderQueryQuestions()) {
-	%>
+import com.liferay.portal.model.Layout;
+import com.liferay.portal.theme.ThemeDisplay;
 
-		<aui:option label="<%= question %>" />
+/**
+ * @author Raymond Augé
+ */
+public class PortletConfigurationLayoutUtil {
 
-	<%
+	public static Layout getLayout(ThemeDisplay themeDisplay) {
+		Layout layout = themeDisplay.getLayout();
+
+		if (layout.isTypeControlPanel() &&
+			(themeDisplay.getScopeGroupId() != layout.getGroupId())) {
+
+			return null;
+		}
+
+		return layout;
 	}
-	%>
 
-	<c:if test="<%= PropsValues.USERS_REMINDER_QUERIES_CUSTOM_QUESTION_ENABLED %>">
-		<aui:option label="<%= UsersAdmin.CUSTOM_QUESTION %>" />
-	</c:if>
-</aui:select>
+}

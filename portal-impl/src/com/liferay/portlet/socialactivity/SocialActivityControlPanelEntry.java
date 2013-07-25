@@ -1,4 +1,3 @@
-<%--
 /**
  * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
  *
@@ -12,21 +11,29 @@
  * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
  * details.
  */
---%>
 
-<aui:select cssClass="reminder-query-question" label="question" name="reminderQueryQuestion">
+package com.liferay.portlet.socialactivity;
 
-	<%
-	for (String question : user.getReminderQueryQuestions()) {
-	%>
+import com.liferay.portal.model.Group;
+import com.liferay.portal.model.Portlet;
+import com.liferay.portal.security.permission.PermissionChecker;
+import com.liferay.portlet.BaseControlPanelEntry;
 
-		<aui:option label="<%= question %>" />
+/**
+ * @author Sergio González
+ */
+public class SocialActivityControlPanelEntry extends BaseControlPanelEntry {
 
-	<%
+	@Override
+	protected boolean hasAccessPermissionDenied(
+			PermissionChecker permissionChecker, Group group, Portlet portlet)
+		throws Exception {
+
+		if (group.isLayoutSetPrototype()) {
+			return true;
+		}
+
+		return false;
 	}
-	%>
 
-	<c:if test="<%= PropsValues.USERS_REMINDER_QUERIES_CUSTOM_QUESTION_ENABLED %>">
-		<aui:option label="<%= UsersAdmin.CUSTOM_QUESTION %>" />
-	</c:if>
-</aui:select>
+}
