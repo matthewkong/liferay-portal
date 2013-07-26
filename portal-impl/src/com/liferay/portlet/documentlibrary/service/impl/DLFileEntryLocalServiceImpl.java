@@ -2038,8 +2038,7 @@ public class DLFileEntryLocalServiceImpl
 
 		try {
 			expandoTable = expandoTableLocalService.getDefaultTable(
-				lastDLFileVersion.getCompanyId(),
-				DLFileEntry.class.getName());
+				lastDLFileVersion.getCompanyId(), DLFileEntry.class.getName());
 		}
 		catch (NoSuchTableException nste) {
 		}
@@ -2085,8 +2084,8 @@ public class DLFileEntryLocalServiceImpl
 			if (Validator.isNull(lastChecksum)) {
 				lastInputStream = DLStoreUtil.getFileAsStream(
 					dlFileEntry.getCompanyId(),
-					dlFileEntry.getDataRepositoryId(),
-					dlFileEntry.getName(), lastDLFileVersion.getVersion());
+					dlFileEntry.getDataRepositoryId(), dlFileEntry.getName(),
+					lastDLFileVersion.getVersion());
 
 				lastChecksum = DigesterUtil.digestBase64(lastInputStream);
 
@@ -2096,9 +2095,8 @@ public class DLFileEntryLocalServiceImpl
 			}
 
 			latestInputStream = DLStoreUtil.getFileAsStream(
-				dlFileEntry.getCompanyId(),
-				dlFileEntry.getDataRepositoryId(), dlFileEntry.getName(),
-				latestDLFileVersion.getVersion());
+				dlFileEntry.getCompanyId(), dlFileEntry.getDataRepositoryId(),
+				dlFileEntry.getName(), latestDLFileVersion.getVersion());
 
 			String latestChecksum = DigesterUtil.digestBase64(
 				latestInputStream);
