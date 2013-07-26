@@ -1924,10 +1924,10 @@ public class DLFileEntryLocalServiceImpl
 			return false;
 		}
 
-		long lastFolderId = lastDLFileVersion.getFolderId();
-		long latestFolderId = latestDLFileVersion.getFolderId();
+		String lastDescription = lastDLFileVersion.getDescription();
+		String latestDescription = latestDLFileVersion.getDescription();
 
-		if (lastFolderId != latestFolderId) {
+		if (!Validator.equals(lastDescription, latestDescription)) {
 			return false;
 		}
 
@@ -1938,31 +1938,24 @@ public class DLFileEntryLocalServiceImpl
 			return false;
 		}
 
-		String lastMimeType = lastDLFileVersion.getMimeType();
-		String latestMimeType = latestDLFileVersion.getMimeType();
-
-		if (!Validator.equals(lastMimeType, latestMimeType)) {
-			return false;
-		}
-
-		String lastTitle = lastDLFileVersion.getTitle();
-		String latestTitle = latestDLFileVersion.getTitle();
-
-		if (!Validator.equals(lastTitle, latestTitle)) {
-			return false;
-		}
-
-		String lastDescription = lastDLFileVersion.getDescription();
-		String latestDescription = latestDLFileVersion.getDescription();
-
-		if (!Validator.equals(lastDescription, latestDescription)) {
-			return false;
-		}
-
 		long lastFileEntryTypeId = lastDLFileVersion.getFileEntryTypeId();
 		long latestFileEntryTypeId = latestDLFileVersion.getFileEntryTypeId();
 
 		if (lastFileEntryTypeId != latestFileEntryTypeId) {
+			return false;
+		}
+
+		long lastFolderId = lastDLFileVersion.getFolderId();
+		long latestFolderId = latestDLFileVersion.getFolderId();
+
+		if (lastFolderId != latestFolderId) {
+			return false;
+		}
+
+		String lastMimeType = lastDLFileVersion.getMimeType();
+		String latestMimeType = latestDLFileVersion.getMimeType();
+
+		if (!Validator.equals(lastMimeType, latestMimeType)) {
 			return false;
 		}
 
@@ -1974,6 +1967,13 @@ public class DLFileEntryLocalServiceImpl
 		}
 
 		if (lastSize != latestSize) {
+			return false;
+		}
+
+		String lastTitle = lastDLFileVersion.getTitle();
+		String latestTitle = latestDLFileVersion.getTitle();
+
+		if (!Validator.equals(lastTitle, latestTitle)) {
 			return false;
 		}
 
