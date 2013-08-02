@@ -28,6 +28,7 @@ import com.liferay.portal.kernel.search.Document;
 import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.kernel.search.Hits;
 import com.liferay.portal.kernel.util.ArrayUtil;
+import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.HttpUtil;
@@ -739,7 +740,7 @@ public class DLImpl implements DL {
 		FileEntry fileEntry, FileVersion fileVersion, ThemeDisplay themeDisplay,
 		String queryString, boolean appendVersion, boolean absoluteURL) {
 
-		StringBundler sb = new StringBundler(17);
+		StringBundler sb = new StringBundler(19);
 
 		if (themeDisplay != null) {
 			if (absoluteURL) {
@@ -760,14 +761,17 @@ public class DLImpl implements DL {
 			title = TrashUtil.getOriginalTitle(fileEntry.getTitle());
 		}
 
-		sb.append(HttpUtil.encodeURL(HtmlUtil.unescape(title)));
+		title = HttpUtil.encodeURL(HtmlUtil.unescape(title));
 
+		sb.append(title);
 		sb.append(StringPool.SLASH);
 		sb.append(fileEntry.getUuid());
 
-		if (fileEntry.getMimeType().equalsIgnoreCase("application/pdf")) {
+		String mimeType = fileEntry.getMimeType();
+
+		if (mimeType.equals(ContentTypes.APPLICATION_PDF)) {
 			sb.append(StringPool.SLASH);
-			sb.append(HttpUtil.encodeURL(HtmlUtil.unescape(title)));
+			sb.append(title);
 		}
 
 		if (appendVersion) {
