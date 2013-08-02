@@ -765,6 +765,11 @@ public class DLImpl implements DL {
 		sb.append(StringPool.SLASH);
 		sb.append(fileEntry.getUuid());
 
+		if (fileEntry.getMimeType().equalsIgnoreCase("application/pdf")) {
+			sb.append(StringPool.SLASH);
+			sb.append(HttpUtil.encodeURL(HtmlUtil.unescape(title)));
+		}
+
 		if (appendVersion) {
 			sb.append("?version=");
 			sb.append(fileVersion.getVersion());
