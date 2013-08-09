@@ -22,9 +22,13 @@ import com.liferay.portal.security.auth.PrincipalException;
 import com.liferay.portal.security.permission.ActionKeys;
 import com.liferay.portal.security.permission.PermissionChecker;
 import com.liferay.portal.service.GroupLocalServiceUtil;
+import com.liferay.portlet.asset.model.AssetEntry;
+import com.liferay.portlet.asset.service.AssetEntryLocalServiceUtil;
 import com.liferay.portlet.blogs.model.BlogsEntry;
+import com.liferay.portlet.blogs.service.BlogsEntryLocalServiceUtil;
 import com.liferay.portlet.blogs.service.permission.BlogsPermission;
 import com.liferay.portlet.journal.model.JournalArticle;
+import com.liferay.portlet.journal.service.JournalArticleLocalServiceUtil;
 import com.liferay.portlet.journal.service.permission.JournalPermission;
 import com.liferay.portlet.messageboards.NoSuchDiscussionException;
 import com.liferay.portlet.messageboards.model.MBCategory;
@@ -32,6 +36,7 @@ import com.liferay.portlet.messageboards.model.MBThread;
 import com.liferay.portlet.messageboards.service.MBDiscussionLocalServiceUtil;
 import com.liferay.portlet.messageboards.service.MBThreadLocalServiceUtil;
 import com.liferay.portlet.messageboards.service.permission.MBCategoryPermission;
+import com.liferay.portlet.messageboards.service.permission.MBDiscussionPermission;
 import com.liferay.portlet.messageboards.service.permission.MBMessagePermission;
 import com.liferay.portlet.messageboards.service.permission.MBPermission;
 import com.liferay.portlet.wiki.model.WikiNode;
@@ -75,7 +80,8 @@ public class SubscriptionPermissionImpl implements SubscriptionPermission {
 			MBDiscussionLocalServiceUtil.getDiscussion(
 				subscriptionClassName, subscriptionClassPK);
 
-			return true;
+			return hasDiscussionPermission(
+				permissionChecker, subscriptionClassName, subscriptionClassPK);
 		}
 		catch (NoSuchDiscussionException nsde) {
 		}
@@ -99,6 +105,51 @@ public class SubscriptionPermissionImpl implements SubscriptionPermission {
 		}
 
 		return true;
+	}
+
+	protected boolean hasDiscussionPermission(
+			PermissionChecker permissionChecker, String subscriptionClassName,
+			long subscriptionClassPK)
+		throws PortalException, SystemException {
+
+		AssetEntry assetEntry = AssetEntryLocalServiceUtil.fetchEntry(
+			subscriptionClassName, subscriptionClassPK);
+
+		if (assetEntry == null) {
+			return false;
+		}
+
+		if (subscriptionClassName.equals(BlogsEntry.class.getName())) {
+			BlogsEntry blogsEntry = BlogsEntryLocalServiceUtil.getBlogsEntry(
+				subscriptionClassPK);
+
+			long groupId = blogsEntry.getGroupId();
+
+			long companyId = blogsEntry.getCompanyId();
+
+			long blogsCreatorId = blogsEntry.getUserId();
+
+			return MBDiscussionPermission.contains(
+				permissionChecker, companyId, groupId, subscriptionClassName,
+				subscriptionClassPK, blogsCreatorId, ActionKeys.VIEW);
+		}
+		else if (subscriptionClassName.equals(JournalArticle.class.getName())) {
+			JournalArticle journalArticle =
+				JournalArticleLocalServiceUtil.getLatestArticle(
+					subscriptionClassPK);
+
+			long groupId = journalArticle.getGroupId();
+
+			long companyId = journalArticle.getCompanyId();
+
+			long articleCreatorId = journalArticle.getUserId();
+
+			return MBDiscussionPermission.contains(
+				permissionChecker, companyId, groupId, subscriptionClassName,
+				subscriptionClassPK, articleCreatorId, ActionKeys.VIEW);
+		}
+
+		return false;
 	}
 
 	protected Boolean hasPermission(
