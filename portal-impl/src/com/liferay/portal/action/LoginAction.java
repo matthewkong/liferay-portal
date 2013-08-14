@@ -15,10 +15,10 @@
 package com.liferay.portal.action;
 
 import com.liferay.portal.kernel.portlet.WindowStateFactory;
+import com.liferay.portal.kernel.util.Http;
 import com.liferay.portal.kernel.util.HttpUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
-import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.theme.ThemeDisplay;
 import com.liferay.portal.util.PortalUtil;
@@ -102,17 +102,16 @@ public class LoginAction extends Action {
 			portletURL.setParameter("saveLastPath", Boolean.FALSE.toString());
 			portletURL.setParameter("struts_action", "/login/login");
 			portletURL.setPortletMode(PortletMode.VIEW);
+			portletURL.setSecure(
+				PropsValues.COMPANY_SECURITY_AUTH_REQUIRES_HTTPS);
 			portletURL.setWindowState(getWindowState(request));
 
 			redirect = portletURL.toString();
 		}
 
-		if (PropsValues.COMPANY_SECURITY_AUTH_REQUIRES_HTTPS) {
-			String portalURL = PortalUtil.getPortalURL(request, false);
-			String portalURLSecure = PortalUtil.getPortalURL(request, true);
-
-			redirect = StringUtil.replaceFirst(
-				redirect, portalURL, portalURLSecure);
+		if (!redirect.startsWith(Http.HTTP)) {
+			String portalURL = PortalUtil.getPortalURL(request);
+			redirect = portalURL.concat(redirect);
 		}
 
 		String loginRedirect = ParamUtil.getString(request, "redirect");
