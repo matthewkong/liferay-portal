@@ -16,19 +16,26 @@ package com.liferay.portal.service.permission;
 
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
+import com.liferay.portal.kernel.repository.model.Folder;
 import com.liferay.portal.kernel.util.Validator;
+import com.liferay.portal.kernel.workflow.WorkflowInstance;
+import com.liferay.portal.kernel.workflow.permission.WorkflowPermissionUtil;
 import com.liferay.portal.model.Group;
+import com.liferay.portal.model.Layout;
 import com.liferay.portal.security.auth.PrincipalException;
 import com.liferay.portal.security.permission.ActionKeys;
 import com.liferay.portal.security.permission.PermissionChecker;
 import com.liferay.portal.service.GroupLocalServiceUtil;
+import com.liferay.portal.service.LayoutLocalServiceUtil;
 import com.liferay.portlet.asset.model.AssetEntry;
 import com.liferay.portlet.asset.service.AssetEntryLocalServiceUtil;
 import com.liferay.portlet.blogs.model.BlogsEntry;
-import com.liferay.portlet.blogs.service.BlogsEntryLocalServiceUtil;
 import com.liferay.portlet.blogs.service.permission.BlogsPermission;
+import com.liferay.portlet.documentlibrary.model.DLFolder;
+import com.liferay.portlet.documentlibrary.service.DLFolderLocalServiceUtil;
+import com.liferay.portlet.documentlibrary.service.permission.DLFolderPermission;
+import com.liferay.portlet.documentlibrary.service.permission.DLPermission;
 import com.liferay.portlet.journal.model.JournalArticle;
-import com.liferay.portlet.journal.service.JournalArticleLocalServiceUtil;
 import com.liferay.portlet.journal.service.permission.JournalPermission;
 import com.liferay.portlet.messageboards.NoSuchDiscussionException;
 import com.liferay.portlet.messageboards.model.MBCategory;
@@ -76,14 +83,44 @@ public class SubscriptionPermissionImpl implements SubscriptionPermission {
 			return false;
 		}
 
+		AssetEntry assetEntry = AssetEntryLocalServiceUtil.fetchEntry(
+			subscriptionClassName, subscriptionClassPK);
+
+		if (assetEntry == null) {
+			return false;
+		}
+
 		try {
 			MBDiscussionLocalServiceUtil.getDiscussion(
 				subscriptionClassName, subscriptionClassPK);
 
 			return hasDiscussionPermission(
-				permissionChecker, subscriptionClassName, subscriptionClassPK);
+				permissionChecker, subscriptionClassName, subscriptionClassPK,
+				assetEntry);
 		}
 		catch (NoSuchDiscussionException nsde) {
+		}
+
+		if (subscriptionClassName.equals(Folder.class.getName())) {
+			if (subscriptionClassPK != assetEntry.getGroupId()) {
+				DLFolder dlFolder = DLFolderLocalServiceUtil.getDLFolder(
+					subscriptionClassPK);
+
+				return DLFolderPermission.contains(
+					permissionChecker, dlFolder, ActionKeys.VIEW);
+			}
+			else {
+				try {
+					DLPermission.check(
+						permissionChecker, assetEntry.getGroupId(),
+						ActionKeys.VIEW);
+
+					return true;
+				}
+				catch (PrincipalException pe) {
+					return false;
+				}
+			}
 		}
 
 		if (Validator.isNotNull(inferredClassName)) {
@@ -109,47 +146,36 @@ public class SubscriptionPermissionImpl implements SubscriptionPermission {
 
 	protected boolean hasDiscussionPermission(
 			PermissionChecker permissionChecker, String subscriptionClassName,
-			long subscriptionClassPK)
+			long subscriptionClassPK, AssetEntry assetEntry)
 		throws PortalException, SystemException {
 
-		AssetEntry assetEntry = AssetEntryLocalServiceUtil.fetchEntry(
-			subscriptionClassName, subscriptionClassPK);
+		long groupId = assetEntry.getGroupId();
+		long companyId = assetEntry.getCompanyId();
+		long userCreatorId = assetEntry.getUserId();
 
-		if (assetEntry == null) {
+		if (subscriptionClassName.equals(WorkflowInstance.class.getName())) {
+			Boolean hasPermission = WorkflowPermissionUtil.hasPermission(
+				permissionChecker, companyId, subscriptionClassName,
+				subscriptionClassPK, ActionKeys.SUBSCRIBE);
+
+			if (hasPermission != null) {
+				return hasPermission.booleanValue();
+			}
+
 			return false;
 		}
-
-		if (subscriptionClassName.equals(BlogsEntry.class.getName())) {
-			BlogsEntry blogsEntry = BlogsEntryLocalServiceUtil.getBlogsEntry(
+		else if (subscriptionClassName.equals(Layout.class.getName())) {
+			Layout layout = LayoutLocalServiceUtil.getLayout(
 				subscriptionClassPK);
 
-			long groupId = blogsEntry.getGroupId();
-
-			long companyId = blogsEntry.getCompanyId();
-
-			long blogsCreatorId = blogsEntry.getUserId();
-
+			return LayoutPermissionUtil.contains(
+				permissionChecker, layout, ActionKeys.VIEW);
+		}
+		else {
 			return MBDiscussionPermission.contains(
 				permissionChecker, companyId, groupId, subscriptionClassName,
-				subscriptionClassPK, blogsCreatorId, ActionKeys.VIEW);
+				subscriptionClassPK, userCreatorId, ActionKeys.VIEW);
 		}
-		else if (subscriptionClassName.equals(JournalArticle.class.getName())) {
-			JournalArticle journalArticle =
-				JournalArticleLocalServiceUtil.getLatestArticle(
-					subscriptionClassPK);
-
-			long groupId = journalArticle.getGroupId();
-
-			long companyId = journalArticle.getCompanyId();
-
-			long articleCreatorId = journalArticle.getUserId();
-
-			return MBDiscussionPermission.contains(
-				permissionChecker, companyId, groupId, subscriptionClassName,
-				subscriptionClassPK, articleCreatorId, ActionKeys.VIEW);
-		}
-
-		return false;
 	}
 
 	protected Boolean hasPermission(
