@@ -421,7 +421,8 @@ public class LoginUtil {
 			Boolean httpsInitial = (Boolean)session.getAttribute(
 				WebKeys.HTTPS_INITIAL);
 
-			if ((httpsInitial == null) || !httpsInitial.booleanValue()) {
+			if (((httpsInitial == null) || !httpsInitial.booleanValue()) &&
+					!PropsValues.COMPANY_SECURITY_AUTH_REQUIRES_HTTPS) {
 				secure = false;
 			}
 		}
