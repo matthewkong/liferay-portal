@@ -85,6 +85,8 @@ import com.liferay.portlet.documentlibrary.model.DLFolder;
 import com.liferay.portlet.documentlibrary.model.DLFolderConstants;
 import com.liferay.portlet.documentlibrary.model.DLSyncConstants;
 import com.liferay.portlet.documentlibrary.model.impl.DLFileEntryImpl;
+import com.liferay.portlet.documentlibrary.service.DLFileEntryMetadataLocalServiceUtil;
+import com.liferay.portlet.documentlibrary.service.DLFileEntryTypeLocalServiceUtil;
 import com.liferay.portlet.documentlibrary.service.base.DLFileEntryLocalServiceBaseImpl;
 import com.liferay.portlet.documentlibrary.store.DLStoreUtil;
 import com.liferay.portlet.documentlibrary.util.DL;
@@ -113,6 +115,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -1975,7 +1978,7 @@ public class DLFileEntryLocalServiceImpl
 			return false;
 		}
 
-		if (PropsValues.DL_FILE_ENTRY_VERSION_POLICY == 0) {
+		if (PropsValues.DL_FILE_ENTRY_VERSION_POLICY != 1) {
 			return false;
 		}
 
@@ -2030,6 +2033,52 @@ public class DLFileEntryLocalServiceImpl
 
 		if (!Validator.equals(lastTitle, latestTitle)) {
 			return false;
+		}
+
+		// Metadata
+
+		DLFileEntryType dlFileEntryType =
+			DLFileEntryTypeLocalServiceUtil.getFileEntryType(
+				lastFileEntryTypeId);
+
+		List<DDMStructure> ddmStructures = dlFileEntryType.getDDMStructures();
+
+		for (DDMStructure ddmStructure : ddmStructures) {
+			DLFileEntryMetadata lastFileEntryMetadata =
+				DLFileEntryMetadataLocalServiceUtil.getFileEntryMetadata(
+					ddmStructure.getStructureId(),
+					lastDLFileVersion.getFileVersionId());
+			DLFileEntryMetadata latestFileEntryMetadata =
+				DLFileEntryMetadataLocalServiceUtil.getFileEntryMetadata(
+					ddmStructure.getStructureId(),
+					latestDLFileVersion.getFileVersionId());
+
+			Fields lastFields = StorageEngineUtil.getFields(
+				lastFileEntryMetadata.getDDMStorageId());
+			Fields latestFields = StorageEngineUtil.getFields(
+				latestFileEntryMetadata.getDDMStorageId());
+
+			Iterator<com.liferay.portlet.dynamicdatamapping.storage.Field>
+				lastItr = lastFields.iterator();
+			Iterator<com.liferay.portlet.dynamicdatamapping.storage.Field>
+				latestItr = latestFields.iterator();
+
+			while (lastItr.hasNext() && latestItr.hasNext()) {
+				com.liferay.portlet.dynamicdatamapping.storage.Field
+					lastField = lastItr.next();
+				com.liferay.portlet.dynamicdatamapping.storage.Field
+					latestField = latestItr.next();
+
+				if (!lastField.equals(latestField)) {
+					return false;
+				}
+
+				if (lastItr.hasNext() && !latestItr.hasNext() ||
+					!lastItr.hasNext() && latestItr.hasNext()) {
+
+					return false;
+				}
+			}
 		}
 
 		// Expando
