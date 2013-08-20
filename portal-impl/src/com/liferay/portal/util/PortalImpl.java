@@ -3783,7 +3783,7 @@ public class PortalImpl implements Portal {
 	@Override
 	public String getPortalURL(HttpServletRequest request, boolean secure) {
 		return getPortalURL(
-			request.getServerName(), request.getServerPort(), secure);
+			request.getServerName(), getPortalPort(secure), secure);
 	}
 
 	@Override
@@ -7585,11 +7585,13 @@ public class PortalImpl implements Portal {
 	private String _pathProxy;
 	private Map<String, Long> _plidToPortletIdMap =
 		new ConcurrentHashMap<String, Long>();
-	private final AtomicInteger _portalPort = new AtomicInteger(-1);
+	private final AtomicInteger _portalPort = new AtomicInteger(
+		PropsValues.HTTP_PORT);
 	private List<PortalPortEventListener> _portalPortEventListeners =
 		new ArrayList<PortalPortEventListener>();
 	private Set<String> _reservedParams;
-	private final AtomicInteger _securePortalPort = new AtomicInteger(-1);
+	private final AtomicInteger _securePortalPort = new AtomicInteger(
+		PropsValues.HTTPS_PORT);
 	private String[] _sortedSystemGroups;
 	private String[] _sortedSystemOrganizationRoles;
 	private String[] _sortedSystemRoles;
