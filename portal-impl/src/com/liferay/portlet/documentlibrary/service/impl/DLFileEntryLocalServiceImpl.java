@@ -327,7 +327,8 @@ public class DLFileEntryLocalServiceImpl
 		DLFileVersion latestDLFileVersion =
 			dlFileVersionLocalService.getLatestFileVersion(fileEntryId, false);
 
-		if (isKeepFileVersionLabel(
+		if (!majorVersion &&
+			isKeepFileVersionLabel(
 				dlFileEntry, lastDLFileVersion, latestDLFileVersion,
 				serviceContext.getWorkflowAction())) {
 
@@ -1371,8 +1372,8 @@ public class DLFileEntryLocalServiceImpl
 
 		copyFileEntryMetadata(
 			dlFileVersion.getCompanyId(), dlFileVersion.getFileEntryTypeId(),
-			fileEntryId, newDlFileVersion.getFileVersionId(),
-			dlFileVersion.getFileVersionId(), serviceContext);
+			fileEntryId, dlFileVersion.getFileVersionId(),
+			newDlFileVersion.getFileVersionId(), serviceContext);
 	}
 
 	@Override
