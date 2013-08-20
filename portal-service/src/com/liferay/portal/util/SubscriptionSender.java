@@ -440,8 +440,13 @@ public class SubscriptionSender implements Serializable {
 					subscription, inferredClassName, inferredClassPK, user)) {
 
 				if (_log.isDebugEnabled()) {
-					_log.debug("Skip unauthorized user " + user.getUserId());
+					_log.debug(
+						"Remove subscription for unauthorized user " +
+							user.getUserId());
 				}
+
+				SubscriptionLocalServiceUtil.deleteSubscription(
+					subscription.getSubscriptionId());
 
 				return;
 			}
