@@ -81,7 +81,7 @@ public class FlagsRequestMessageListener extends BaseMessageListener {
 
 		Group group = layout.getGroup();
 
-		String groupName = HtmlUtil.escape(group.getDescriptiveName());
+		String groupName = group.getDescriptiveName();
 
 		// Reporter user
 
