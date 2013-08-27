@@ -1653,17 +1653,11 @@ public class PortalImpl implements Portal {
 			createAccountURL.setParameter(
 				"struts_action", "/login/create_account");
 			createAccountURL.setPortletMode(PortletMode.VIEW);
+			createAccountURL.setSecure(request.isSecure() ||
+				PropsValues.COMPANY_SECURITY_AUTH_REQUIRES_HTTPS);
 			createAccountURL.setWindowState(WindowState.MAXIMIZED);
 
-			if (!PropsValues.COMPANY_SECURITY_AUTH_REQUIRES_HTTPS) {
-				return createAccountURL.toString();
-			}
-
-			String portalURL = getPortalURL(request);
-			String portalURLSecure = getPortalURL(request, true);
-
-			return StringUtil.replaceFirst(
-				createAccountURL.toString(), portalURL, portalURLSecure);
+			return createAccountURL.toString();
 		}
 
 		try {
@@ -3782,7 +3776,7 @@ public class PortalImpl implements Portal {
 	@Override
 	public String getPortalURL(HttpServletRequest request, boolean secure) {
 		return getPortalURL(
-			request.getServerName(), request.getServerPort(), secure);
+			request.getServerName(), getPortalPort(secure), secure);
 	}
 
 	@Override
@@ -6167,6 +6161,27 @@ public class PortalImpl implements Portal {
 
 	@Override
 	public boolean isSecure(HttpServletRequest request) {
+		if (!PropsValues.COMPANY_SECURITY_AUTH_REQUIRES_HTTPS) {
+			return request.isSecure();
+		}
+
+		if (PropsValues.SESSION_ENABLE_PHISHING_PROTECTION) {
+			return true;
+		}
+
+		String ppid = ParamUtil.getString(request, "p_p_id", StringPool.BLANK);
+
+		ThemeDisplay themeDisplay = (ThemeDisplay)request.getAttribute(
+			WebKeys.THEME_DISPLAY);
+
+		if (themeDisplay == null) {
+			return request.isSecure();
+		}
+
+		if (!themeDisplay.isSignedIn() && ppid.equals(PortletKeys.LOGIN)) {
+			return true;
+		}
+
 		HttpSession session = request.getSession();
 
 		if (session == null) {
@@ -6176,19 +6191,11 @@ public class PortalImpl implements Portal {
 		Boolean httpsInitial = (Boolean)session.getAttribute(
 			WebKeys.HTTPS_INITIAL);
 
-		boolean secure = false;
-
-		if (PropsValues.COMPANY_SECURITY_AUTH_REQUIRES_HTTPS &&
-			!PropsValues.SESSION_ENABLE_PHISHING_PROTECTION &&
-			(httpsInitial != null) && !httpsInitial.booleanValue()) {
-
-			secure = false;
-		}
-		else {
-			secure = request.isSecure();
+		if (httpsInitial == null) {
+			return request.isSecure();
 		}
 
-		return secure;
+		return httpsInitial;
 	}
 
 	@Override
@@ -7576,11 +7583,13 @@ public class PortalImpl implements Portal {
 	private String _pathProxy;
 	private Map<String, Long> _plidToPortletIdMap =
 		new ConcurrentHashMap<String, Long>();
-	private final AtomicInteger _portalPort = new AtomicInteger(-1);
+	private final AtomicInteger _portalPort = new AtomicInteger(
+		PropsValues.HTTP_PORT);
 	private List<PortalPortEventListener> _portalPortEventListeners =
 		new ArrayList<PortalPortEventListener>();
 	private Set<String> _reservedParams;
-	private final AtomicInteger _securePortalPort = new AtomicInteger(-1);
+	private final AtomicInteger _securePortalPort = new AtomicInteger(
+		PropsValues.HTTPS_PORT);
 	private final String _servletContextName;
 	private String[] _sortedSystemGroups;
 	private String[] _sortedSystemOrganizationRoles;
