@@ -502,6 +502,16 @@ public class AnnouncementsEntryLocalServiceWrapper
 	}
 
 	@Override
+	public void sendUserNotifications(
+		com.liferay.portlet.announcements.model.AnnouncementsEntry announcementEntry,
+		com.liferay.portal.kernel.json.JSONObject notificationEventJSONObject)
+		throws com.liferay.portal.kernel.exception.PortalException,
+			com.liferay.portal.kernel.exception.SystemException {
+		_announcementsEntryLocalService.sendUserNotifications(announcementEntry,
+			notificationEventJSONObject);
+	}
+
+	@Override
 	public com.liferay.portlet.announcements.model.AnnouncementsEntry updateEntry(
 		long userId, long entryId, java.lang.String title,
 		java.lang.String content, java.lang.String url, java.lang.String type,
