@@ -24,6 +24,7 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.notifications.ChannelHubManagerUtil;
 import com.liferay.portal.kernel.notifications.NotificationEvent;
 import com.liferay.portal.kernel.notifications.NotificationEventFactoryUtil;
+import com.liferay.portal.kernel.search.Indexer;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.PropsKeys;
@@ -55,7 +56,6 @@ import com.liferay.portlet.announcements.service.base.AnnouncementsEntryLocalSer
 import com.liferay.util.ContentUtil;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -352,44 +352,78 @@ public class AnnouncementsEntryLocalServiceImpl
 			JSONObject notificationEventJSONObject)
 		throws PortalException, SystemException {
 
-		List<User> users = Collections.emptyList();
+		int count = 0;
 
 		if (announcementEntry.getClassNameId() == 0) {
-			users = UserLocalServiceUtil.getUsers(
-				QueryUtil.ALL_POS, QueryUtil.ALL_POS);
+			count = UserLocalServiceUtil.getUsersCount();
 		}
 		else {
 			String className = PortalUtil.getClassName(
 				announcementEntry.getClassNameId());
 
 			if (className.equals(Group.class.getName())) {
-				users = UserLocalServiceUtil.getGroupUsers(
+				count = UserLocalServiceUtil.getGroupUsersCount(
 					announcementEntry.getClassPK());
 			}
 			else if (className.equals(Organization.class.getName())) {
-				users = UserLocalServiceUtil.getOrganizationUsers(
+				count = UserLocalServiceUtil.getOrganizationUsersCount(
 					announcementEntry.getClassPK());
 			}
 			else if (className.equals(Role.class.getName())) {
-				users = UserLocalServiceUtil.getRoleUsers(
+				count = UserLocalServiceUtil.getRoleUsersCount(
 					announcementEntry.getClassPK());
 			}
 			else if (className.equals(UserGroup.class.getName())) {
-				users = UserLocalServiceUtil.getUserGroupUsers(
+				count = UserLocalServiceUtil.getUserGroupUsersCount(
 					announcementEntry.getClassPK());
 			}
 		}
 
-		for (User user : users) {
-			NotificationEvent notificationEvent =
-				NotificationEventFactoryUtil.createNotificationEvent(
-					System.currentTimeMillis(), "6_WAR_soportlet",
-					notificationEventJSONObject);
+		List<User> users = new ArrayList<User>();
 
-			notificationEvent.setDeliveryRequired(0);
+		int pages = count / Indexer.DEFAULT_INTERVAL;
 
-			ChannelHubManagerUtil.sendNotificationEvent(
-				user.getCompanyId(), user.getUserId(), notificationEvent);
+		for (int i = 0; i <= pages; i++) {
+			int start = (i * Indexer.DEFAULT_INTERVAL);
+
+			int end = start + Indexer.DEFAULT_INTERVAL;
+
+			if (announcementEntry.getClassNameId() == 0) {
+				users = UserLocalServiceUtil.getUsers(start, end);
+			}
+			else {
+				String className = PortalUtil.getClassName(
+					announcementEntry.getClassNameId());
+
+				if (className.equals(Group.class.getName())) {
+					users = UserLocalServiceUtil.getGroupUsers(
+						announcementEntry.getClassPK(), start, end);
+				}
+				else if (className.equals(Organization.class.getName())) {
+					users = UserLocalServiceUtil.getOrganizationUsers(
+						announcementEntry.getClassPK(), start, end);
+				}
+				else if (className.equals(Role.class.getName())) {
+					users = UserLocalServiceUtil.getRoleUsers(
+						announcementEntry.getClassPK(), start, end);
+				}
+				else if (className.equals(UserGroup.class.getName())) {
+					users = UserLocalServiceUtil.getUserGroupUsers(
+						announcementEntry.getClassPK(), start, end);
+				}
+			}
+
+			for (User user : users) {
+				NotificationEvent notificationEvent =
+					NotificationEventFactoryUtil.createNotificationEvent(
+						System.currentTimeMillis(), "6_WAR_soportlet",
+						notificationEventJSONObject);
+
+				notificationEvent.setDeliveryRequired(0);
+
+				ChannelHubManagerUtil.sendNotificationEvent(
+					user.getCompanyId(), user.getUserId(), notificationEvent);
+			}
 		}
 	}
 
