@@ -355,29 +355,54 @@ public class AnnouncementsEntryLocalServiceImpl
 
 		int count = 0;
 
+		Company company = companyPersistence.findByPrimaryKey(
+			announcementEntry.getCompanyId());
+
+		LinkedHashMap<String, Object> params =
+			new LinkedHashMap<String, Object>();
+
 		if (announcementEntry.getClassNameId() == 0) {
 			count = UserLocalServiceUtil.getUsersCount();
 		}
 		else {
-			String className = PortalUtil.getClassName(
-				announcementEntry.getClassNameId());
+			String className = announcementEntry.getClassName();
 
-			if (className.equals(Group.class.getName())) {
-				count = UserLocalServiceUtil.getGroupUsersCount(
-					announcementEntry.getClassPK());
+			long classPK = announcementEntry.getClassPK();
+
+			if (classPK > 0) {
+				if (className.equals(Group.class.getName())) {
+					params.put("inherit", Boolean.TRUE);
+					params.put("usersGroups", classPK);
+				}
+				else if (className.equals(Organization.class.getName())) {
+					Organization organization =
+						organizationPersistence.findByPrimaryKey(classPK);
+
+					params.put(
+						"usersOrgsTree",
+						ListUtil.fromArray(new Organization[] {organization}));
+				}
+				else if (className.equals(Role.class.getName())) {
+					Role role = rolePersistence.findByPrimaryKey(classPK);
+
+					if (role.getType() == RoleConstants.TYPE_REGULAR) {
+						params.put("inherit", Boolean.TRUE);
+						params.put("usersRoles", classPK);
+					}
+					else {
+						params.put(
+							"userGroupRole", new Long[] {Long.valueOf(0),
+							classPK});
+					}
+				}
+				else if (className.equals(UserGroup.class.getName())) {
+					params.put("usersUserGroups", classPK);
+				}
 			}
-			else if (className.equals(Organization.class.getName())) {
-				count = UserLocalServiceUtil.getOrganizationUsersCount(
-					announcementEntry.getClassPK());
-			}
-			else if (className.equals(Role.class.getName())) {
-				count = UserLocalServiceUtil.getRoleUsersCount(
-					announcementEntry.getClassPK());
-			}
-			else if (className.equals(UserGroup.class.getName())) {
-				count = UserLocalServiceUtil.getUserGroupUsersCount(
-					announcementEntry.getClassPK());
-			}
+
+			count = userLocalService.searchCount(
+				company.getCompanyId(), null, WorkflowConstants.STATUS_APPROVED,
+				params);
 		}
 
 		List<User> users = new ArrayList<User>();
@@ -393,25 +418,10 @@ public class AnnouncementsEntryLocalServiceImpl
 				users = UserLocalServiceUtil.getUsers(start, end);
 			}
 			else {
-				String className = PortalUtil.getClassName(
-					announcementEntry.getClassNameId());
-
-				if (className.equals(Group.class.getName())) {
-					users = UserLocalServiceUtil.getGroupUsers(
-						announcementEntry.getClassPK(), start, end);
-				}
-				else if (className.equals(Organization.class.getName())) {
-					users = UserLocalServiceUtil.getOrganizationUsers(
-						announcementEntry.getClassPK(), start, end);
-				}
-				else if (className.equals(Role.class.getName())) {
-					users = UserLocalServiceUtil.getRoleUsers(
-						announcementEntry.getClassPK(), start, end);
-				}
-				else if (className.equals(UserGroup.class.getName())) {
-					users = UserLocalServiceUtil.getUserGroupUsers(
-						announcementEntry.getClassPK(), start, end);
-				}
+				users = userLocalService.search(
+					company.getCompanyId(), null,
+					WorkflowConstants.STATUS_APPROVED, params, start, end,
+					(OrderByComparator)null);
 			}
 
 			for (User user : users) {
