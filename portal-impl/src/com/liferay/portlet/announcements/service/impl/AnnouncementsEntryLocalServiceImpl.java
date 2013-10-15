@@ -17,9 +17,13 @@ package com.liferay.portlet.announcements.service.impl;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
+import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.notifications.ChannelHubManagerUtil;
+import com.liferay.portal.kernel.notifications.NotificationEvent;
+import com.liferay.portal.kernel.notifications.NotificationEventFactoryUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.PropsKeys;
@@ -34,6 +38,7 @@ import com.liferay.portal.model.Role;
 import com.liferay.portal.model.RoleConstants;
 import com.liferay.portal.model.User;
 import com.liferay.portal.model.UserGroup;
+import com.liferay.portal.service.UserLocalServiceUtil;
 import com.liferay.portal.util.PortalUtil;
 import com.liferay.portal.util.PortletKeys;
 import com.liferay.portal.util.PrefsPropsUtil;
@@ -50,6 +55,7 @@ import com.liferay.portlet.announcements.service.base.AnnouncementsEntryLocalSer
 import com.liferay.util.ContentUtil;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -339,6 +345,52 @@ public class AnnouncementsEntryLocalServiceImpl
 	@Override
 	public int getUserEntriesCount(long userId) throws SystemException {
 		return announcementsEntryPersistence.countByUserId(userId);
+	}
+
+	public void sendUserNotifications(
+			AnnouncementsEntry announcementEntry,
+			JSONObject notificationEventJSONObject)
+		throws PortalException, SystemException {
+
+		List<User> users = Collections.emptyList();
+
+		if (announcementEntry.getClassNameId() == 0) {
+			users = UserLocalServiceUtil.getUsers(
+				QueryUtil.ALL_POS, QueryUtil.ALL_POS);
+		}
+		else {
+			String className = PortalUtil.getClassName(
+				announcementEntry.getClassNameId());
+
+			if (className.equals(Group.class.getName())) {
+				users = UserLocalServiceUtil.getGroupUsers(
+					announcementEntry.getClassPK());
+			}
+			else if (className.equals(Organization.class.getName())) {
+				users = UserLocalServiceUtil.getOrganizationUsers(
+					announcementEntry.getClassPK());
+			}
+			else if (className.equals(Role.class.getName())) {
+				users = UserLocalServiceUtil.getRoleUsers(
+					announcementEntry.getClassPK());
+			}
+			else if (className.equals(UserGroup.class.getName())) {
+				users = UserLocalServiceUtil.getUserGroupUsers(
+					announcementEntry.getClassPK());
+			}
+		}
+
+		for (User user : users) {
+			NotificationEvent notificationEvent =
+				NotificationEventFactoryUtil.createNotificationEvent(
+					System.currentTimeMillis(), "6_WAR_soportlet",
+					notificationEventJSONObject);
+
+			notificationEvent.setDeliveryRequired(0);
+
+			ChannelHubManagerUtil.sendNotificationEvent(
+				user.getCompanyId(), user.getUserId(), notificationEvent);
+		}
 	}
 
 	@Override
