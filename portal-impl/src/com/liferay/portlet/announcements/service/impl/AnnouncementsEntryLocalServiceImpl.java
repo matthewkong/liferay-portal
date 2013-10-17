@@ -14,12 +14,16 @@
 
 package com.liferay.portlet.announcements.service.impl;
 
-import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
+import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.notifications.ChannelHubManagerUtil;
+import com.liferay.portal.kernel.notifications.NotificationEvent;
+import com.liferay.portal.kernel.notifications.NotificationEventFactoryUtil;
+import com.liferay.portal.kernel.search.Indexer;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.PropsKeys;
@@ -34,6 +38,7 @@ import com.liferay.portal.model.Role;
 import com.liferay.portal.model.RoleConstants;
 import com.liferay.portal.model.User;
 import com.liferay.portal.model.UserGroup;
+import com.liferay.portal.service.UserLocalServiceUtil;
 import com.liferay.portal.util.PortalUtil;
 import com.liferay.portal.util.PortletKeys;
 import com.liferay.portal.util.PrefsPropsUtil;
@@ -53,6 +58,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * @author Brian Wing Shun Chan
@@ -341,6 +347,96 @@ public class AnnouncementsEntryLocalServiceImpl
 		return announcementsEntryPersistence.countByUserId(userId);
 	}
 
+	public void sendUserNotifications(
+			AnnouncementsEntry announcementEntry,
+			JSONObject notificationEventJSONObject)
+		throws PortalException, SystemException {
+
+		int count = 0;
+
+		Company company = companyPersistence.findByPrimaryKey(
+			announcementEntry.getCompanyId());
+
+		LinkedHashMap<String, Object> params =
+			new LinkedHashMap<String, Object>();
+
+		if (announcementEntry.getClassNameId() == 0) {
+			count = UserLocalServiceUtil.getUsersCount();
+		}
+		else {
+			String className = announcementEntry.getClassName();
+
+			long classPK = announcementEntry.getClassPK();
+
+			if (classPK > 0) {
+				if (className.equals(Group.class.getName())) {
+					params.put("inherit", Boolean.TRUE);
+					params.put("usersGroups", classPK);
+				}
+				else if (className.equals(Organization.class.getName())) {
+					Organization organization =
+						organizationPersistence.findByPrimaryKey(classPK);
+
+					params.put(
+						"usersOrgsTree",
+						ListUtil.fromArray(new Organization[] {organization}));
+				}
+				else if (className.equals(Role.class.getName())) {
+					Role role = rolePersistence.findByPrimaryKey(classPK);
+
+					if (role.getType() == RoleConstants.TYPE_REGULAR) {
+						params.put("inherit", Boolean.TRUE);
+						params.put("usersRoles", classPK);
+					}
+					else {
+						params.put(
+							"userGroupRole", new Long[] {Long.valueOf(0),
+							classPK});
+					}
+				}
+				else if (className.equals(UserGroup.class.getName())) {
+					params.put("usersUserGroups", classPK);
+				}
+			}
+
+			count = userLocalService.searchCount(
+				company.getCompanyId(), null, WorkflowConstants.STATUS_APPROVED,
+				params);
+		}
+
+		List<User> users = new ArrayList<User>();
+
+		int pages = count / Indexer.DEFAULT_INTERVAL;
+
+		for (int i = 0; i <= pages; i++) {
+			int start = (i * Indexer.DEFAULT_INTERVAL);
+
+			int end = start + Indexer.DEFAULT_INTERVAL;
+
+			if (announcementEntry.getClassNameId() == 0) {
+				users = UserLocalServiceUtil.getUsers(start, end);
+			}
+			else {
+				users = userLocalService.search(
+					company.getCompanyId(), null,
+					WorkflowConstants.STATUS_APPROVED, params, start, end,
+					(OrderByComparator)null);
+			}
+
+			for (User user : users) {
+				NotificationEvent notificationEvent =
+					NotificationEventFactoryUtil.createNotificationEvent(
+						System.currentTimeMillis(), "6_WAR_soportlet",
+						notificationEventJSONObject);
+
+				notificationEvent.setDeliveryRequired(0);
+
+				ChannelHubManagerUtil.sendNotificationEvent(
+					user.getCompanyId(), user.getUserId(), notificationEvent);
+			}
+		}
+	}
+
 	@Override
 	public AnnouncementsEntry updateEntry(
 			long userId, long entryId, String title, String content, String url,
@@ -397,13 +493,6 @@ public class AnnouncementsEntryLocalServiceImpl
 		String className = entry.getClassName();
 		long classPK = entry.getClassPK();
 
-		String fromName = PrefsPropsUtil.getStringFromNames(
-			entry.getCompanyId(), PropsKeys.ANNOUNCEMENTS_EMAIL_FROM_NAME,
-			PropsKeys.ADMIN_EMAIL_FROM_NAME);
-		String fromAddress = PrefsPropsUtil.getStringFromNames(
-			entry.getCompanyId(), PropsKeys.ANNOUNCEMENTS_EMAIL_FROM_ADDRESS,
-			PropsKeys.ADMIN_EMAIL_FROM_ADDRESS);
-
 		String toName = PropsValues.ANNOUNCEMENTS_EMAIL_TO_NAME;
 		String toAddress = PropsValues.ANNOUNCEMENTS_EMAIL_TO_ADDRESS;
 
@@ -455,7 +544,7 @@ public class AnnouncementsEntryLocalServiceImpl
 			}
 		}
 
-		List<User> users = null;
+		List<User> users = new ArrayList<User>();
 
 		if (className.equals(User.class.getName())) {
 			User user = userPersistence.findByPrimaryKey(classPK);
@@ -463,18 +552,39 @@ public class AnnouncementsEntryLocalServiceImpl
 			toName = user.getFullName();
 			toAddress = user.getEmailAddress();
 
-			users = new ArrayList<User>();
-
 			if (Validator.isNotNull(toAddress)) {
 				users.add(user);
 			}
+
+			notifyUsers(users, entry, company.getLocale(), toAddress, toName);
 		}
 		else {
-			users = userLocalService.search(
+			int count = userLocalService.searchCount(
 				company.getCompanyId(), null, WorkflowConstants.STATUS_APPROVED,
-				params, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
-				(OrderByComparator)null);
+				params);
+
+			int pages = count / Indexer.DEFAULT_INTERVAL;
+
+			for (int i = 0; i <= pages; i++) {
+				int start = (i * Indexer.DEFAULT_INTERVAL);
+
+				int end = start + Indexer.DEFAULT_INTERVAL;
+
+				users = userLocalService.search(
+					company.getCompanyId(), null,
+					WorkflowConstants.STATUS_APPROVED, params, start, end,
+					(OrderByComparator)null);
+
+				notifyUsers(
+					users, entry, company.getLocale(), toAddress, toName);
+			}
 		}
+	}
+
+	protected void notifyUsers(
+			List<User> users, AnnouncementsEntry entry, Locale locale,
+			String toAddress, String toName)
+		throws PortalException, SystemException {
 
 		if (_log.isDebugEnabled()) {
 			_log.debug("Notifying " + users.size() + " users");
@@ -510,9 +620,15 @@ public class AnnouncementsEntryLocalServiceImpl
 			return;
 		}
 
+		String body = ContentUtil.get(PropsValues.ANNOUNCEMENTS_EMAIL_BODY);
+		String fromAddress = PrefsPropsUtil.getStringFromNames(
+			entry.getCompanyId(), PropsKeys.ANNOUNCEMENTS_EMAIL_FROM_ADDRESS,
+			PropsKeys.ADMIN_EMAIL_FROM_ADDRESS);
+		String fromName = PrefsPropsUtil.getStringFromNames(
+			entry.getCompanyId(), PropsKeys.ANNOUNCEMENTS_EMAIL_FROM_NAME,
+			PropsKeys.ADMIN_EMAIL_FROM_NAME);
 		String subject = ContentUtil.get(
 			PropsValues.ANNOUNCEMENTS_EMAIL_SUBJECT);
-		String body = ContentUtil.get(PropsValues.ANNOUNCEMENTS_EMAIL_BODY);
 
 		subscriptionSender.setBody(body);
 		subscriptionSender.setCompanyId(entry.getCompanyId());
@@ -520,12 +636,9 @@ public class AnnouncementsEntryLocalServiceImpl
 			"[$ENTRY_CONTENT$]", entry.getContent(), false);
 		subscriptionSender.setContextAttributes(
 			"[$ENTRY_ID$]", entry.getEntryId(), "[$ENTRY_TITLE$]",
-			entry.getTitle(), "[$ENTRY_TYPE$]",
-			LanguageUtil.get(company.getLocale(), entry.getType()),
-			"[$ENTRY_URL$]", entry.getUrl(), "[$PORTLET_NAME$]",
-			LanguageUtil.get(
-				company.getLocale(),
-				(entry.isAlert() ? "alert" : "announcement")));
+			entry.getTitle(), "[$ENTRY_TYPE$]", "[$ENTRY_URL$]", entry.getUrl(),
+			"[$PORTLET_NAME$]", LanguageUtil.get(
+			locale, (entry.isAlert() ? "alert" : "announcement")));
 		subscriptionSender.setFrom(fromAddress, fromName);
 		subscriptionSender.setHtmlFormat(true);
 		subscriptionSender.setMailId("announcements_entry", entry.getEntryId());
