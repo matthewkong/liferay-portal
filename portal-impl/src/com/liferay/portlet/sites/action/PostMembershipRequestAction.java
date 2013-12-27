@@ -82,8 +82,8 @@ public class PostMembershipRequestAction extends PortletAction {
 				new LinkedHashMap<String, Object>();
 
 			userParams.put(
-				"userGroupRole", new Long[] {group.getGroupId(),
-				siteAdminRole.getRoleId()});
+				"userGroupRole",
+				new Long[] {group.getGroupId(), siteAdminRole.getRoleId()});
 
 			List<User> users = UserLocalServiceUtil.search(
 				themeDisplay.getCompanyId(), null,

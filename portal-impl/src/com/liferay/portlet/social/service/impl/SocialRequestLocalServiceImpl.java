@@ -523,11 +523,11 @@ public class SocialRequestLocalServiceImpl
 		if (Validator.isNull(comments)) {
 			if (status == SocialRequestConstants.STATUS_CONFIRM) {
 				comments = LanguageUtil.get(
-				themeDisplay.getLocale(), "request-approved");
+					themeDisplay.getLocale(), "request-approved");
 			}
 			else {
 				comments = LanguageUtil.get(
-				themeDisplay.getLocale(), "request-denied");
+					themeDisplay.getLocale(), "request-denied");
 			}
 		}
 
@@ -539,12 +539,12 @@ public class SocialRequestLocalServiceImpl
 
 		socialRequestPersistence.update(request);
 
-		if (request.getClassNameId() == classNameLocalService.getClassNameId(
-				Group.class)) {
+		if (request.getClassNameId() ==
+				classNameLocalService.getClassNameId(Group.class)) {
 
 			List<MembershipRequest> membershipRequests =
 				membershipRequestLocalService.getMembershipRequests(
-					request.getClassPK(), request.getUserId());
+					request.getUserId(), request.getClassPK());
 
 			for (MembershipRequest membershipRequest : membershipRequests) {
 				membershipRequestService.updateStatus(
