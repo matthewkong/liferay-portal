@@ -18,11 +18,9 @@ import com.liferay.portal.kernel.dao.jdbc.DataAccess;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.upgrade.UpgradeProcess;
-import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.model.ResourceBlockPermissionsContainer;
 import com.liferay.portal.model.ResourceConstants;
-import com.liferay.portal.model.ResourcePermission;
 import com.liferay.portal.model.RoleConstants;
 import com.liferay.portal.security.permission.ResourceActionsUtil;
 import com.liferay.portal.service.ResourceActionLocalServiceUtil;
@@ -357,39 +355,52 @@ public class UpgradePermission extends UpgradeProcess {
 	protected void updateScopeResourcePermissions(String name)
 		throws Exception {
 
-		List<ResourcePermission> resourcePermissions =
-			ResourcePermissionLocalServiceUtil.getScopeResourcePermissions(
-				_SCOPES);
+		Connection con = null;
+		PreparedStatement ps = null;
+		ResultSet rs = null;
 
-		for (ResourcePermission resourcePermission : resourcePermissions) {
-			int scope = resourcePermission.getScope();
+		try {
+			con = DataAccess.getUpgradeOptimizedConnection();
 
-			if (!name.equals(resourcePermission.getName())) {
-				continue;
-			}
+			ps = con.prepareStatement(
+				"select companyId, name, scope, primKey, roleId, actionIds " +
+					"from ResourcePermission where scope = ? or scope = ? or " +
+						"scope = ?");
 
-			if ((scope == ResourceConstants.SCOPE_COMPANY) ||
-				(scope == ResourceConstants.SCOPE_GROUP_TEMPLATE)) {
+			ps.setInt(1, ResourceConstants.SCOPE_COMPANY);
+			ps.setInt(2, ResourceConstants.SCOPE_GROUP);
+			ps.setInt(3, ResourceConstants.SCOPE_GROUP_TEMPLATE);
 
-				ResourceBlockLocalServiceUtil.setCompanyScopePermissions(
-					resourcePermission.getCompanyId(), name,
-					resourcePermission.getRoleId(),
-					resourcePermission.getActionIds());
-			}
-			else if (scope == ResourceConstants.SCOPE_GROUP) {
-				ResourceBlockLocalServiceUtil.setGroupScopePermissions(
-					resourcePermission.getCompanyId(),
-					GetterUtil.getLong(resourcePermission.getPrimaryKey()),
-					name, resourcePermission.getRoleId(),
-					resourcePermission.getActionIds());
+			rs = ps.executeQuery();
+
+			while (rs.next()) {
+				long companyId = rs.getLong("companyId");
+				String resourcePermissionName = rs.getString("name");
+				int scope = rs.getInt("scope");
+				long primKey = rs.getLong("primKey");
+				long roleId = rs.getLong("roleId");
+				long actionIds = rs.getLong("actionIds");
+
+				if (!name.equals(resourcePermissionName)) {
+					continue;
+				}
+
+				if ((scope == ResourceConstants.SCOPE_COMPANY) ||
+					(scope == ResourceConstants.SCOPE_GROUP_TEMPLATE)) {
+
+					ResourceBlockLocalServiceUtil.setCompanyScopePermissions(
+						companyId, name, roleId, actionIds);
+				}
+				else if (scope == ResourceConstants.SCOPE_GROUP) {
+					ResourceBlockLocalServiceUtil.setGroupScopePermissions(
+						companyId, primKey, name, roleId, actionIds);
+				}
 			}
 		}
+		finally {
+			DataAccess.cleanUp(con, ps, rs);
+		}
 	}
-
-	private static final int[] _SCOPES = {
-		ResourceConstants.SCOPE_COMPANY, ResourceConstants.SCOPE_GROUP,
-		ResourceConstants.SCOPE_GROUP_TEMPLATE
-	};
 
 	private static Log _log = LogFactoryUtil.getLog(UpgradePermission.class);
 
