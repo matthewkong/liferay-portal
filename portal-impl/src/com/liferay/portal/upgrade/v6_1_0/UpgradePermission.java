@@ -24,7 +24,6 @@ import com.liferay.portal.model.ResourceConstants;
 import com.liferay.portal.model.RoleConstants;
 import com.liferay.portal.security.permission.ResourceActionsUtil;
 import com.liferay.portal.service.ResourceActionLocalServiceUtil;
-import com.liferay.portal.service.ResourceBlockLocalServiceUtil;
 import com.liferay.portal.service.ResourcePermissionLocalServiceUtil;
 import com.liferay.portal.service.RoleLocalServiceUtil;
 import com.liferay.portlet.bookmarks.model.BookmarksEntry;
@@ -383,6 +382,43 @@ public class UpgradePermission extends UpgradeProcess {
 		}
 	}
 
+	protected void setGroupScopePermissions(
+			long companyId, long groupId, String name, long roleId,
+			long actionIds)
+		throws Exception {
+
+		updateGroupScopeResourceTypePermissions(
+			companyId, groupId, name, roleId, actionIds);
+
+		Connection con = null;
+		PreparedStatement ps = null;
+		ResultSet rs = null;
+
+		try {
+			con = DataAccess.getUpgradeOptimizedConnection();
+
+			ps = con.prepareStatement(
+				"select resourceBlockId from ResourceBlock where companyId = " +
+					"? groupId = ? and name = ?");
+
+			ps.setLong(1, companyId);
+			ps.setLong(2, groupId);
+			ps.setString(3, name);
+
+			ps.executeQuery();
+
+			while (rs.next()) {
+				long resourceBlockId = rs.getLong("resourceBlockId");
+
+				updateResourceBlockPermissions(
+					resourceBlockId, roleId, actionIds);
+			}
+		}
+		finally {
+			DataAccess.cleanUp(con, ps, rs);
+		}
+	}
+
 	protected void updateCompanyScopeResourceTypePermissions(
 			long companyId, String name, long roleId, long actionIds)
 		throws Exception {
@@ -629,7 +665,7 @@ public class UpgradePermission extends UpgradeProcess {
 						companyId, name, roleId, actionIds);
 				}
 				else if (scope == ResourceConstants.SCOPE_GROUP) {
-					ResourceBlockLocalServiceUtil.setGroupScopePermissions(
+					setGroupScopePermissions(
 						companyId, primKey, name, roleId, actionIds);
 				}
 			}
