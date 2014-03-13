@@ -180,33 +180,7 @@ public class UpgradePermission extends UpgradeProcess {
 			DataAccess.cleanUp(con, ps, rs);
 		}
 
-		List<ResourcePermission> resourcePermissions =
-			ResourcePermissionLocalServiceUtil.getScopeResourcePermissions(
-				_SCOPES);
-
-		for (ResourcePermission resourcePermission : resourcePermissions) {
-			int scope = resourcePermission.getScope();
-
-			if (!name.equals(resourcePermission.getName())) {
-				continue;
-			}
-
-			if ((scope == ResourceConstants.SCOPE_COMPANY) ||
-				(scope == ResourceConstants.SCOPE_GROUP_TEMPLATE)) {
-
-				ResourceBlockLocalServiceUtil.setCompanyScopePermissions(
-					resourcePermission.getCompanyId(), name,
-					resourcePermission.getRoleId(),
-					resourcePermission.getActionIds());
-			}
-			else if (scope == ResourceConstants.SCOPE_GROUP) {
-				ResourceBlockLocalServiceUtil.setGroupScopePermissions(
-					resourcePermission.getCompanyId(),
-					GetterUtil.getLong(resourcePermission.getPrimaryKey()),
-					name, resourcePermission.getRoleId(),
-					resourcePermission.getActionIds());
-			}
-		}
+		updateScopeResourcePermissions(name);
 	}
 
 	@Override
@@ -378,6 +352,38 @@ public class UpgradePermission extends UpgradeProcess {
 		sb.append(primKey);
 
 		runSQL(sb.toString());
+	}
+
+	protected void updateScopeResourcePermissions(String name)
+		throws Exception {
+
+		List<ResourcePermission> resourcePermissions =
+			ResourcePermissionLocalServiceUtil.getScopeResourcePermissions(
+				_SCOPES);
+
+		for (ResourcePermission resourcePermission : resourcePermissions) {
+			int scope = resourcePermission.getScope();
+
+			if (!name.equals(resourcePermission.getName())) {
+				continue;
+			}
+
+			if ((scope == ResourceConstants.SCOPE_COMPANY) ||
+				(scope == ResourceConstants.SCOPE_GROUP_TEMPLATE)) {
+
+				ResourceBlockLocalServiceUtil.setCompanyScopePermissions(
+					resourcePermission.getCompanyId(), name,
+					resourcePermission.getRoleId(),
+					resourcePermission.getActionIds());
+			}
+			else if (scope == ResourceConstants.SCOPE_GROUP) {
+				ResourceBlockLocalServiceUtil.setGroupScopePermissions(
+					resourcePermission.getCompanyId(),
+					GetterUtil.getLong(resourcePermission.getPrimaryKey()),
+					name, resourcePermission.getRoleId(),
+					resourcePermission.getActionIds());
+			}
+		}
 	}
 
 	private static final int[] _SCOPES = {
