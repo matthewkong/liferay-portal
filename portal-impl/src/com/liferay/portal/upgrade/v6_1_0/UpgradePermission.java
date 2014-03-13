@@ -20,7 +20,6 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.upgrade.UpgradeProcess;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.StringBundler;
-import com.liferay.portal.model.ResourceBlock;
 import com.liferay.portal.model.ResourceBlockPermissionsContainer;
 import com.liferay.portal.model.ResourceConstants;
 import com.liferay.portal.model.ResourcePermission;
@@ -124,7 +123,7 @@ public class UpgradePermission extends UpgradeProcess {
 		}
 	}
 
-	protected ResourceBlock convertResourcePermissions(
+	protected void convertResourcePermissions(
 			String tableName, String pkColumnName, long companyId, long groupId,
 			String name, long primKey)
 		throws Exception {
@@ -139,8 +138,6 @@ public class UpgradePermission extends UpgradeProcess {
 		updateResourceBlockId(
 			tableName, pkColumnName, primKey, companyId, groupId, name,
 			permissionsHash, resourceBlockPermissionsContainer);
-
-		return resourceBlock;
 	}
 
 	protected void convertResourcePermissions(
@@ -152,6 +149,8 @@ public class UpgradePermission extends UpgradeProcess {
 		ResultSet rs = null;
 
 		try {
+			int resourceBlocksProcessed = 0;
+
 			con = DataAccess.getUpgradeOptimizedConnection();
 
 			ps = con.prepareStatement(
@@ -165,13 +164,15 @@ public class UpgradePermission extends UpgradeProcess {
 				long groupId = rs.getLong("groupId");
 				long companyId = rs.getLong("companyId");
 
-				ResourceBlock resourceBlock = convertResourcePermissions(
+				convertResourcePermissions(
 					tableName, pkColumnName, companyId, groupId, name, primKey);
 
-				if (_log.isInfoEnabled() &&
-					((resourceBlock.getResourceBlockId() % 100) == 0)) {
+				if (_log.isInfoEnabled()) {
+					resourceBlocksProcessed ++;
 
-					_log.info("Processed 100 resource blocks for " + name);
+					if ((resourceBlocksProcessed % 100) == 0) {
+						_log.info("Processed 100 resource blocks for " + name);
+					}
 				}
 			}
 		}
