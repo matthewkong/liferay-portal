@@ -363,27 +363,23 @@ public class UpgradePermission extends UpgradeProcess {
 			con = DataAccess.getUpgradeOptimizedConnection();
 
 			ps = con.prepareStatement(
-				"select companyId, name, scope, primKey, roleId, actionIds " +
-					"from ResourcePermission where scope = ? or scope = ? or " +
-						"scope = ?");
+				"select companyId, scope, primKey, roleId, actionIds from " +
+					"ResourcePermission where name = ? and (scope = ? or " +
+						"scope = ? or scope = ?)");
 
-			ps.setInt(1, ResourceConstants.SCOPE_COMPANY);
-			ps.setInt(2, ResourceConstants.SCOPE_GROUP);
-			ps.setInt(3, ResourceConstants.SCOPE_GROUP_TEMPLATE);
+			ps.setString(1, name);
+			ps.setInt(2, ResourceConstants.SCOPE_COMPANY);
+			ps.setInt(3, ResourceConstants.SCOPE_GROUP);
+			ps.setInt(4, ResourceConstants.SCOPE_GROUP_TEMPLATE);
 
 			rs = ps.executeQuery();
 
 			while (rs.next()) {
 				long companyId = rs.getLong("companyId");
-				String resourcePermissionName = rs.getString("name");
 				int scope = rs.getInt("scope");
 				long primKey = rs.getLong("primKey");
 				long roleId = rs.getLong("roleId");
 				long actionIds = rs.getLong("actionIds");
-
-				if (!name.equals(resourcePermissionName)) {
-					continue;
-				}
 
 				if ((scope == ResourceConstants.SCOPE_COMPANY) ||
 					(scope == ResourceConstants.SCOPE_GROUP_TEMPLATE)) {
