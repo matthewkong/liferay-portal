@@ -15,12 +15,11 @@
 package com.liferay.portal.upgrade.v6_1_0;
 
 import com.liferay.portal.kernel.dao.jdbc.DataAccess;
-import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.exception.SystemException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.upgrade.UpgradeProcess;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.StringBundler;
 import com.liferay.portal.model.ResourceBlock;
 import com.liferay.portal.model.ResourceBlockPermissionsContainer;
 import com.liferay.portal.model.ResourceConstants;
@@ -49,7 +48,7 @@ public class UpgradePermission extends UpgradeProcess {
 
 	protected ResourceBlock convertResourcePermissions(
 			long companyId, long groupId, String name, long primKey)
-		throws PortalException, SystemException {
+		throws Exception {
 
 		ResourceBlockPermissionsContainer resourceBlockPermissionsContainer =
 			getResourceBlockPermissionsContainer(
@@ -153,19 +152,48 @@ public class UpgradePermission extends UpgradeProcess {
 	protected ResourceBlockPermissionsContainer
 			getResourceBlockPermissionsContainer(
 				long companyId, long groupId, String name, long primKey)
-		throws SystemException {
+		throws Exception {
 
 		ResourceBlockPermissionsContainer resourceBlockPermissionContainer =
 			new ResourceBlockPermissionsContainer();
 
-		List<ResourcePermission> resourcePermissions =
-			ResourcePermissionLocalServiceUtil.getResourceResourcePermissions(
-				companyId, groupId, name, String.valueOf(primKey));
+		Connection con = null;
+		PreparedStatement ps = null;
+		ResultSet rs = null;
 
-		for (ResourcePermission resourcePermission : resourcePermissions) {
-			resourceBlockPermissionContainer.addPermission(
-				resourcePermission.getRoleId(),
-				resourcePermission.getActionIds());
+		try {
+			con = DataAccess.getUpgradeOptimizedConnection();
+
+			StringBundler sb = new StringBundler(4);
+
+			sb.append("select roleId, actionIds from ");
+			sb.append("resourcePermission where companyId = ? and name = ? ");
+			sb.append("and ((primKey = ? and scope = ?) or (primKey = ? and ");
+			sb.append("scope = ?) or scope = ? or scope = ?)");
+
+			ps = con.prepareStatement(sb.toString());
+
+			ps.setLong(1, companyId);
+			ps.setString(2, name);
+			ps.setString(3, String.valueOf(primKey));
+			ps.setInt(4, ResourceConstants.SCOPE_INDIVIDUAL);
+			ps.setString(5, String.valueOf(groupId));
+			ps.setInt(6, ResourceConstants.SCOPE_GROUP);
+			ps.setInt(7, ResourceConstants.SCOPE_COMPANY);
+			ps.setInt(8, ResourceConstants.SCOPE_GROUP_TEMPLATE);
+
+			rs = ps.executeQuery();
+
+			while (rs.next()) {
+				long roleId = rs.getLong("roleId");
+				long actionIds = rs.getLong("actionIds");
+
+				resourceBlockPermissionContainer.addPermission(
+					roleId, actionIds);
+			}
+		}
+		finally {
+			DataAccess.cleanUp(con, ps, rs);
 		}
 
 		return resourceBlockPermissionContainer;
