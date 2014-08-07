@@ -18,8 +18,10 @@ import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.util.StringPool;
+import com.liferay.portal.model.Portlet;
 import com.liferay.portal.model.UserNotificationDeliveryConstants;
 import com.liferay.portal.model.UserNotificationEvent;
+import com.liferay.portal.service.PortletLocalServiceUtil;
 import com.liferay.portal.service.ServiceContext;
 import com.liferay.registry.Registry;
 import com.liferay.registry.RegistryUtil;
@@ -35,6 +37,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -78,6 +81,36 @@ public class UserNotificationManagerUtil {
 
 		return Collections.unmodifiableMap(
 			_instance._userNotificationDefinitions);
+	}
+
+	public static List<List<UserNotificationDefinition>>
+		getUserNotificationDefinitionsList() {
+
+		Map<String, List<UserNotificationDefinition>>
+			sortedUserNotificationDefinitionsMap =
+				new TreeMap<String, List<UserNotificationDefinition>>();
+
+		for (String portletId :
+				_instance._userNotificationDefinitions.keySet()) {
+
+			Portlet portlet = PortletLocalServiceUtil.getPortletById(portletId);
+
+			String displayName = portlet.getDisplayName();
+
+			sortedUserNotificationDefinitionsMap.put(
+				displayName + StringPool.COLON + portletId,
+				_instance._userNotificationDefinitions.get(portletId));
+		}
+
+		List<List<UserNotificationDefinition>> userNotificationDefinitionsList =
+			new ArrayList<List<UserNotificationDefinition>>();
+
+		for (String key : sortedUserNotificationDefinitionsMap.keySet()) {
+			userNotificationDefinitionsList.add(
+				sortedUserNotificationDefinitionsMap.get(key));
+		}
+
+		return Collections.unmodifiableList(userNotificationDefinitionsList);
 	}
 
 	public static Map<String, Map<String, UserNotificationHandler>>
